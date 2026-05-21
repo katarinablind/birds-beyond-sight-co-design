@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bird Audio Montage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--surface:#111214;--console:#0c0d0f;--groove:#08090a;
+  --board:#131517;--board-edge:#1a1c1f;
+  --td:#f4f2ec;--tdd:rgba(244,242,236,.5);--tdd2:rgba(244,242,236,.25);
+  --emerald:rgb(16,185,129);--emerald-bg:rgba(16,185,129,.1);--emerald-glow:rgba(16,185,129,.35);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,.1);--amber-glow:rgba(245,158,11,.3);
+  --red:#ef4444;--purple:#8b5cf6;--cyan:#06b6d4;
+  --R:14px;--pill:999px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.12);
+  --font:'DM Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+body{background:var(--bg);font-family:var(--font);-webkit-font-smoothing:antialiased;
+  color:var(--td);min-height:100vh;padding:16px clamp(12px,2vw,32px)}
+
+/* ── Header: left-aligned with tabs inline ── */
+.header{display:flex;align-items:center;gap:16px;margin-bottom:14px;max-width:1100px;margin-left:auto;margin-right:auto;padding:0 0 14px;
+  border-bottom:1px solid rgba(255,255,255,.04)}
+.header-text h1{font-size:14px;font-weight:700;letter-spacing:-.02em;margin-bottom:1px}
+.header-text p{font-size:10px;color:var(--tdd);font-weight:400}
+.tabs{display:flex;gap:4px;margin-left:auto;flex-shrink:0}
+.tab{padding:6px 18px;font-size:10px;font-weight:600;border-radius:var(--pill);
+  border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--tdd);
+  cursor:pointer;font-family:var(--font);transition:all .2s var(--ease)}
+.tab:hover{border-color:rgba(255,255,255,.1);color:var(--td)}
+.tab.active{background:var(--emerald-bg);border-color:rgba(16,185,129,.2);color:var(--emerald)}
+.tab-page{display:none}.tab-page.active{display:block}
+
+/* ── 3-col Layout ── */
+.layout{display:grid;grid-template-columns:140px 1fr 172px;gap:12px;max-width:1100px;margin:0 auto;align-items:start}
+
+/* ── Card ── */
+.card{background:var(--surface);border-radius:var(--R);border:1px solid rgba(255,255,255,.05);
+  box-shadow:var(--shadow);padding:12px}
+.card-label{font-size:7px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tdd2);margin-bottom:6px}
+
+/* ── Bird list (left) ── */
+.col-left{position:sticky;top:16px}
+.bird-list{display:flex;flex-direction:column;gap:1px}
+.bird-chip{padding:6px 9px;border-radius:7px;border:none;
+  background:transparent;color:var(--tdd);font-family:var(--font);font-size:10px;font-weight:500;
+  cursor:pointer;transition:all .15s var(--ease);text-align:left;line-height:1.3}
+.bird-chip:hover{background:rgba(255,255,255,.04);color:var(--td)}
+.bird-chip.active{background:var(--emerald-bg);color:var(--emerald);font-weight:600}
+
+/* ── Center ── */
+.col-center{display:flex;flex-direction:column;gap:8px}
+
+/* ── Control strips ── */
+.strip{background:var(--surface);border-radius:10px;border:1px solid rgba(255,255,255,.04);
+  padding:7px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.strip-label{font-size:7px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tdd2);min-width:54px;flex-shrink:0}
+
+/* Console buttons */
+.c-btn{padding:5px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.02);color:var(--tdd);font-family:var(--font);
+  font-size:9.5px;font-weight:600;cursor:pointer;transition:all .12s;white-space:nowrap}
+.c-btn:hover{border-color:rgba(255,255,255,.12);color:var(--td)}
+.c-btn.on{background:var(--emerald-bg);border-color:rgba(16,185,129,.25);color:var(--emerald);
+  box-shadow:0 0 8px rgba(16,185,129,.1)}
+.c-btn.amber-on{background:var(--amber-bg);border-color:rgba(245,158,11,.25);color:var(--amber);
+  box-shadow:0 0 8px rgba(245,158,11,.08)}
+.c-btn.purple{background:rgba(139,92,246,.06);border-color:rgba(139,92,246,.18);color:var(--purple)}
+.c-btn.purple:hover{background:rgba(139,92,246,.1)}
+.btn-group{display:flex;gap:3px;flex-wrap:wrap}
+.strip-sep{width:1px;height:20px;background:rgba(255,255,255,.06);flex-shrink:0;margin:0 2px}
+
+/* Inline slider */
+.inline-slider{display:flex;align-items:center;gap:5px}
+.inline-slider input[type=range]{-webkit-appearance:none;width:70px;height:3px;
+  background:rgba(255,255,255,.1);border-radius:2px;outline:none;cursor:pointer}
+.inline-slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;
+  border-radius:50%;background:var(--emerald);cursor:pointer}
+.inline-slider-val{font-family:var(--mono);font-size:9px;color:var(--emerald);min-width:16px}
+
+/* Noise chips */
+.noise-row{display:flex;gap:3px;flex-wrap:wrap}
+
+/* Mnemonic tag */
+.mnem-tag{font-size:8px;color:var(--cyan);font-weight:500;font-style:italic}
+
+/* Narration select */
+.narr-select{padding:5px 8px;border-radius:7px;border:1px solid rgba(255,255,255,.06);
+  background:var(--groove);color:var(--td);font-family:var(--font);font-size:9px;font-weight:500;
+  cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg width='8' height='5' viewBox='0 0 8 5' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L4 4L7 1' stroke='%23888' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;padding-right:22px}
+.narr-select:focus{border-color:rgba(16,185,129,.25)}
+
+/* ══ THE BOARD ══ */
+.board{display:flex;gap:0;position:relative;
+  background:linear-gradient(175deg,#191b1e 0%,#131517 40%,#101214 100%);
+  border-radius:16px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 1px 0 #1e2024,0 2px 0 #1a1c1f,0 3px 0 #161819,0 4px 0 #131517,
+    0 6px 1px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.55),0 20px 50px rgba(0,0,0,.3)}
+/* Top edge highlight */
+.board::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(to right,transparent 5%,rgba(255,255,255,.08) 30%,rgba(255,255,255,.1) 50%,rgba(255,255,255,.08) 70%,transparent 95%);z-index:2}
+/* Bottom edge shadow */
+.board::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:rgba(0,0,0,.4);z-index:2}
+/* Corner screws via pseudo on children */
+.board-screw{position:absolute;width:7px;height:7px;border-radius:50%;z-index:3;
+  background:radial-gradient(circle at 40% 35%,#3a3a3a,#222);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04)}
+.board-screw::after{content:'';position:absolute;top:2.5px;left:1.5px;width:4px;height:1.5px;
+  background:rgba(0,0,0,.4);border-radius:1px}
+
+/* Turntable side */
+.board-vinyl{flex-shrink:0;width:270px;padding:24px 20px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:12px;
+  background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.2) 100%);
+  border-right:1px solid rgba(255,255,255,.04);position:relative}
+/* Panel label */
+.board-vinyl::before{content:'PLAYBACK';position:absolute;top:10px;left:16px;
+  font-size:6px;font-weight:700;letter-spacing:.18em;color:rgba(255,255,255,.1);font-family:var(--font)}
+.tt-plinth{width:210px;height:210px;background:var(--console);border-radius:14px;
+  border:1px solid rgba(255,255,255,.05);
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.4),inset 0 0 0 1px rgba(0,0,0,.2),0 1px 0 rgba(255,255,255,.03)}
+.tt-platter{width:165px;height:165px;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 50% 50%,#1a1a1a 0%,#0d0d0d 28%,#1a1a1a 29%,#0d0d0d 48%,
+    #1a1a1a 49%,#111 64%,#1a1a1a 65%,#0d0d0d 78%,#1a1a1a 79%,#111 100%);
+  box-shadow:0 0 0 3px rgba(255,255,255,.03),0 4px 20px rgba(0,0,0,.5)}
+.tt-platter.spinning{animation:spin 2s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tt-label{position:absolute;width:60px;height:60px;border-radius:50%;
+  background:radial-gradient(circle,rgba(16,185,129,.12) 0%,rgba(16,185,129,.05) 60%,transparent 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  top:50%;left:50%;transform:translate(-50%,-50%)}
+.tt-label-text{font-size:6px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--emerald);text-align:center;line-height:1.3;max-width:50px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.tt-label-dot{width:4px;height:4px;border-radius:50%;background:var(--emerald);margin-bottom:2px;
+  box-shadow:0 0 6px rgba(16,185,129,.5)}
+.tt-spindle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:6px;height:6px;border-radius:50%;background:#333;border:2px solid #444;z-index:2}
+.tt-arm{position:absolute;top:12px;right:16px;width:2.5px;height:68px;
+  background:linear-gradient(to bottom,#555,#333);border-radius:2px;
+  transform-origin:top center;transform:rotate(-20deg);transition:transform .6s var(--ease);z-index:3}
+.tt-arm.on{transform:rotate(8deg)}
+.tt-arm::after{content:'';position:absolute;bottom:-2px;left:-3px;width:8px;height:9px;
+  background:#444;border-radius:2px;border:1px solid #555}
+.tt-arm-base{position:absolute;top:8px;right:13px;width:11px;height:11px;
+  border-radius:50%;background:#333;border:2px solid #444;z-index:4}
+.tt-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:5;transition:background .2s}
+.tt-play:hover{background:rgba(0,0,0,.15)}
+.tt-play-icon{width:38px;height:38px;border-radius:50%;background:var(--emerald-bg);
+  border:1px solid rgba(16,185,129,.25);display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:var(--emerald);transition:all .2s;backdrop-filter:blur(8px)}
+.tt-play:hover .tt-play-icon{transform:scale(1.08);box-shadow:0 0 16px rgba(16,185,129,.2)}
+.tt-play.playing .tt-play-icon{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.25);color:var(--amber)}
+.tt-status{text-align:center}
+.tt-bird{font-size:12px;font-weight:600}
+.tt-sub{font-size:8px;color:var(--tdd);margin-top:1px}
+
+/* ── Fader mixer side ── */
+.board-mixer{flex:1;padding:18px 18px 14px;display:flex;flex-direction:column;
+  background:linear-gradient(180deg,rgba(0,0,0,.04) 0%,rgba(0,0,0,.1) 100%);position:relative}
+/* Panel label */
+.board-mixer::before{content:'LEVELS';position:absolute;top:10px;right:16px;
+  font-size:6px;font-weight:700;letter-spacing:.18em;color:rgba(255,255,255,.1);font-family:var(--font)}
+.board-mixer-label{font-size:7px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tdd2);margin-bottom:10px;text-align:center}
+.fader-row{display:flex;gap:6px;flex:1;justify-content:center}
+
+/* Channel strip */
+.fader-ch{display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:linear-gradient(to bottom,rgba(255,255,255,.015),var(--groove));
+  border-radius:10px;padding:10px 6px 8px;
+  border:1px solid rgba(255,255,255,.04);flex:1;max-width:72px;min-width:48px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02),0 1px 3px rgba(0,0,0,.2)}
+.fader-ch.master-ch{border-color:rgba(16,185,129,.12);
+  background:linear-gradient(to bottom,rgba(16,185,129,.04),var(--groove));
+  box-shadow:inset 0 1px 0 rgba(16,185,129,.05),0 1px 3px rgba(0,0,0,.2),0 0 12px rgba(16,185,129,.03)}
+.fader-ch-label{font-size:7px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--tdd2);text-align:center;line-height:1.1}
+.fader-ch-label.master{color:var(--emerald)}
+
+/* LED */
+.led{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.06);flex-shrink:0;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.4);border:1px solid rgba(0,0,0,.3)}
+.led.on{background:var(--emerald);border-color:rgba(16,185,129,.3);
+  box-shadow:0 0 4px var(--emerald-glow),0 0 10px rgba(16,185,129,.15)}
+.led.amber{background:var(--amber);border-color:rgba(245,158,11,.3);
+  box-shadow:0 0 4px var(--amber-glow),0 0 10px rgba(245,158,11,.12)}
+.led.purple{background:var(--purple);border-color:rgba(139,92,246,.3);
+  box-shadow:0 0 4px rgba(139,92,246,.35),0 0 10px rgba(139,92,246,.12)}
+
+/* Fader groove — the channel background track */
+.fader-groove{width:4px;height:100px;background:rgba(0,0,0,.4);border-radius:2px;position:relative;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.5),0 0.5px 0 rgba(255,255,255,.03);margin:2px 0}
+.fader-groove::before{content:'';position:absolute;left:50%;transform:translateX(-50%);
+  bottom:0;width:2px;border-radius:1px;
+  background:var(--emerald);opacity:.25;height:var(--fill,50%)}
+.fader-groove.amber-fill::before{background:var(--amber)}
+.fader-groove.purple-fill::before{background:var(--purple)}
+
+/* Vertical fader */
+.v-fader{width:28px;height:120px;display:flex;align-items:center;justify-content:center;position:relative}
+.v-fader input[type=range]{-webkit-appearance:none;appearance:none;width:110px;height:6px;
+  background:linear-gradient(to right,rgba(255,255,255,.04),rgba(255,255,255,.1));
+  border-radius:3px;outline:none;cursor:pointer;
+  transform:rotate(270deg);transform-origin:center center;position:absolute}
+.v-fader input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:10px;
+  border-radius:3px;background:linear-gradient(to bottom,#777,#444);
+  border:1px solid rgba(255,255,255,.2);cursor:pointer;
+  box-shadow:0 1px 4px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.1)}
+.v-fader input[type=range]::-moz-range-thumb{width:22px;height:10px;
+  border-radius:3px;background:linear-gradient(to bottom,#777,#444);
+  border:1px solid rgba(255,255,255,.2);cursor:pointer}
+/* Master fader thumb accent */
+.master-ch .v-fader input[type=range]::-webkit-slider-thumb{
+  background:linear-gradient(to bottom,#5a9,#387);border-color:rgba(16,185,129,.35)}
+
+.fader-ch-val{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--emerald)}
+.fader-ch-extra{margin-top:2px}
+
+/* ── Session log (right) ── */
+.col-right{position:sticky;top:16px}
+.session-item{display:flex;align-items:center;justify-content:space-between;padding:5px 7px;
+  background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.03);border-radius:7px;margin-bottom:3px}
+.session-item:hover{background:rgba(255,255,255,.04)}
+.session-name{font-size:9px;font-weight:600}
+.session-time{font-size:7px;color:var(--tdd2)}
+.s-btn{font-size:7px;font-weight:600;padding:2px 6px;border-radius:var(--pill);
+  background:transparent;cursor:pointer;font-family:var(--font);transition:all .15s}
+.s-btn.load{color:var(--emerald);border:1px solid rgba(16,185,129,.15)}
+.s-btn.load:hover{background:var(--emerald-bg)}
+.s-btn.del{color:var(--red);border:1px solid rgba(239,68,68,.15);margin-left:2px}
+.s-btn.del:hover{background:rgba(239,68,68,.08)}
+.no-sessions{font-size:9px;color:var(--tdd2);font-style:italic}
+.session-actions{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.sa-btn{width:100%;padding:6px;border-radius:7px;font-family:var(--font);font-size:9px;
+  font-weight:600;cursor:pointer;transition:all .15s;text-align:center}
+.sa-btn.primary{background:var(--emerald-bg);border:1px solid rgba(16,185,129,.2);color:var(--emerald)}
+.sa-btn.primary:hover{background:rgba(16,185,129,.16)}
+.sa-btn.secondary{background:transparent;border:1px solid rgba(255,255,255,.06);color:var(--tdd)}
+.sa-btn.secondary:hover{background:rgba(255,255,255,.04);color:var(--td)}
+
+/* ── Highlight reel ── */
+.reel{max-width:760px;margin:0 auto}
+.reel-list{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.reel-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);
+  border:1px solid rgba(255,255,255,.04);border-radius:12px}
+.reel-num{font-size:10px;font-weight:700;color:var(--tdd2);width:18px;text-align:center;flex-shrink:0}
+.reel-item-info{flex:1;min-width:0}
+.reel-item-name{font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reel-item-detail{font-size:8px;color:var(--tdd2);margin-top:1px}
+.reel-item-btns{display:flex;gap:3px;flex-shrink:0}
+.reel-item-btn{width:24px;height:24px;border-radius:50%;border:1px solid rgba(255,255,255,.06);
+  background:transparent;color:var(--tdd);font-size:9px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;transition:all .12s;font-family:var(--font)}
+.reel-item-btn:hover{border-color:rgba(255,255,255,.15);color:var(--td)}
+.reel-add{width:100%;padding:10px;border:1px dashed rgba(255,255,255,.08);border-radius:12px;
+  background:transparent;color:var(--tdd);font-family:var(--font);font-size:10px;font-weight:600;
+  cursor:pointer;transition:all .15s;text-align:center}
+.reel-add:hover{border-color:rgba(255,255,255,.15);color:var(--td)}
+.s-row{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.s-row:last-child{border-bottom:none}
+.s-label{font-size:11px;font-weight:500;color:var(--td)}
+.tog{width:34px;height:18px;border-radius:9px;background:rgba(255,255,255,.08);
+  position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.tog.on{background:var(--emerald-bg)}
+.tog::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;
+  border-radius:50%;background:var(--tdd);transition:all .2s}
+.tog.on::after{left:18px;background:var(--emerald)}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn{padding:7px 14px;border-radius:var(--pill);font-family:var(--font);font-size:10px;
+  font-weight:600;cursor:pointer;transition:all .15s var(--ease);border:1px solid rgba(255,255,255,.06);
+  background:transparent;color:var(--tdd)}
+.btn:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:var(--td)}
+.btn.primary{background:var(--emerald-bg);border-color:rgba(16,185,129,.2);color:var(--emerald)}
+.btn.primary:hover{background:rgba(16,185,129,.16)}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);
+  padding:10px 22px;background:var(--surface);border:1px solid rgba(16,185,129,.2);
+  border-radius:var(--pill);font-size:11px;font-weight:600;color:var(--emerald);
+  box-shadow:var(--shadow);transition:transform .3s var(--ease);z-index:50;pointer-events:none}
+.toast.visible{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr;max-width:560px}
+  .col-left,.col-right{position:static}
+  .bird-list{flex-direction:row;flex-wrap:wrap;gap:2px}
+  .board{flex-direction:column}
+  .board-vinyl{border-right:none;border-bottom:1px solid rgba(255,255,255,.04);width:100%}
+  .fader-row{flex-wrap:wrap}
+  .header{flex-direction:column;align-items:flex-start}
+  .tabs{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<!-- Header: left-aligned, tabs inline -->
+<div class="header">
+  <div class="header-text">
+    <h1>Bird Audio Montage</h1>
+    <p>Design the sound profile for a reflective birding experience &middot; Union Bay, Seattle</p>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('mix')">Soundboard</button>
+    <button class="tab" onclick="switchTab('reel')">Highlight Reel</button>
+  </div>
+</div>
+
+<!-- SOUNDBOARD -->
+<div class="tab-page active" id="page-mix">
+<div class="layout">
+
+  <!-- LEFT: Birds -->
+  <div class="col-left">
+    <div class="card">
+      <div class="card-label">Union Bay Birds</div>
+      <div class="bird-list" id="birdPicker"></div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="col-center">
+
+    <!-- 1. SOURCE -->
+    <div class="strip">
+      <span class="strip-label">Source</span>
+      <div class="btn-group" id="sourceBtns">
+        <button class="c-btn on" data-source="clean" onclick="setSource('clean')">Clean Reference</button>
+        <button class="c-btn" data-source="field" onclick="setSource('field')">Field Recording</button>
+      </div>
+      <div class="noise-row" id="noiseChipsRow" style="display:none">
+        <div class="strip-sep"></div>
+        <button class="c-btn amber-on" data-noise="traffic" onclick="toggleNoise(this)">Traffic</button>
+        <button class="c-btn amber-on" data-noise="footsteps" onclick="toggleNoise(this)">Footsteps</button>
+        <button class="c-btn" data-noise="voices" onclick="toggleNoise(this)">Voices</button>
+        <button class="c-btn amber-on" data-noise="wind" onclick="toggleNoise(this)">Wind</button>
+      </div>
+    </div>
+
+    <!-- 2. ORDER -->
+    <div class="strip">
+      <span class="strip-label">Order</span>
+      <div class="btn-group" id="orderBtns">
+        <button class="c-btn on" data-order="bird-first" onclick="setOrder('bird-first')">Bird first</button>
+        <button class="c-btn" data-order="person-first" onclick="setOrder('person-first')">Talk first</button>
+        <button class="c-btn" data-order="both" onclick="setOrder('both')">Both at once</button>
+      </div>
+      <div class="strip-sep"></div>
+      <div class="inline-slider">
+        <span style="font-size:9px;color:var(--tdd);font-weight:500">Pause</span>
+        <input type="range" min="0" max="8" step="0.5" value="2" id="pauseSlider" oninput="setPause(this.value)">
+        <span class="inline-slider-val" id="pauseVal">2s</span>
+      </div>
+    </div>
+
+    <!-- 3. ELEMENTS -->
+    <div class="strip" style="gap:6px">
+      <span class="strip-label">Elements</span>
+      <div class="btn-group">
+        <button class="c-btn on" id="optBirdName" onclick="toggleConsoleBtn(this)">Bird name</button>
+        <button class="c-btn on" id="optDesc" onclick="toggleConsoleBtn(this)">Description</button>
+        <button class="c-btn on" id="optMnem" onclick="toggleConsoleBtn(this)">Mnemonic</button>
+        <button class="c-btn" id="optMnemLabel" onclick="toggleConsoleBtn(this)">Say "mnemonic"</button>
+      </div>
+      <div class="strip-sep"></div>
+      <span style="font-size:9px;color:var(--tdd);font-weight:500">Narration</span>
+      <select class="narr-select" id="narrStyle" onchange="setNarration(this.value)">
+        <option value="direct">Direct</option>
+        <option value="field-guide">Field guide</option>
+        <option value="field-tour">Field tour</option>
+        <option value="reflective">Reflective</option>
+      </select>
+      <div class="mnem-tag" id="mnemTag"></div>
+    </div>
+
+    <!-- 4. THE BOARD -->
+    <div class="board">
+      <!-- Corner screws for hardware feel -->
+      <div class="board-screw" style="top:8px;left:8px"></div>
+      <div class="board-screw" style="top:8px;right:8px"></div>
+      <div class="board-screw" style="bottom:8px;left:8px"></div>
+      <div class="board-screw" style="bottom:8px;right:8px"></div>
+
+      <!-- Vinyl -->
+      <div class="board-vinyl">
+        <div class="tt-plinth">
+          <div class="tt-platter" id="platter">
+            <div class="tt-label">
+              <div class="tt-label-dot"></div>
+              <div class="tt-label-text" id="ttLabel">No bird</div>
+            </div>
+            <div class="tt-spindle"></div>
+          </div>
+          <div class="tt-arm" id="ttArm"></div>
+          <div class="tt-arm-base"></div>
+          <div class="tt-play" id="ttPlay" onclick="togglePlay()">
+            <div class="tt-play-icon" id="ttPlayIcon">&#9654;</div>
+          </div>
+        </div>
+        <div class="tt-status">
+          <div class="tt-bird" id="ttBird">Select a bird</div>
+          <div class="tt-sub" id="ttSub"></div>
+        </div>
+      </div>
+
+      <!-- Fader mixer — Master first -->
+      <div class="board-mixer">
+        <div class="board-mixer-label">Mixer</div>
+        <div class="fader-row">
+
+          <div class="fader-ch master-ch">
+            <div class="fader-ch-label master">Master</div>
+            <div class="led on"></div>
+            <div class="v-fader"><input type="range" min="0" max="100" value="80" oninput="setVol('master',this.value)"></div>
+            <div class="fader-ch-val" id="val-master">80</div>
+          </div>
+
+          <div class="fader-ch">
+            <div class="fader-ch-label">Bird</div>
+            <div class="led on" id="ledBird"></div>
+            <div class="v-fader"><input type="range" min="0" max="100" value="85" oninput="setVol('bird',this.value)"></div>
+            <div class="fader-ch-val" id="val-bird">85</div>
+          </div>
+
+          <div class="fader-ch">
+            <div class="fader-ch-label">Enviro</div>
+            <div class="led on" id="ledEnv"></div>
+            <div class="v-fader"><input type="range" min="0" max="100" value="35" oninput="setVol('env',this.value)"></div>
+            <div class="fader-ch-val" id="val-env">35</div>
+            <div class="fader-ch-extra"><button class="c-btn purple" id="envPresetBtn" onclick="cycleEnvPreset()" style="font-size:8px;padding:3px 7px">Wind</button></div>
+          </div>
+
+          <div class="fader-ch" id="fieldNoiseCh" style="display:none">
+            <div class="fader-ch-label">Noise</div>
+            <div class="led amber" id="ledNoise"></div>
+            <div class="v-fader"><input type="range" min="0" max="100" value="75" id="noiseSlider" oninput="setNoiseLevel(this.value)"></div>
+            <div class="fader-ch-val" id="noiseVal">75</div>
+          </div>
+
+          <div class="fader-ch">
+            <div class="fader-ch-label">Voice</div>
+            <div class="led purple" id="ledVoice"></div>
+            <div class="v-fader"><input type="range" min="0" max="100" value="70" oninput="setVol('voice',this.value)"></div>
+            <div class="fader-ch-val" id="val-voice">70</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Sessions -->
+  <div class="col-right">
+    <div class="card">
+      <div class="card-label">Session Log</div>
+      <div id="sessionList"><div class="no-sessions">No saved sessions yet</div></div>
+      <div class="session-actions">
+        <button class="sa-btn primary" onclick="saveSession()">Save session</button>
+        <button class="sa-btn secondary" onclick="exportSession()">Export JSON</button>
+        <button class="sa-btn secondary" onclick="resetAll()">Reset all</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- HIGHLIGHT REEL -->
+<div class="tab-page" id="page-reel">
+<div class="layout">
+
+  <!-- LEFT: Bird picker for reel -->
+  <div class="col-left">
+    <div class="card">
+      <div class="card-label">Add Birds</div>
+      <div class="bird-list" id="reelBirdPicker"></div>
+    </div>
+  </div>
+
+  <!-- CENTER: Reel sequence + controls -->
+  <div class="col-center">
+
+    <!-- Reel sequence strip -->
+    <div class="strip" style="flex-direction:column;align-items:stretch;gap:6px;padding:10px 14px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="strip-label" style="min-width:0;margin-bottom:0">Sequence</div>
+        <button class="c-btn" onclick="showTextInput()" style="font-size:8px;padding:3px 8px;margin-left:auto">+ Add spoken text</button>
+      </div>
+      <div class="reel-list" id="reelList"></div>
+      <div style="font-size:9px;color:var(--tdd2);text-align:center;padding:2px 0" id="reelEmpty">Click a bird on the left to add it, or add spoken text</div>
+      <!-- Inline text input (hidden by default) -->
+      <div id="reelTextInput" style="display:none">
+        <textarea id="reelTextArea" placeholder="Type text to be spoken aloud (e.g. participant reflections, journal entries, transitions...)"
+          style="width:100%;height:54px;resize:vertical;background:var(--groove);border:1px solid rgba(255,255,255,.06);
+          border-radius:8px;padding:8px 10px;color:var(--td);font-family:var(--font);font-size:10px;
+          line-height:1.5;outline:none"></textarea>
+        <div style="display:flex;gap:4px;margin-top:4px;justify-content:flex-end">
+          <button class="c-btn" onclick="cancelTextInput()" style="font-size:8px;padding:3px 10px">Cancel</button>
+          <button class="c-btn on" onclick="addTextToReel()" style="font-size:8px;padding:3px 10px">Add to reel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Composition order strip -->
+    <div class="strip">
+      <div class="strip-label">Reel Order</div>
+      <div class="btn-group">
+        <button class="c-btn on" data-reelorder="narrate-each" onclick="setReelOrder(this)">Narrate each</button>
+        <button class="c-btn" data-reelorder="sounds-only" onclick="setReelOrder(this)">Sounds only</button>
+        <button class="c-btn" data-reelorder="summary-first" onclick="setReelOrder(this)">Summary + sounds</button>
+        <button class="c-btn" data-reelorder="guided" onclick="setReelOrder(this)">Guided tour</button>
+      </div>
+      <div class="strip-sep"></div>
+      <span style="font-size:8px;color:var(--tdd2);font-weight:600">Narration</span>
+      <select class="narr-select" id="reelNarrationSel" onchange="state.narration=this.value">
+        <option value="direct">Direct</option>
+        <option value="field-guide">Field guide</option>
+        <option value="field-tour">Field tour</option>
+        <option value="reflective">Reflective</option>
+      </select>
+    </div>
+
+    <!-- Elements strip -->
+    <div class="strip">
+      <div class="strip-label">Include</div>
+      <div class="btn-group">
+        <button class="c-btn on" id="settingAnnounce" onclick="toggleOpt(this)">Bird name</button>
+        <button class="c-btn" id="settingDesc" onclick="toggleOpt(this)">Description</button>
+        <button class="c-btn" id="settingMnem" onclick="toggleOpt(this)">Mnemonic</button>
+      </div>
+      <div class="strip-sep"></div>
+      <div class="btn-group">
+        <button class="c-btn on" id="settingEnv" onclick="toggleOpt(this)">Environment</button>
+        <button class="c-btn on" id="settingCrossfade" onclick="toggleOpt(this)">Crossfade</button>
+      </div>
+    </div>
+
+    <!-- Duration strip -->
+    <div class="strip">
+      <div class="strip-label">Duration</div>
+      <div class="btn-group">
+        <button class="c-btn on" data-reeldur="full" onclick="setReelDuration(this)">Full clip</button>
+        <button class="c-btn" data-reeldur="10" onclick="setReelDuration(this)">10s</button>
+        <button class="c-btn" data-reeldur="20" onclick="setReelDuration(this)">20s</button>
+        <button class="c-btn" data-reeldur="30" onclick="setReelDuration(this)">30s</button>
+      </div>
+      <div class="strip-sep"></div>
+      <span style="font-size:8px;color:var(--tdd2);font-weight:600">Pause between</span>
+      <div class="inline-slider">
+        <input type="range" min="0" max="5" value="2" id="reelPauseSlider" oninput="setReelPause(this.value)">
+        <span class="inline-slider-val" id="reelPauseVal">2s</span>
+      </div>
+    </div>
+
+    <!-- Mixer board -->
+    <div class="board" style="min-height:0">
+      <div class="board-mixer" style="padding:14px 16px 12px;flex:1">
+        <div class="board-mixer-label">Mixer</div>
+        <div class="fader-row" style="gap:8px">
+          <div class="fader-ch master-ch">
+            <div class="fader-ch-label master">Master</div>
+            <div class="led on"></div>
+            <div class="v-fader"><input type="range" min="0" max="100" value="80" oninput="setVol('master',this.value)"></div>
+            <div class="fader-ch-val" id="reel-val-master">80</div>
+          </div>
+          <div class="fader-ch">
+            <div class="fader-ch-label">Bird</div>
+            <div class="led on" id="reelLedBird"></div>
+            <div class="v-fader"><input type="range" min="0" max="100" value="85" oninput="setVol('bird',this.value)"></div>
+            <div class="fader-ch-val" id="reel-val-bird">85</div>
+          </div>
+          <div class="fader-ch">
+            <div class="fader-ch-label">Enviro</div>
+            <div class="led on" id="reelLedEnv"></div>
+            <div class="v-fader"><input type="range" min="0" max="100" value="35" oninput="setVol('env',this.value)"></div>
+            <div class="fader-ch-val" id="reel-val-env">35</div>
+          </div>
+          <div class="fader-ch">
+            <div class="fader-ch-label">Voice</div>
+            <div class="led purple" id="reelLedVoice"></div>
+            <div class="v-fader"><input type="range" min="0" max="100" value="70" oninput="setVol('voice',this.value)"></div>
+            <div class="fader-ch-val" id="reel-val-voice">70</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Play controls -->
+    <div style="display:flex;gap:8px;justify-content:center;align-items:center;margin-top:4px;flex-wrap:wrap">
+      <button class="btn primary" onclick="playReel()" id="reelPlayBtn" style="padding:10px 24px;font-size:11px">&#9654; Play highlight reel</button>
+      <button class="btn" onclick="recordReel()" id="reelRecBtn" style="border-color:rgba(239,68,68,.2);color:var(--red)">&#9679; Record to audio</button>
+      <button class="btn" onclick="exportReel()">Export JSON</button>
+      <button class="btn" onclick="clearReel()" style="color:var(--red);border-color:rgba(239,68,68,.15)">Clear all</button>
+    </div>
+    <!-- Recording indicator -->
+    <div id="recordingBar" style="display:none;text-align:center;padding:8px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:10px;margin-top:4px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 1s infinite"></div>
+        <span style="font-size:10px;font-weight:600;color:var(--red)" id="recordingStatus">Recording...</span>
+      </div>
+    </div>
+    <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}</style>
+
+    <!-- Order explanation card -->
+    <div class="card" id="reelOrderInfo" style="margin-top:4px">
+      <div class="card-label">How it plays</div>
+      <p id="reelOrderDesc" style="font-size:10px;color:var(--tdd);line-height:1.6"></p>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: reel info -->
+  <div class="col-right">
+    <div class="card">
+      <div class="card-label">Reel Info</div>
+      <div style="font-size:9px;color:var(--tdd2);line-height:1.5" id="reelStats">0 birds added<br>Click birds to add</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<audio id="audioMain" loop></audio>
+<input type="file" id="fileInput" accept="audio/*" style="display:none" onchange="handleMnemUpload(this.files)">
+
+<script>
+const BIRDS=[
+  {name:'Song Sparrow',sci:'Melospiza melodia',id:253526},
+  {name:'Red-winged Blackbird',sci:'Agelaius phoeniceus',id:602535},
+  {name:'Black-capped Chickadee',sci:'Poecile atricapillus',id:434624},
+  {name:'American Robin',sci:'Turdus migratorius',id:174960},
+  {name:"Bewick's Wren",sci:'Thryomanes bewickii',id:270231},
+  {name:'Spotted Towhee',sci:'Pipilo maculatus',id:126997},
+  {name:"Anna's Hummingbird",sci:'Calypte anna',id:603659},
+  {name:'Marsh Wren',sci:'Cistothorus palustris',id:181128},
+  {name:'White-crowned Sparrow',sci:'Zonotrichia leucophrys',id:565001},
+  {name:'Golden-crowned Sparrow',sci:'Zonotrichia atricapilla',id:420270},
+  {name:'Pacific Wren',sci:'Troglodytes pacificus',id:120847},
+  {name:"Steller's Jay",sci:'Cyanocitta stelleri',id:368857},
+  {name:'Northern Flicker',sci:'Colaptes auratus',id:314603},
+  {name:'Great Blue Heron',sci:'Ardea herodias',id:445084},
+  {name:'Bald Eagle',sci:'Haliaeetus leucocephalus',id:451490},
+];
+
+const BIRD_DESC={
+  'Song Sparrow':'Streaky brown with a central breast spot. Musical song starts with repeated notes then bursts into a trill.',
+  'Red-winged Blackbird':'Males jet black with vivid red and yellow shoulder patches. Loud conk-la-ree rings across the marsh.',
+  'Black-capped Chickadee':'Tiny round bird with black cap and bib. Named for its chick-a-dee-dee call. Fee-bee song in spring.',
+  'American Robin':'Large thrush with warm orange breast. Often seen running across lawns. Cheerful caroling song.',
+  "Bewick's Wren":'Small gray-brown wren with a long tail and white eyebrow. Complex buzzy song from thickets.',
+  'Spotted Towhee':'Bold black, white and rufous. Scratches noisily in leaf litter. Buzzy trill from dense shrubs.',
+  "Anna's Hummingbird":'Year-round resident hummer with rose-pink gorget. Males sing a scratchy, buzzy song from high perches.',
+  'Marsh Wren':'Tiny brown wren clinging to cattails. Rapid bubbly song chatters across the wetland.',
+  'White-crowned Sparrow':'Crisp black and white head stripes. Sweet descending whistle followed by buzzy trills.',
+  'Golden-crowned Sparrow':'Yellow crown patch with black border. Plaintive three-note descending whistle: oh dear me.',
+  'Pacific Wren':'Tiny dark wren of the forest floor. Astonishingly long, complex, rapid trilling song.',
+  "Steller's Jay":'Deep blue with a tall black crest. Loud, harsh calls echo through conifers. Expert mimic.',
+  'Northern Flicker':'Large woodpecker with spotted breast and red under-tail. Loud wik-wik-wik call and drumming.',
+  'Great Blue Heron':'Tall wading bird standing motionless in shallows. Deep, guttural croaking call when flushed.',
+  'Bald Eagle':'Massive dark raptor with white head and tail. High thin whistling call, surprisingly delicate for its size.',
+};
+
+const BIRD_MNEM={
+  'Black-capped Chickadee':{phrase:'Cheese-burger!',desc:'Fee-bee song sounds like "cheeseburger"'},
+  'American Robin':{phrase:'Cheerily, cheer-up, cheerio!',desc:'Rising and falling carol'},
+  'Song Sparrow':{phrase:'Maids maids maids, put on your tea kettle',desc:'Starts with repeated notes then a trill'},
+  'Red-winged Blackbird':{phrase:'Conk-la-ree! Conk-la-ree!',desc:'Liquid gurgling call from the marsh'},
+  'Golden-crowned Sparrow':{phrase:'Oh dear me!',desc:'Plaintive three-note descending whistle'},
+  'White-crowned Sparrow':{phrase:'See me, pretty pretty me!',desc:'Sweet whistle then buzzy trill'},
+  'Spotted Towhee':{phrase:'Drink your tea!',desc:'Buzzy trill from dense shrubs'},
+  'Northern Flicker':{phrase:'Wik-wik-wik-wik-wik!',desc:'Loud rapid call'},
+  'Bald Eagle':{phrase:'Klee-klee-klee!',desc:'High thin whistling call'},
+  "Steller's Jay":{phrase:'Shaack! Shaack! Shaack!',desc:'Harsh scolding call'},
+};
+
+const ENV_PRESETS=['Wind','Rain','Stream','Forest'];
+
+// ── Narration templates ──
+// 4 clear styles: what you'd say in the moment vs. looking back
+const NARRATIONS={
+  'direct': b => b.name,
+  'field-guide': b => `This is the ${b.name}, ${b.sci}.`,
+  'field-tour': b => {
+    const p=['Listen closely...','Can you hear that?','Right there...','Pause and listen...',
+      'Walking along the trail at Union Bay','On this sunny morning at the marsh'];
+    return `${p[Math.floor(Math.random()*p.length)]} that's a ${b.name} nearby.`;
+  },
+  'reflective': b => {
+    const i=['Thinking back on today\'s walk','Reflecting on this morning at the bay',
+      'Looking back on that quiet moment','Remember that moment when you heard',
+      'One of the highlights was hearing'];
+    return `${i[Math.floor(Math.random()*i.length)]} the ${b.name}.`;
+  },
+};
+
+let state={
+  bird:null,source:'clean',envPreset:'Wind',narration:'direct',
+  volumes:{master:80,bird:85,env:35,voice:70},
+  opts:{birdName:true,desc:true,mnem:true,mnemLabel:false},
+  playOrder:'bird-first',pauseSec:2,
+  noiseLevel:75,noiseTypes:{traffic:true,footsteps:true,voices:false,wind:true},
+  mnemonicFile:null,
+};
+
+let audioCtx=null,masterGain=null,mainSource=null,isPlaying=false;
+const mainAudio=document.getElementById('audioMain');
+const nodes={};
+let envNodes=null,mnemSource=null,mnemBuffer=null,fieldNoiseNodes=null;
+
+function initAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  masterGain=audioCtx.createGain();
+  masterGain.gain.value=state.volumes.master/100;
+  masterGain.connect(audioCtx.destination);
+  mainSource=audioCtx.createMediaElementSource(mainAudio);
+  nodes.bird=audioCtx.createGain();
+  mainSource.connect(nodes.bird);nodes.bird.connect(masterGain);
+  nodes.env=audioCtx.createGain();
+  nodes.env.connect(masterGain);
+  nodes.mnem=audioCtx.createGain();
+  nodes.mnem.connect(masterGain);
+  applyGains();
+}
+
+function applyGains(){
+  if(!audioCtx)return;
+  const t=audioCtx.currentTime;
+  nodes.bird.gain.setTargetAtTime(state.volumes.bird/100,t,0.015);
+  nodes.env.gain.setTargetAtTime(state.volumes.env/100,t,0.015);
+  masterGain.gain.setTargetAtTime(state.volumes.master/100,t,0.015);
+}
+
+function setVol(id,val){
+  val=Number(val);state.volumes[id]=val;
+  // Update both soundboard and reel fader displays
+  const el1=document.getElementById(`val-${id}`);if(el1)el1.textContent=val;
+  const el2=document.getElementById(`reel-val-${id}`);if(el2)el2.textContent=val;
+  applyGains();
+  if(id==='bird'){const l=document.getElementById('ledBird');if(l)l.classList.toggle('on',val>0);}
+  if(id==='env'){const l=document.getElementById('ledEnv');if(l)l.classList.toggle('on',val>0);}
+}
+
+function toggleConsoleBtn(el){el.classList.toggle('on');syncOpts();}
+function toggleOpt(el){el.classList.toggle('on');}
+
+function syncOpts(){
+  state.opts.birdName=document.getElementById('optBirdName').classList.contains('on');
+  state.opts.desc=document.getElementById('optDesc').classList.contains('on');
+  state.opts.mnem=document.getElementById('optMnem').classList.contains('on');
+  state.opts.mnemLabel=document.getElementById('optMnemLabel').classList.contains('on');
+}
+function setOrder(order){
+  state.playOrder=order;
+  document.querySelectorAll('#orderBtns .c-btn').forEach(p=>p.classList.toggle('on',p.dataset.order===order));
+}
+function setPause(val){state.pauseSec=Number(val);document.getElementById('pauseVal').textContent=val+'s';}
+function setNarration(val){state.narration=val;}
+
+function setSource(src){
+  state.source=src;
+  document.querySelectorAll('#sourceBtns .c-btn').forEach(p=>p.classList.toggle('on',p.dataset.source===src));
+  document.getElementById('fieldNoiseCh').style.display=src==='field'?'flex':'none';
+  document.getElementById('noiseChipsRow').style.display=src==='field'?'flex':'none';
+  if(isPlaying){src==='field'?startFieldNoise():stopFieldNoise();}
+}
+function setNoiseLevel(val){
+  state.noiseLevel=Number(val);document.getElementById('noiseVal').textContent=val;
+  if(fieldNoiseNodes)fieldNoiseNodes.gain.gain.setTargetAtTime(val/100*1.8,audioCtx.currentTime,.05);
+}
+function toggleNoise(el){
+  const t=el.dataset.noise;state.noiseTypes[t]=!state.noiseTypes[t];
+  el.classList.toggle('amber-on',state.noiseTypes[t]);
+  if(isPlaying&&state.source==='field'){stopFieldNoise();startFieldNoise();}
+}
+
+function startFieldNoise(){
+  stopFieldNoise();if(!audioCtx)return;
+  const sr=audioCtx.sampleRate;
+  const mixGain=audioCtx.createGain();
+  // Much louder: full range 0-1.8 so 100 is really loud
+  mixGain.gain.value=state.noiseLevel/100*1.8;
+  mixGain.connect(masterGain);
+  const sources=[];
+
+  // ── TRAFFIC: low rumble + distinct car pass-bys ──
+  if(state.noiseTypes.traffic){
+    const len=sr*10,buf=audioCtx.createBuffer(2,len,sr);
+    for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      // Car pass-by events — random timing, doppler-like
+      const cars=[];for(let c=0;c<6;c++)cars.push({t:Math.random()*10,dur:.8+Math.random()*1.5,freq:80+Math.random()*60,pan:ch===0?1:-1});
+      for(let i=0;i<len;i++){const t=i/sr;let s=0;const w=Math.random()*2-1;
+        b0=.99886*b0+w*.0555179;b1=.99332*b1+w*.0750759;b2=.96900*b2+w*.1538520;
+        b3=.86650*b3+w*.3104856;b4=.55000*b4+w*.5329522;b5=-.7616*b5-w*.0168980;
+        const pink=(b0+b1+b2+b3+b4+b5+b6+w*.5362)*.06;b6=w*.115926;
+        // Steady low hum
+        s+=pink*1.2*(.6+.2*Math.sin(t*.1+ch));
+        // Distinct car pass-bys with doppler sweep
+        for(const c of cars){const dt=t-c.t;if(dt>0&&dt<c.dur){
+          const env=Math.sin(Math.PI*dt/c.dur);const doppler=c.freq*(1+.3*(dt/c.dur-.5));
+          s+=Math.sin(t*doppler*.1)*env*.5*(ch===0?(.5+.3*Math.sin(dt*2)):(.5-.3*Math.sin(dt*2)));
+          s+=(Math.random()*2-1)*env*.2;}}
+        d[i]=s;}}
+    const src=audioCtx.createBufferSource();src.buffer=buf;src.loop=true;
+    const lp=audioCtx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=800;lp.Q.value=0.7;
+    src.connect(lp);lp.connect(mixGain);src.start();sources.push(src);
+  }
+
+  // ── FOOTSTEPS: crisp transient impacts on gravel/path ──
+  if(state.noiseTypes.footsteps){
+    const len=sr*8,buf=audioCtx.createBuffer(2,len,sr);
+    for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);
+      // Generate footstep events with slight timing variation
+      const stepRate=1.4+Math.random()*.4; // steps per second
+      const stepInterval=sr/stepRate;
+      for(let i=0;i<len;i++){
+        const stepPhase=((i+(ch*sr*.02))%stepInterval)/stepInterval;
+        // Each step: sharp attack, crunchy decay
+        if(stepPhase<.015){
+          const env=1-stepPhase/.015;
+          d[i]=(Math.random()*2-1)*env*env*.7;
+        }else if(stepPhase<.06){
+          // Gravel crunch tail
+          const env=1-(stepPhase-.015)/.045;
+          d[i]=(Math.random()*2-1)*env*.25*(1+.5*Math.sin(i/sr*4000));
+        }
+        // Occasional scuff sound
+        const scuffPhase=((i+sr*3.7*ch)%(stepInterval*3.5))/sr;
+        if(scuffPhase>.01&&scuffPhase<.08){
+          const env=Math.sin(Math.PI*(scuffPhase-.01)/.07);
+          d[i]+=(Math.random()*2-1)*env*.12;
+        }
+      }}
+    const src=audioCtx.createBufferSource();src.buffer=buf;src.loop=true;
+    const bp=audioCtx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=3000;bp.Q.value=0.8;
+    const g2=audioCtx.createGain();g2.gain.value=1.3;
+    src.connect(bp);bp.connect(g2);g2.connect(mixGain);src.start();sources.push(src);
+  }
+
+  // ── VOICES: distant murmur with occasional distinct cadence ──
+  if(state.noiseTypes.voices){
+    const len=sr*12,buf=audioCtx.createBuffer(2,len,sr);
+    for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      // Formant-like frequencies for voice character
+      const f1=300+ch*80,f2=1800+ch*200,f3=2600;
+      // Conversation bursts
+      const bursts=[];for(let b=0;b<8;b++)bursts.push({t:Math.random()*12,dur:.5+Math.random()*2,pitch:120+Math.random()*100});
+      for(let i=0;i<len;i++){const t=i/sr;let s=0;const w=Math.random()*2-1;
+        b0=.99886*b0+w*.0555179;b1=.99332*b1+w*.0750759;b2=.96900*b2+w*.1538520;
+        b3=.86650*b3+w*.3104856;b4=.55000*b4+w*.5329522;b5=-.7616*b5-w*.0168980;
+        const pink=(b0+b1+b2+b3+b4+b5+b6+w*.5362)*.06;b6=w*.115926;
+        for(const burst of bursts){const dt=t-burst.t;if(dt>0&&dt<burst.dur){
+          const env=Math.sin(Math.PI*dt/burst.dur)*(.4+.3*Math.sin(dt*8));
+          // Vowel-like formants
+          const glottal=Math.sin(t*burst.pitch*6.28)*.3+Math.sin(t*burst.pitch*12.56)*.15;
+          const formant=Math.sin(t*f1*6.28)*.2+Math.sin(t*f2*6.28)*.1+Math.sin(t*f3*6.28)*.05;
+          s+=(glottal+formant+pink*.5)*env*.35;}}
+        // Faint background murmur always
+        s+=pink*.15*(.3+.4*Math.sin(t*.4+ch*2));
+        d[i]=s;}}
+    const src=audioCtx.createBufferSource();src.buffer=buf;src.loop=true;
+    const bp=audioCtx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1200;bp.Q.value=0.5;
+    src.connect(bp);bp.connect(mixGain);src.start();sources.push(src);
+  }
+
+  // ── WIND: breathy gusts with dynamic swells ──
+  if(state.noiseTypes.wind){
+    const len=sr*10,buf=audioCtx.createBuffer(2,len,sr);
+    for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      for(let i=0;i<len;i++){const t=i/sr;const w=Math.random()*2-1;
+        b0=.99886*b0+w*.0555179;b1=.99332*b1+w*.0750759;b2=.96900*b2+w*.1538520;
+        b3=.86650*b3+w*.3104856;b4=.55000*b4+w*.5329522;b5=-.7616*b5-w*.0168980;
+        const pink=(b0+b1+b2+b3+b4+b5+b6+w*.5362)*.06;b6=w*.115926;
+        // Wind gusts — slow LFO with randomized shape
+        const gust1=.5+.35*Math.sin(t*.22+ch*1.3)+.15*Math.sin(t*.07);
+        const gust2=.5+.3*Math.sin(t*.35+2+ch)+.2*Math.sin(t*.13+ch*.5);
+        const gustEnv=Math.max(gust1,gust2);
+        // Breathy character — boosted mids
+        d[i]=pink*1.6*gustEnv+w*.08*gustEnv;}}
+    const src=audioCtx.createBufferSource();src.buffer=buf;src.loop=true;
+    const lp=audioCtx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3500;lp.Q.value=0.3;
+    const hp=audioCtx.createBiquadFilter();hp.type='highpass';hp.frequency.value=200;hp.Q.value=0.3;
+    src.connect(hp);hp.connect(lp);lp.connect(mixGain);src.start();sources.push(src);
+  }
+
+  fieldNoiseNodes={sources,gain:mixGain};
+}
+function stopFieldNoise(){
+  if(fieldNoiseNodes){
+    fieldNoiseNodes.sources.forEach(s=>{try{s.stop()}catch(e){}});
+    fieldNoiseNodes=null;
+  }
+}
+
+function startEnv(){
+  stopEnv();if(!audioCtx)return;
+  const sr=audioCtx.sampleRate,len=sr*6,buf=audioCtx.createBuffer(2,len,sr),ep=state.envPreset;
+  for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+    for(let i=0;i<len;i++){const w=Math.random()*2-1;
+      b0=.99886*b0+w*.0555179;b1=.99332*b1+w*.0750759;b2=.96900*b2+w*.1538520;
+      b3=.86650*b3+w*.3104856;b4=.55000*b4+w*.5329522;b5=-.7616*b5-w*.0168980;
+      const pink=(b0+b1+b2+b3+b4+b5+b6+w*.5362)*.06;b6=w*.115926;
+      if(ep==='Rain')d[i]=pink*.5+(Math.random()<.003?(Math.random()*2-1)*.4:0);
+      else if(ep==='Stream')d[i]=pink*.4+Math.sin(i/sr*(200+Math.sin(i/sr*.7)*80))*.1*(.3+Math.sin(i/sr*.3)*.2);
+      else if(ep==='Forest')d[i]=pink*.3+(Math.random()<.0005?Math.sin(i/sr*3000*(1+Math.random()))*.15*Math.exp(-((i%sr)/sr)*20):0);
+      else d[i]=pink*(.4+.3*Math.sin(i/sr*.2+ch));}
+  }
+  const src=audioCtx.createBufferSource();src.buffer=buf;src.loop=true;
+  const lp=audioCtx.createBiquadFilter();lp.type='lowpass';
+  lp.frequency.value=ep==='Rain'?3000:ep==='Stream'?1500:ep==='Forest'?2000:600;
+  const lfo=audioCtx.createOscillator(),lfoG=audioCtx.createGain();
+  lfo.frequency.value=ep==='Stream'?.4:.12;lfoG.gain.value=200;
+  lfo.connect(lfoG);lfoG.connect(lp.frequency);lfo.start();
+  src.connect(lp);lp.connect(nodes.env);src.start();
+  envNodes={source:src,lfo};
+}
+function stopEnv(){if(envNodes){try{envNodes.source.stop()}catch(e){}try{envNodes.lfo.stop()}catch(e){}envNodes=null;}}
+function cycleEnvPreset(){
+  state.envPreset=ENV_PRESETS[(ENV_PRESETS.indexOf(state.envPreset)+1)%ENV_PRESETS.length];
+  document.getElementById('envPresetBtn').textContent=state.envPreset;
+  if(envNodes&&isPlaying)startEnv();
+}
+
+// ── TTS with voice volume ──
+function makeUtterance(text){
+  const u=new SpeechSynthesisUtterance(text);
+  u.volume=state.volumes.voice/100;
+  return u;
+}
+function speakAndWait(text){
+  return new Promise(resolve=>{
+    const u=makeUtterance(text);u.rate=.9;
+    u.onend=resolve;u.onerror=resolve;
+    speechSynthesis.speak(u);
+  });
+}
+function speakAndWaitDesc(){
+  return new Promise(resolve=>{
+    if(!state.bird){resolve();return;}
+    const text=BIRD_DESC[state.bird.name]||`${state.bird.name}. A distinctive bird.`;
+    const u=makeUtterance(text);u.rate=0.85;
+    u.onend=resolve;u.onerror=resolve;
+    speechSynthesis.speak(u);
+  });
+}
+function stopDesc(){speechSynthesis.cancel();}
+function speakMnem(){
+  stopMnem();if(!state.bird)return;
+  const m=BIRD_MNEM[state.bird.name];
+  if(!m&&!mnemBuffer)return;
+  if(mnemBuffer){
+    initAudio();mnemSource=audioCtx.createBufferSource();
+    mnemSource.buffer=mnemBuffer;mnemSource.connect(nodes.mnem);mnemSource.start();
+  }else{
+    const prefix=state.opts.mnemLabel?'Mnemonic: ':'';
+    const u=makeUtterance(prefix+m.phrase);
+    u.rate=0.8;u.pitch=1.1;speechSynthesis.speak(u);
+  }
+}
+function stopMnem(){if(mnemSource){try{mnemSource.stop()}catch(e){}mnemSource=null;}}
+
+async function handleMnemUpload(files){
+  if(!files?.length)return;initAudio();
+  try{mnemBuffer=await audioCtx.decodeAudioData(await files[0].arrayBuffer());
+    state.mnemonicFile=files[0].name;updateMnemTag();toast('Audio loaded');
+  }catch(e){toast('Could not decode audio');}
+}
+
+function buildPicker(){
+  document.getElementById('birdPicker').innerHTML=BIRDS.map(b=>
+    `<button class="bird-chip${state.bird?.name===b.name?' active':''}"
+       onclick='pickBird(${JSON.stringify(b).replace(/'/g,"&#39;")})'>${b.name}</button>`
+  ).join('');
+}
+function pickBird(bird){
+  state.bird=bird;
+  mainAudio.src=`https://xeno-canto.org/${bird.id}/download`;
+  document.getElementById('ttLabel').textContent=bird.name;
+  document.getElementById('ttBird').textContent=bird.name;
+  document.getElementById('ttSub').textContent=bird.sci;
+  if(isPlaying)stopPlay();
+  buildPicker();updateMnemTag();
+  toast(`Loaded: ${bird.name}`);
+}
+function updateMnemTag(){
+  const m=state.bird&&BIRD_MNEM[state.bird.name];
+  document.getElementById('mnemTag').textContent=m?`Mnemonic: "${m.phrase}"`:(state.mnemonicFile||'');
+}
+
+// ── Playback ──
+function togglePlay(){
+  if(isPlaying){stopPlay();return;}
+  if(!state.bird){toast('Select a bird first');return;}
+  initAudio();syncOpts();
+  if(audioCtx.state==='suspended')audioCtx.resume();
+
+  isPlaying=true;
+  document.getElementById('platter').classList.add('spinning');
+  document.getElementById('ttArm').classList.add('on');
+  document.getElementById('ttPlay').classList.add('playing');
+  document.getElementById('ttPlayIcon').innerHTML='&#9646;&#9646;';
+
+  if(state.source==='field')startFieldNoise();
+  if(state.volumes.env>0)startEnv();
+
+  // For person-first: speech first, then bird audio after pause
+  // For bird-first: bird audio first, speech after pause
+  // For both: everything at once
+  if(state.playOrder==='person-first'){
+    // Don't play bird yet — scheduleSpeech will start it after speech+pause
+    scheduleSpeech();
+  }else{
+    // Play bird audio immediately
+    mainAudio.play().then(()=>{
+      applyGains();
+      scheduleSpeech();
+    }).catch(()=>toast('Could not play audio'));
+  }
+}
+
+function startBirdAudio(){
+  return mainAudio.play().then(()=>applyGains()).catch(()=>{});
+}
+
+async function scheduleSpeech(){
+  const pause=state.pauseSec*1000;
+  const order=state.playOrder;
+  const narrText=NARRATIONS[state.narration]?NARRATIONS[state.narration](state.bird):state.bird.name;
+
+  if(order==='both'){
+    // Everything at once — bird already playing
+    if(state.opts.birdName)await speakAndWait(narrText);
+    if(!isPlaying)return;
+    if(state.opts.desc)await speakAndWaitDesc();
+    if(!isPlaying)return;
+    if(state.opts.mnem)speakMnem();
+
+  }else if(order==='bird-first'){
+    // Bird already playing, wait pause, then speak
+    if(pause>0)await sleep(pause);if(!isPlaying)return;
+    if(state.opts.birdName)await speakAndWait(narrText);if(!isPlaying)return;
+    if(pause>0)await sleep(Math.min(pause,1000));if(!isPlaying)return;
+    if(state.opts.desc)await speakAndWaitDesc();if(!isPlaying)return;
+    if(pause>0)await sleep(Math.min(pause,1000));if(!isPlaying)return;
+    if(state.opts.mnem)speakMnem();
+
+  }else{
+    // Person first: speak, pause, THEN start bird audio
+    if(state.opts.birdName)await speakAndWait(narrText);if(!isPlaying)return;
+    if(state.opts.desc)await speakAndWaitDesc();if(!isPlaying)return;
+    if(state.opts.mnem){
+      await speakAndWait(
+        (state.opts.mnemLabel?'Mnemonic: ':'')+(BIRD_MNEM[state.bird.name]?.phrase||'')
+      );
+      if(!isPlaying)return;
+    }
+    // Pause, then bird audio starts
+    if(pause>0)await sleep(pause);if(!isPlaying)return;
+    await startBirdAudio();
+  }
+}
+
+function stopPlay(){
+  mainAudio.pause();mainAudio.currentTime=0;isPlaying=false;
+  document.getElementById('platter').classList.remove('spinning');
+  document.getElementById('ttArm').classList.remove('on');
+  document.getElementById('ttPlay').classList.remove('playing');
+  document.getElementById('ttPlayIcon').innerHTML='&#9654;';
+  stopEnv();stopDesc();stopMnem();stopFieldNoise();
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.textContent.toLowerCase().includes(tab==='mix'?'sound':'reel')));
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.toggle('active',p.id===`page-${tab}`));
+}
+
+let reel=JSON.parse(localStorage.getItem('birdReel')||'[]');
+let reelOrder='narrate-each'; // 'narrate-each' | 'sounds-only' | 'summary-first' | 'guided'
+let reelDuration='full'; // 'full' | '10' | '20' | '30'
+let reelPauseSec=2;
+
+function addToReelDirect(bird){
+  reel.push({bird:{name:bird.name,sci:bird.sci,id:bird.id},
+    volumes:{...state.volumes},opts:{...state.opts},envPreset:state.envPreset,source:state.source,narration:state.narration});
+  localStorage.setItem('birdReel',JSON.stringify(reel));renderReel();toast(`Added ${bird.name}`);
+}
+function addToReel(){
+  if(!state.bird){toast('Select a bird first');return;}
+  addToReelDirect(state.bird);
+}
+function removeFromReel(i){reel.splice(i,1);localStorage.setItem('birdReel',JSON.stringify(reel));renderReel();}
+function moveReel(i,dir){const j=i+dir;if(j<0||j>=reel.length)return;[reel[i],reel[j]]=[reel[j],reel[i]];localStorage.setItem('birdReel',JSON.stringify(reel));renderReel();}
+function clearReel(){reel=[];localStorage.setItem('birdReel','[]');renderReel();toast('Reel cleared');}
+
+// Custom text blocks
+function showTextInput(){document.getElementById('reelTextInput').style.display='';document.getElementById('reelTextArea').focus();}
+function cancelTextInput(){document.getElementById('reelTextInput').style.display='none';document.getElementById('reelTextArea').value='';}
+function addTextToReel(){
+  const text=document.getElementById('reelTextArea').value.trim();
+  if(!text){toast('Type some text first');return;}
+  reel.push({type:'text',text});
+  localStorage.setItem('birdReel',JSON.stringify(reel));renderReel();
+  cancelTextInput();toast('Added spoken text');
+}
+
+function buildReelPicker(){
+  const el=document.getElementById('reelBirdPicker');if(!el)return;
+  el.innerHTML=BIRDS.map(b=>
+    `<button class="bird-chip" onclick='addToReelDirect(${JSON.stringify(b).replace(/'/g,"&#39;")})'>${b.name}</button>`
+  ).join('');
+}
+
+function renderReel(){
+  const c=document.getElementById('reelList');
+  const empty=document.getElementById('reelEmpty');
+  const stats=document.getElementById('reelStats');
+  if(!reel.length){c.innerHTML='';if(empty)empty.style.display='';if(stats)stats.innerHTML='0 birds added<br>Click birds to add';return;}
+  if(empty)empty.style.display='none';
+  const birdItems=reel.filter(r=>r.type!=='text');
+  const textItems=reel.filter(r=>r.type==='text');
+  const unique=new Set(birdItems.map(r=>r.bird.name));
+  let info=`${reel.length} item${reel.length>1?'s':''} in reel`;
+  if(birdItems.length)info+=`<br>${unique.size} unique species`;
+  if(textItems.length)info+=`<br>${textItems.length} text block${textItems.length>1?'s':''}`;
+  if(stats)stats.innerHTML=info;
+  c.innerHTML=reel.map((r,i)=>{
+    if(r.type==='text'){
+      const preview=r.text.length>60?r.text.slice(0,60)+'...':r.text;
+      return `<div class="reel-item" style="border-left:2px solid var(--purple)"><div class="reel-num">${i+1}</div>
+        <div class="reel-item-info"><div class="reel-item-name" style="color:var(--purple)">&#128172; Spoken text</div>
+        <div class="reel-item-detail">"${preview}"</div></div>
+        <div class="reel-item-btns">
+          <button class="reel-item-btn" onclick="moveReel(${i},-1)">&#9650;</button>
+          <button class="reel-item-btn" onclick="moveReel(${i},1)">&#9660;</button>
+          <button class="reel-item-btn" onclick="removeFromReel(${i})" style="color:var(--red)">&#10005;</button>
+        </div></div>`;
+    }
+    const m=BIRD_MNEM[r.bird.name];
+    return `<div class="reel-item"><div class="reel-num">${i+1}</div>
+      <div class="reel-item-info"><div class="reel-item-name">${r.bird.name}</div>
+      <div class="reel-item-detail">${r.bird.sci}${m?' · "'+m.phrase+'"':''}</div></div>
+      <div class="reel-item-btns">
+        <button class="reel-item-btn" onclick="moveReel(${i},-1)">&#9650;</button>
+        <button class="reel-item-btn" onclick="moveReel(${i},1)">&#9660;</button>
+        <button class="reel-item-btn" onclick="removeFromReel(${i})" style="color:var(--red)">&#10005;</button>
+      </div></div>`;}).join('');
+}
+
+function setReelOrder(el){
+  reelOrder=el.dataset.reelorder;
+  document.querySelectorAll('[data-reelorder]').forEach(b=>b.classList.toggle('on',b.dataset.reelorder===reelOrder));
+  updateReelOrderDesc();
+}
+function setReelDuration(el){
+  reelDuration=el.dataset.reeldur;
+  document.querySelectorAll('[data-reeldur]').forEach(b=>b.classList.toggle('on',b.dataset.reeldur===reelDuration));
+}
+function setReelPause(val){
+  reelPauseSec=Number(val);
+  document.getElementById('reelPauseVal').textContent=val+'s';
+}
+function updateReelOrderDesc(){
+  const d=document.getElementById('reelOrderDesc');if(!d)return;
+  const descs={
+    'narrate-each':'For each bird: announce the name, play the bird audio, then move to the next. Speech and sound together per bird.',
+    'sounds-only':'Just the bird audio, one after another. No narration — pure listening.',
+    'summary-first':'Start with a spoken summary of all the birds you saw today, then play each bird\'s audio back to back.',
+    'guided':'Like a nature podcast: narrate the bird (name, description, mnemonic), pause, then play the audio. All speech finishes before each bird plays.'
+  };
+  d.textContent=descs[reelOrder]||'';
+}
+
+let reelPlaying=false;
+async function playReel(){
+  if(reelPlaying){stopPlay();reelPlaying=false;document.getElementById('reelPlayBtn').innerHTML='&#9654; Play highlight reel';return;}
+  if(!reel.length){toast('Add birds first');return;}
+  reelPlaying=true;document.getElementById('reelPlayBtn').innerHTML='&#9724; Stop reel';
+  initAudio();syncOpts();if(audioCtx.state==='suspended')audioCtx.resume();
+  const doAnnounce=document.getElementById('settingAnnounce').classList.contains('on');
+  const doEnv=document.getElementById('settingEnv').classList.contains('on');
+  const doMnem=document.getElementById('settingMnem').classList.contains('on');
+  const doDesc=document.getElementById('settingDesc').classList.contains('on');
+  const pause=reelPauseSec*1000;
+  const dur=reelDuration;
+  if(doEnv)startEnv();
+
+  // Helper: play a text item (speak it aloud)
+  async function playTextItem(item){
+    await speakAndWait(item.text);
+    if(pause>0)await sleep(pause);
+  }
+
+  // Helper: play a bird item based on current reel order
+  async function playBirdItem(item){
+    pickBird(item.bird);
+    if(reelOrder==='sounds-only'){
+      await waitForAudioReady();if(!reelPlaying)return;
+      mainAudio.loop=false;mainAudio.play();applyGains();
+      await waitForAudioEndOrDur(dur);
+    } else if(reelOrder==='guided'){
+      if(doAnnounce){const t=NARRATIONS[state.narration]?NARRATIONS[state.narration](item.bird):item.bird.name;await speakAndWait(t);if(!reelPlaying)return;}
+      if(doDesc){await speakAndWaitDesc();if(!reelPlaying)return;}
+      if(doMnem&&BIRD_MNEM[item.bird.name]){await speakAndWait((state.opts.mnemLabel?'Mnemonic: ':'')+(BIRD_MNEM[item.bird.name]?.phrase||''));if(!reelPlaying)return;}
+      if(pause>0)await sleep(pause);if(!reelPlaying)return;
+      await waitForAudioReady();if(!reelPlaying)return;
+      mainAudio.loop=false;mainAudio.play();applyGains();
+      await waitForAudioEndOrDur(dur);
+    } else {
+      // narrate-each
+      if(doAnnounce){const t=NARRATIONS[state.narration]?NARRATIONS[state.narration](item.bird):item.bird.name;await speakAndWait(t);if(!reelPlaying)return;}
+      await waitForAudioReady();if(!reelPlaying)return;
+      mainAudio.loop=false;mainAudio.play();applyGains();
+      if(doDesc)await speakAndWaitDesc();if(!reelPlaying)return;
+      if(doMnem&&BIRD_MNEM[item.bird.name])speakMnem();
+      await waitForAudioEndOrDur(dur);
+    }
+  }
+
+  if(reelOrder==='summary-first'){
+    const birdItems=reel.filter(r=>r.type!=='text');
+    const names=birdItems.map(r=>r.bird.name);
+    const unique=[...new Set(names)];
+    if(unique.length){
+      let intro;
+      if(unique.length===1) intro=`Today at Union Bay, you heard the ${unique[0]}.`;
+      else if(unique.length===2) intro=`On today's walk at Union Bay, you heard two birds: the ${unique[0]} and the ${unique[1]}.`;
+      else intro=`On today's outing at Union Bay, you heard ${unique.length} birds: ${unique.slice(0,-1).join(', ')}, and ${unique[unique.length-1]}.`;
+      await speakAndWait(intro);if(!reelPlaying){cleanup();return;}
+      await sleep(pause>0?pause:1500);if(!reelPlaying){cleanup();return;}
+    }
+  }
+
+  for(let i=0;i<reel.length;i++){
+    if(!reelPlaying)break;
+    if(reel[i].type==='text'){
+      await playTextItem(reel[i]);
+    } else {
+      await playBirdItem(reel[i]);
+    }
+    if(!reelPlaying)break;
+    if(i<reel.length-1&&pause>0)await sleep(pause);
+  }
+  function cleanup(){stopEnv();reelPlaying=false;document.getElementById('reelPlayBtn').innerHTML='&#9654; Play highlight reel';}
+  stopEnv();reelPlaying=false;document.getElementById('reelPlayBtn').innerHTML='&#9654; Play highlight reel';toast('Reel complete');
+}
+function waitForAudioReady(){return new Promise(r=>{if(mainAudio.readyState>=3){r();return;}mainAudio.addEventListener('canplaythrough',r,{once:true});setTimeout(r,8000);});}
+function waitForAudioEnd(){return new Promise(r=>{mainAudio.addEventListener('ended',r,{once:true});setTimeout(r,30000);});}
+function waitForAudioEndOrDur(durSec){
+  if(durSec==='full'||!durSec)return waitForAudioEnd();
+  const ms=Number(durSec)*1000;
+  return new Promise(r=>{
+    const t=setTimeout(()=>{mainAudio.pause();r();},ms);
+    mainAudio.addEventListener('ended',()=>{clearTimeout(t);r();},{once:true});
+  });
+}
+function exportReel(){
+  const data={reel,reelOrder,settings:{announce:document.getElementById('settingAnnounce').classList.contains('on'),crossfade:document.getElementById('settingCrossfade').classList.contains('on'),env:document.getElementById('settingEnv').classList.contains('on'),mnem:document.getElementById('settingMnem').classList.contains('on'),desc:document.getElementById('settingDesc').classList.contains('on')},playOrder:state.playOrder,pauseSec:state.pauseSec,narration:state.narration};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='highlight-reel.json';a.click();URL.revokeObjectURL(url);toast('Reel exported');
+}
+
+// ── Audio Recording ──
+let mediaRecorder=null,recordedChunks=[];
+async function recordReel(){
+  if(mediaRecorder&&mediaRecorder.state==='recording'){
+    // Stop recording
+    mediaRecorder.stop();return;
+  }
+  if(!reel.length){toast('Add birds first');return;}
+  initAudio();if(audioCtx.state==='suspended')await audioCtx.resume();
+
+  // Create a MediaStream from the audio graph
+  const dest=audioCtx.createMediaStreamDestination();
+  masterGain.connect(dest);
+
+  // Also capture TTS via a speech workaround:
+  // We'll use MediaRecorder on the destination stream
+  // Note: TTS (speechSynthesis) does NOT route through Web Audio API
+  // so we capture what we can (bird audio, env, noise) and note that TTS is separate
+  const mimeType=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm';
+  mediaRecorder=new MediaRecorder(dest.stream,{mimeType});
+  recordedChunks=[];
+
+  mediaRecorder.ondataavailable=e=>{if(e.data.size>0)recordedChunks.push(e.data);};
+  mediaRecorder.onstop=()=>{
+    masterGain.disconnect(dest);
+    const blob=new Blob(recordedChunks,{type:mimeType});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    const ts=new Date().toISOString().slice(0,16).replace(/:/g,'-');
+    a.download=`bird-montage-${ts}.webm`;
+    a.click();URL.revokeObjectURL(url);
+    document.getElementById('recordingBar').style.display='none';
+    document.getElementById('reelRecBtn').innerHTML='&#9679; Record to audio';
+    document.getElementById('reelRecBtn').style.borderColor='rgba(239,68,68,.2)';
+    toast('Audio saved! (Note: TTS voice may not be captured — bird audio, environment & noise are recorded)');
+  };
+
+  mediaRecorder.start();
+  document.getElementById('recordingBar').style.display='';
+  document.getElementById('reelRecBtn').innerHTML='&#9724; Stop recording';
+  document.getElementById('reelRecBtn').style.borderColor='rgba(239,68,68,.5)';
+  document.getElementById('recordingStatus').textContent='Recording... play your reel or soundboard now';
+}
+
+function getSessionData(){
+  syncOpts();
+  return {bird:state.bird?{name:state.bird.name,sci:state.bird.sci,id:state.bird.id}:null,
+    source:state.source,envPreset:state.envPreset,volumes:{...state.volumes},narration:state.narration,
+    opts:{...state.opts},playOrder:state.playOrder,pauseSec:state.pauseSec,
+    noiseLevel:state.noiseLevel,noiseTypes:{...state.noiseTypes},
+    mnemonicFile:state.mnemonicFile,timestamp:new Date().toISOString()};
+}
+function saveSession(){
+  const name=prompt('Session name:',state.bird?.name||'Untitled');if(!name)return;
+  const ss=JSON.parse(localStorage.getItem('birdSessions')||'[]');
+  ss.push({name,data:getSessionData()});localStorage.setItem('birdSessions',JSON.stringify(ss));
+  renderSessions();toast('Session saved');
+}
+function exportSession(){
+  const blob=new Blob([JSON.stringify(getSessionData(),null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`montage-${(state.bird?.name||'untitled').toLowerCase().replace(/\s+/g,'-')}.json`;
+  a.click();URL.revokeObjectURL(url);toast('JSON exported');
+}
+function loadSession(i){
+  const s=JSON.parse(localStorage.getItem('birdSessions')||'[]')[i]?.data;if(!s)return;stopPlay();
+  if(s.volumes)state.volumes=s.volumes;if(s.opts)state.opts=s.opts;
+  if(s.source)setSource(s.source);
+  if(s.narration){state.narration=s.narration;document.getElementById('narrStyle').value=s.narration;}
+  if(s.envPreset){state.envPreset=s.envPreset;document.getElementById('envPresetBtn').textContent=s.envPreset;}
+  if(s.playOrder)setOrder(s.playOrder);
+  if(s.pauseSec!=null){state.pauseSec=s.pauseSec;document.getElementById('pauseSlider').value=s.pauseSec;setPause(s.pauseSec);}
+  if(s.noiseLevel!=null){state.noiseLevel=s.noiseLevel;document.getElementById('noiseSlider').value=s.noiseLevel;setNoiseLevel(s.noiseLevel);}
+  if(s.noiseTypes){state.noiseTypes={...s.noiseTypes};document.querySelectorAll('[data-noise]').forEach(el=>el.classList.toggle('amber-on',state.noiseTypes[el.dataset.noise]));}
+  ['optBirdName','optDesc','optMnem','optMnemLabel'].forEach(id=>{
+    const key=id.replace('opt','');const k=key.charAt(0).toLowerCase()+key.slice(1);
+    if(s.opts&&s.opts[k]!=null)document.getElementById(id).classList.toggle('on',s.opts[k]);
+  });
+  document.querySelectorAll('.v-fader input').forEach(el=>{
+    const fn=el.getAttribute('oninput');
+    for(const[k,v]of Object.entries(state.volumes)){
+      if(fn.includes(k)){el.value=v;document.getElementById(`val-${k}`).textContent=v;}
+    }
+  });
+  if(s.bird)pickBird(s.bird);toast('Session loaded');
+}
+function deleteSession(i){const ss=JSON.parse(localStorage.getItem('birdSessions')||'[]');ss.splice(i,1);localStorage.setItem('birdSessions',JSON.stringify(ss));renderSessions();}
+function renderSessions(){
+  const ss=JSON.parse(localStorage.getItem('birdSessions')||'[]');const c=document.getElementById('sessionList');
+  if(!ss.length){c.innerHTML='<div class="no-sessions">No saved sessions yet</div>';return;}
+  c.innerHTML=ss.map((s,i)=>{const t=new Date(s.data.timestamp);
+    return `<div class="session-item"><div><div class="session-name">${s.name}</div>
+      <div class="session-time">${t.toLocaleDateString()}</div></div>
+      <div style="display:flex"><button class="s-btn load" onclick="loadSession(${i})">Load</button>
+      <button class="s-btn del" onclick="deleteSession(${i})">Del</button></div></div>`;}).join('');
+}
+function resetAll(){
+  stopPlay();
+  state.volumes={master:80,bird:85,env:35,voice:70};
+  state.opts={birdName:true,desc:true,mnem:true,mnemLabel:false};
+  state.envPreset='Wind';state.playOrder='bird-first';state.pauseSec=2;state.narration='direct';state.mnemonicFile=null;
+  document.querySelectorAll('.v-fader input').forEach(el=>{
+    const fn=el.getAttribute('oninput');
+    if(fn.includes('master'))el.value=80;else if(fn.includes('bird'))el.value=85;
+    else if(fn.includes('env'))el.value=35;else if(fn.includes('voice'))el.value=70;
+  });
+  document.getElementById('val-master').textContent='80';
+  document.getElementById('val-bird').textContent='85';
+  document.getElementById('val-env').textContent='35';
+  document.getElementById('val-voice').textContent='70';
+  document.getElementById('envPresetBtn').textContent='Wind';
+  document.getElementById('narrStyle').value='direct';
+  document.getElementById('pauseSlider').value=2;setPause(2);setOrder('bird-first');setSource('clean');
+  document.getElementById('optBirdName').classList.add('on');
+  document.getElementById('optDesc').classList.add('on');
+  document.getElementById('optMnem').classList.add('on');
+  document.getElementById('optMnemLabel').classList.remove('on');
+  toast('Reset');
+}
+
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('visible');setTimeout(()=>el.classList.remove('visible'),2000);}
+
+buildPicker();buildReelPicker();renderSessions();renderReel();updateMnemTag();updateReelOrderDesc();
+</script>
+</body>
+</html>

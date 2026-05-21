@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bird Audio Composition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#1a1a1a;
+  --green:#67AD5B;
+  --green-light:#67AD5B18;
+  --green-mid:#67AD5B44;
+  --green-dim:#67AD5B88;
+  --gray:#6C6C6C;
+  --gray-light:#6C6C6C22;
+  --brown:#C4955A;
+  --blue:#8BB8E8;
+  --bg:#fafaf8;
+  --surface:#fff;
+  --border:#e8e6e1;
+  --text:#1a1a1a;
+  --R:12px;
+  --font:'Radio Canada Big',sans-serif;
+  --font-sub:'Source Serif 4',Georgia,serif;
+}
+html{font-size:16px}
+body{background:var(--bg);font-family:var(--font);color:var(--text);
+  min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── Layout: single column ── */
+.page{max-width:720px;margin:0 auto;padding:32px 28px 200px;
+  display:flex;flex-direction:column;gap:14px}
+
+/* ── Header ── */
+.site-header{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 28px;border-bottom:1px solid var(--border);background:var(--surface);
+  position:sticky;top:0;z-index:20}
+.site-title{font-size:.95rem;font-weight:700;color:var(--black);letter-spacing:-.01em}
+.site-sub{font-family:var(--font-sub);font-size:.68rem;color:var(--gray);margin-top:1px}
+.header-actions{display:flex;gap:8px}
+.header-btn{padding:5px 13px;border-radius:999px;border:1.5px solid var(--border);
+  background:var(--surface);color:var(--gray);font-family:var(--font);
+  font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s}
+.header-btn:hover{border-color:var(--green);color:var(--green)}
+
+/* ── Step cards ── */
+.step-row{display:flex;align-items:flex-start;gap:12px}
+.step-num{width:28px;height:28px;border-radius:50%;flex-shrink:0;margin-top:16px;
+  background:var(--green);color:#fff;font-size:.72rem;
+  font-weight:700;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(103,173,91,.25)}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:var(--R);
+  padding:18px 22px;flex:1;min-width:0}
+.step-q{font-size:.95rem;font-weight:600;color:var(--black);line-height:1.35;margin-bottom:2px}
+.step-sub{font-family:var(--font-sub);font-size:.75rem;color:var(--gray);line-height:1.45;margin-bottom:10px}
+
+/* ── Option pills ── */
+.opts{display:flex;flex-wrap:wrap;gap:7px}
+.opt{padding:6px 14px;border-radius:999px;border:1.5px solid var(--border);
+  background:var(--surface);color:var(--text);font-family:var(--font);
+  font-size:.76rem;cursor:pointer;transition:all .15s;font-weight:400}
+.opt:hover{border-color:var(--green);color:var(--green)}
+.opt.on{background:var(--green);border-color:var(--green);color:#fff;font-weight:600}
+.sub-opts{margin-top:10px;padding:12px 14px;background:var(--bg);border-radius:8px;
+  border:1px solid var(--border)}
+.sub-label{font-size:.68rem;font-weight:600;color:var(--gray);margin-bottom:6px;
+  text-transform:uppercase;letter-spacing:.06em}
+
+/* ── Bird cards ── */
+.bird-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.bird-card{border:1.5px solid var(--border);border-radius:var(--R);padding:10px 10px;
+  cursor:pointer;transition:all .15s;background:var(--surface);text-align:center;position:relative}
+.bird-card:hover{border-color:var(--green);box-shadow:0 2px 12px rgba(103,173,91,.1)}
+.bird-card.active{border-color:var(--green);background:var(--green-light);
+  box-shadow:0 0 0 2px var(--green-mid)}
+.bird-card.active::after{content:'✓';position:absolute;top:5px;right:7px;
+  font-size:.65rem;color:var(--green);font-weight:700}
+.bird-card-name{font-size:.78rem;font-weight:600;margin-bottom:1px}
+.bird-card-sci{font-family:var(--font-sub);font-size:.62rem;color:var(--gray)}
+
+/* ── Slider ── */
+.slider-row{display:flex;align-items:center;gap:12px;margin-top:6px}
+.slider-label{font-size:.72rem;color:var(--gray);min-width:44px}
+.slider-val{font-size:.76rem;font-weight:600;color:var(--green);min-width:24px;text-align:right}
+input[type=range]{-webkit-appearance:none;flex:1;height:3px;
+  background:var(--border);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;
+  border-radius:50%;background:var(--green);cursor:pointer;
+  box-shadow:0 1px 4px rgba(0,0,0,.15)}
+
+/* ── Textarea ── */
+.reflection-area{width:100%;min-height:56px;border:1.5px solid var(--border);
+  border-radius:var(--R);padding:10px 14px;font-family:var(--font-sub);font-size:.78rem;
+  color:var(--text);line-height:1.5;resize:vertical;background:var(--bg);outline:none;
+  transition:border-color .15s}
+.reflection-area:focus{border-color:var(--green)}
+.reflection-area::placeholder{color:var(--gray)}
+
+/* ══════════════════════════════════════
+   BOTTOM BAR: timeline + controls
+   ══════════════════════════════════════ */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--black);
+  z-index:30;box-shadow:0 -2px 24px rgba(0,0,0,.15)}
+
+/* ── Horizontal timeline ── */
+.h-timeline-wrap{position:relative;padding:16px 16px 10px}
+.h-timeline{display:flex;align-items:stretch;gap:0;min-height:56px;width:100%;
+  overflow-x:auto;overflow-y:visible;padding-bottom:2px;
+  scrollbar-width:thin;scrollbar-color:#444 transparent}
+.h-timeline::-webkit-scrollbar{height:3px}
+.h-timeline::-webkit-scrollbar-thumb{background:#555;border-radius:2px}
+
+/* Env background strip */
+.h-env-strip{position:absolute;left:16px;right:16px;top:4px;height:5px;
+  border-radius:3px;pointer-events:none}
+
+.h-block{position:relative;height:56px;border-radius:6px;flex-shrink:0;
+  display:flex;align-items:center;padding:0 10px;cursor:pointer;
+  transition:opacity .15s,filter .15s;overflow:hidden}
+.h-block:hover{filter:brightness(1.15)}
+.h-block.muted{opacity:.2}
+.h-block.muted .h-block-mute{opacity:1}
+
+/* Playing state: white outline + sweep gradient */
+.h-block.playing{outline:2.5px solid #fff;outline-offset:-1px;
+  background-image:linear-gradient(90deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,0) 60%);
+  background-size:200% 100%;animation:sweep 2s linear infinite}
+@keyframes sweep{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+/* Block type colors */
+.h-block.t-bird{background:var(--green)}
+.h-block.t-speech{background:#555}
+.h-block.t-reflection{background:var(--brown)}
+
+.h-block-label{font-size:.62rem;font-weight:600;color:#fff;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;letter-spacing:.01em;line-height:1}
+.h-block-sub{font-size:.5rem;color:rgba(255,255,255,.55);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.h-block-inner{display:flex;flex-direction:column;overflow:hidden;flex:1;min-width:0;
+  padding-right:18px}
+
+.h-block-mute{position:absolute;top:4px;right:5px;font-size:.52rem;font-weight:700;
+  color:rgba(255,255,255,.4);cursor:pointer;width:16px;height:16px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:3px;transition:all .15s;background:rgba(255,255,255,.08);
+  letter-spacing:0}
+.h-block-mute:hover{background:rgba(255,255,255,.25);color:#fff}
+.h-block.muted .h-block-mute{background:rgba(255,0,0,.3);color:#fff}
+
+/* Crossfade connector */
+.h-xfade{flex-shrink:0;width:32px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;position:relative}
+.h-xfade-icon{font-size:.72rem;font-weight:700;color:var(--green);line-height:1;
+  opacity:.7}
+.h-xfade-time{font-size:.5rem;font-weight:600;color:#999;margin-top:2px}
+.h-xfade.none .h-xfade-icon{color:#444;font-size:.5rem}
+.h-xfade.none .h-xfade-time{color:#555}
+
+/* Empty state */
+.h-empty{color:#666;font-size:.72rem;padding:16px 0;text-align:center;width:100%;
+  font-family:var(--font-sub)}
+
+/* ── Visualizer ── */
+.visualizer{display:flex;align-items:flex-end;justify-content:center;
+  gap:1.5px;height:18px;padding:2px 20px 0;overflow:hidden}
+.viz-bar{width:2.5px;border-radius:1px 1px 0 0;transition:height .06s ease-out;min-height:1px}
+
+/* ── Play controls ── */
+.play-controls{padding:6px 20px 10px;display:flex;align-items:center;justify-content:center;gap:8px}
+.play-btn{padding:7px 20px;border-radius:999px;border:none;font-family:var(--font);
+  font-size:.74rem;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.01em}
+.play-btn.primary{background:var(--green);color:#fff}
+.play-btn.primary:hover{background:#5a9a4f}
+.play-btn.secondary{background:transparent;border:1.5px solid #555;color:#aaa}
+.play-btn.secondary:hover{border-color:var(--green);color:var(--green)}
+.play-btn.record{background:transparent;border:1.5px solid #c44;color:#c44}
+.play-btn.record:hover{background:rgba(204,68,68,.1)}
+.play-btn.recording{background:#c44;color:#fff;animation:pulse-rec 1.2s infinite}
+@keyframes pulse-rec{0%,100%{opacity:1}50%{opacity:.7}}
+
+/* ── Modal overlay ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;
+  display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal-box{background:var(--surface);border-radius:var(--R);padding:28px 32px;
+  max-width:480px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,.18);
+  font-family:var(--font)}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:4px;color:var(--black)}
+.modal-sub{font-size:.72rem;color:var(--gray);font-family:var(--font-sub);margin-bottom:16px}
+.modal-input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;
+  font-family:var(--font);font-size:.82rem;outline:none;transition:border-color .15s}
+.modal-input:focus{border-color:var(--green)}
+.modal-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+.modal-btn{padding:8px 20px;border-radius:999px;border:none;font-family:var(--font);
+  font-size:.74rem;font-weight:600;cursor:pointer;transition:all .15s}
+.modal-btn.primary{background:var(--green);color:#fff}
+.modal-btn.primary:hover{background:#5a9a4f}
+.modal-btn.cancel{background:transparent;border:1.5px solid var(--border);color:var(--gray)}
+.modal-btn.cancel:hover{border-color:var(--green);color:var(--green)}
+
+/* ── Sessions panel ── */
+.sessions-list{max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;
+  margin-top:12px}
+.session-card{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;
+  transition:border-color .15s;cursor:pointer}
+.session-card:hover{border-color:var(--green)}
+.session-name{font-size:.8rem;font-weight:600;color:var(--black)}
+.session-meta{font-size:.62rem;color:var(--gray);font-family:var(--font-sub);margin-top:2px}
+.session-birds{font-size:.62rem;color:var(--green);margin-top:2px}
+.session-actions{display:flex;gap:6px;flex-shrink:0}
+.session-action-btn{padding:5px 12px;border-radius:999px;border:1.5px solid var(--border);
+  background:var(--surface);font-family:var(--font);font-size:.62rem;font-weight:600;
+  cursor:pointer;transition:all .15s;color:var(--gray)}
+.session-action-btn:hover{border-color:var(--green);color:var(--green)}
+.session-action-btn.danger:hover{border-color:#c44;color:#c44}
+.sessions-empty{text-align:center;padding:32px 0;color:var(--gray);font-size:.78rem;
+  font-family:var(--font-sub)}
+
+</style>
+</head>
+<body>
+
+<!-- Save dialog modal -->
+<div class="modal-overlay" id="saveModal">
+  <div class="modal-box">
+    <div class="modal-title">Name your session</div>
+    <div class="modal-sub">Give this composition a name so you can find it later.</div>
+    <input class="modal-input" id="saveNameInput" placeholder="e.g. Robin + Junco morning mix" maxlength="80">
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSaveDialog()">Cancel</button>
+      <button class="modal-btn primary" onclick="confirmSave()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sessions panel modal -->
+<div class="modal-overlay" id="sessionsModal">
+  <div class="modal-box" style="max-width:540px">
+    <div class="modal-title">Saved sessions</div>
+    <div class="modal-sub">Load a previous session or delete ones you no longer need.</div>
+    <div class="sessions-list" id="sessionsList"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeSessionsPanel()">Close</button>
+    </div>
+  </div>
+</div>
+
+<header class="site-header">
+  <div>
+    <div class="site-title">Bird Audio Composition</div>
+    <div class="site-sub">Union Bay, Seattle &middot; Co-design workshop</div>
+  </div>
+  <div class="header-actions">
+    <button class="header-btn" onclick="showSaveDialog()">Save session</button>
+    <button class="header-btn" onclick="exportJSON()">Export JSON</button>
+    <button class="header-btn" onclick="triggerImportJSON()">Load JSON</button>
+    <button class="header-btn" onclick="showSessionsPanel()">Sessions</button>
+    <input type="file" id="jsonImport" accept=".json" style="display:none" onchange="importJSON(event)">
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- STEP 1 -->
+  <div class="step-row">
+    <div class="step-num">1</div>
+    <div class="step">
+      <div class="step-q">Which birds are we listening to?</div>
+      <div class="step-sub">Select one or more birds to include.</div>
+      <div class="bird-grid" id="birdGrid"></div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-row">
+    <div class="step-num">2</div>
+    <div class="step">
+      <div class="step-q">Your own recording or a clean reference?</div>
+      <div class="step-sub">Field recordings have natural noise. Clean references are studio-quality.</div>
+      <div class="opts">
+        <button class="opt on" data-src="clean" onclick="setSrc(this)">Clean reference</button>
+        <button class="opt" data-src="field" onclick="setSrc(this)">Field recording</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-row">
+    <div class="step-num">3</div>
+    <div class="step">
+      <div class="step-q">How should the composition be structured?</div>
+      <div class="step-sub">Choose what comes with the bird audio.</div>
+      <div class="opts">
+        <button class="opt" data-structure="bird-only" onclick="setStructure(this)">Bird audio only</button>
+        <button class="opt" data-structure="desc-only" onclick="setStructure(this)">Description only</button>
+        <button class="opt on" data-structure="summary-bird" onclick="setStructure(this)">Summary, then bird</button>
+        <button class="opt" data-structure="bird-summary" onclick="setStructure(this)">Bird first, then summary</button>
+      </div>
+      <div class="sub-opts" id="narrSub">
+        <div class="sub-label">Narration style</div>
+        <div class="opts">
+          <button class="opt on" data-narr="field-guide" onclick="setNarr(this)">Field guide</button>
+          <button class="opt" data-narr="field-tour" onclick="setNarr(this)">Field tour</button>
+          <button class="opt" data-narr="reflective" onclick="setNarr(this)">Reflective</button>
+        </div>
+        <div style="margin-top:8px">
+          <div class="sub-label">Include with narration</div>
+          <div class="opts">
+            <button class="opt on" data-elem="desc" onclick="toggleElem(this)">Description</button>
+            <button class="opt on" data-elem="mnem" onclick="toggleElem(this)">Mnemonic phrase</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Crossfade -->
+  <div class="step-row">
+    <div class="step-num">4</div>
+    <div class="step">
+      <div class="step-q">How should segments transition?</div>
+      <div class="step-sub">Crossfade blends the end of one segment into the next.</div>
+      <div class="opts">
+        <button class="opt" data-xfade="0" onclick="setXfade(this)">No crossfade</button>
+        <button class="opt on" data-xfade="0.5" onclick="setXfade(this)">Short (0.5s)</button>
+        <button class="opt" data-xfade="1" onclick="setXfade(this)">Medium (1s)</button>
+        <button class="opt" data-xfade="2" onclick="setXfade(this)">Long (2s)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5: Reflection -->
+  <div class="step-row">
+    <div class="step-num">5</div>
+    <div class="step">
+      <div class="step-q">How would you include your own reflection?</div>
+      <div class="step-sub">Type what you'd want to say or hear. Spoken aloud in the composition.</div>
+      <textarea class="reflection-area" id="reflectionText"
+        placeholder='e.g. "This bird reminds me of mornings at my grandmother&#39;s garden..."'></textarea>
+      <div class="opts" style="margin-top:8px">
+        <button class="opt on" data-refwhen="before" onclick="setRefWhen(this)">Before the birds</button>
+        <button class="opt" data-refwhen="after" onclick="setRefWhen(this)">After the birds</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 6: Duration -->
+  <div class="step-row">
+    <div class="step-num">6</div>
+    <div class="step">
+      <div class="step-q">How long should each bird audio play?</div>
+      <div class="opts">
+        <button class="opt" data-dur="call" onclick="setDur(this)">Only the call</button>
+        <button class="opt on" data-dur="10" onclick="setDur(this)">10 seconds</button>
+        <button class="opt" data-dur="30" onclick="setDur(this)">30 seconds</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 7: Environment -->
+  <div class="step-row">
+    <div class="step-num">7</div>
+    <div class="step">
+      <div class="step-q">How much environmental sound?</div>
+      <div class="step-sub">Add wind, ambient noise, a sense of place.</div>
+      <div class="slider-row">
+        <span class="slider-label">None</span>
+        <input type="range" min="0" max="100" value="30" id="envSlider" oninput="setEnv(this.value)">
+        <span class="slider-label" style="text-align:right">Immersive</span>
+        <span class="slider-val" id="envVal">30</span>
+      </div>
+      <div class="opts" style="margin-top:10px">
+        <button class="opt on" data-envtype="wind" onclick="toggleEnvType(this)">Wind</button>
+        <button class="opt" data-envtype="rain" onclick="toggleEnvType(this)">Rain</button>
+        <button class="opt" data-envtype="forest" onclick="toggleEnvType(this)">Forest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 8: Ending -->
+  <div class="step-row">
+    <div class="step-num">8</div>
+    <div class="step">
+      <div class="step-q">How should the composition end?</div>
+      <div class="step-sub">Choose what listeners hear last.</div>
+      <div class="opts">
+        <button class="opt on" data-ending="bird" onclick="setEnding(this)">End on the bird</button>
+        <button class="opt" data-ending="summary" onclick="setEnding(this)">End with a summary</button>
+        <button class="opt" data-ending="gentle-close" onclick="setEnding(this)">A gentle closing moment</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ BOTTOM BAR ═══ -->
+<div class="bottom-bar">
+  <div class="h-timeline-wrap">
+    <div class="h-timeline" id="hTimeline"></div>
+    <div class="h-env-strip" id="envStrip" style="display:none"></div>
+  </div>
+  <div class="visualizer" id="visualizer"></div>
+  <div class="play-controls">
+    <button class="play-btn primary" onclick="playComposition()" id="playBtn">&#9654;&ensp;Play</button>
+    <button class="play-btn record" onclick="recordComposition()" id="recBtn">&#9679;&ensp;Record</button>
+    <button class="play-btn secondary" onclick="saveSession()">Save</button>
+    <button class="play-btn secondary" onclick="resetAll()">Reset</button>
+  </div>
+</div>
+
+
+<script>
+// ── Bird data ──
+const BIRDS=[
+  {id:'robin',name:'American Robin',sci:'Turdus migratorius',file:'birds/american-robin.mp3',
+   desc:'A familiar thrush with a warm orange breast. Its cheerful caroling is one of the first signs of spring.',
+   mnem:{phrase:'Cheerily, cheer-up, cheerio',phonetic:'cheerily cheer up cheerio'}},
+  {id:'house-finch',name:'House Finch',sci:'Haemorhous mexicanus',file:'birds/house-finch.mp3',
+   desc:'A small songbird with a warbling, jumbled song. Males sport a rosy-red head and breast.',
+   mnem:{phrase:'Warble warble warble zeee',phonetic:'warble warble warble zee'}},
+  {id:'dark-eyed-junco',name:'Dark-eyed Junco',sci:'Junco hyemalis',file:'birds/dark-eyed-junco.mp3',
+   desc:'A slate-gray sparrow with a white belly and flashing white tail feathers. Common on forest edges.',
+   mnem:{phrase:'Tew tew tew tew tew',phonetic:'tew tew tew tew tew'}},
+  {id:'red-wing-blackbird',name:'Red-winged Blackbird',sci:'Agelaius phoeniceus',file:'birds/red-wing-blackbird.mp3',
+   desc:'A stocky blackbird with bright red-and-yellow shoulder patches. Sings from cattails and marshes.',
+   mnem:{phrase:'Konk-la-ree!',phonetic:'conk la ree'}},
+  {id:'mallard',name:'Mallard Duck',sci:'Anas platyrhynchos',file:'birds/mallard-duck.mp3',
+   desc:'The classic dabbling duck with an iridescent green head. Familiar quacking heard along Union Bay shoreline.',
+   mnem:{phrase:'Quack quack quack',phonetic:'quack quack quack'}},
+  {id:'common-crow',name:'American Crow',sci:'Corvus brachyrhynchos',file:'birds/common-crow.mp3',
+   desc:'A large, intelligent all-black bird. Its harsh caw-caw carries across open areas and treetops.',
+   mnem:{phrase:'Caw caw caw',phonetic:'caw caw caw'}},
+];
+
+// ── State ──
+let comp={
+  birds:[],
+  source:'clean',
+  structure:'summary-bird',
+  narration:'field-guide',
+  includeDesc:true,
+  includeMnem:true,
+  crossfade:0.5,
+  reflectionText:'',
+  reflectionWhen:'before',
+  duration:'10',
+  envLevel:30,
+  envTypes:{wind:true,rain:false,forest:false},
+  ending:'bird', // 'bird' | 'summary' | 'gentle-close'
+};
+let sequence=[];       // built from state, respects order
+let mutedBlocks={};    // uid -> bool
+let isPlaying=false,audioCtx=null,masterGain=null,analyser=null,envNodes=null;
+let birdAudioEls={};
+let vizAnimId=null;
+let currentPlayingUid=null;
+let skipToIdx=-1;      // set to index to skip during playback
+
+// ── Narrations ──
+const NARRATIONS={
+  'field-guide':b=>`This is the ${b.name}, ${b.sci}.`,
+  'field-tour':b=>{
+    const p=['Listen closely...','Can you hear that?','Right there...','Pause and listen...'];
+    return `${p[Math.floor(Math.random()*p.length)]} that's a ${b.name} nearby.`;
+  },
+  'reflective':b=>{
+    const p=["Thinking back on today's walk","Reflecting on this morning at the bay",
+      "Looking back on that quiet moment","Remember when you heard"];
+    return `${p[Math.floor(Math.random()*p.length)]} the ${b.name}.`;
+  },
+};
+
+// ── Build bird grid ──
+function buildGrid(){
+  document.getElementById('birdGrid').innerHTML=BIRDS.map((b,i)=>{
+    const active=comp.birds.some(s=>s.id===b.id);
+    return `<div class="bird-card${active?' active':''}" onclick="toggleBird(${i})">
+      <div class="bird-card-name">${b.name}</div>
+      <div class="bird-card-sci">${b.sci}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleBird(i){
+  const b=BIRDS[i];
+  const idx=comp.birds.findIndex(s=>s.id===b.id);
+  if(idx>=0) comp.birds.splice(idx,1);
+  else comp.birds.push(b);
+  buildGrid();rebuildSequence();renderTimeline();
+}
+
+// ── Controls ──
+function setSrc(el){
+  comp.source=el.dataset.src;
+  document.querySelectorAll('[data-src]').forEach(b=>b.classList.toggle('on',b.dataset.src===comp.source));
+  rebuildSequence();renderTimeline();
+}
+function setStructure(el){
+  comp.structure=el.dataset.structure;
+  document.querySelectorAll('[data-structure]').forEach(b=>b.classList.toggle('on',b.dataset.structure===comp.structure));
+  // Show narration sub-options only for summary structures
+  const showNarr=comp.structure==='summary-bird'||comp.structure==='bird-summary';
+  document.getElementById('narrSub').style.display=showNarr?'':'none';
+  rebuildSequence();renderTimeline();
+}
+function setNarr(el){
+  comp.narration=el.dataset.narr;
+  document.querySelectorAll('[data-narr]').forEach(b=>b.classList.toggle('on',b.dataset.narr===comp.narration));
+  rebuildSequence();renderTimeline();
+}
+function toggleElem(el){
+  el.classList.toggle('on');
+  if(el.dataset.elem==='desc')comp.includeDesc=el.classList.contains('on');
+  if(el.dataset.elem==='mnem')comp.includeMnem=el.classList.contains('on');
+  rebuildSequence();renderTimeline();
+}
+function setXfade(el){
+  comp.crossfade=Number(el.dataset.xfade);
+  document.querySelectorAll('[data-xfade]').forEach(b=>b.classList.toggle('on',Number(b.dataset.xfade)===comp.crossfade));
+  renderTimeline();
+}
+function setRefWhen(el){
+  comp.reflectionWhen=el.dataset.refwhen;
+  document.querySelectorAll('[data-refwhen]').forEach(b=>b.classList.toggle('on',b.dataset.refwhen===comp.reflectionWhen));
+  rebuildSequence();renderTimeline();
+}
+function setDur(el){
+  comp.duration=el.dataset.dur;
+  document.querySelectorAll('[data-dur]').forEach(b=>b.classList.toggle('on',b.dataset.dur===comp.duration));
+  rebuildSequence();renderTimeline();
+}
+function setEnv(val){
+  comp.envLevel=Number(val);
+  document.getElementById('envVal').textContent=val;
+  renderTimeline();
+}
+function toggleEnvType(el){
+  const t=el.dataset.envtype;
+  comp.envTypes[t]=!comp.envTypes[t];
+  el.classList.toggle('on',comp.envTypes[t]);
+  renderTimeline();
+}
+function setEnding(el){
+  comp.ending=el.dataset.ending;
+  document.querySelectorAll('[data-ending]').forEach(b=>b.classList.toggle('on',b.dataset.ending===comp.ending));
+  rebuildSequence();renderTimeline();
+}
+
+// ── Sequence builder ──
+function rebuildSequence(){
+  comp.reflectionText=(document.getElementById('reflectionText')?.value||'').trim();
+  const items=[];
+  const hasRef=comp.reflectionText&&comp.reflectionWhen!=='none';
+  const struct=comp.structure;
+  // bird-only: just audio. desc-only: description + bird. summary-bird/bird-summary: full narration
+  const hasSummary=struct==='summary-bird'||struct==='bird-summary';
+  const hasDescOnly=struct==='desc-only';
+  const birdFirst=struct==='bird-summary';
+
+  // Pre-bird reflection
+  if(hasRef&&comp.reflectionWhen==='before'){
+    items.push({uid:'ref-pre',type:'reflection',label:'Reflection',
+      shortLabel:'Refl.',dur:3});
+  }
+
+  comp.birds.forEach(bird=>{
+    const short=comp.birds.length>1?bird.name.split(' ')[0]:'';
+
+    function addSpeech(){
+      if(hasSummary){
+        items.push({uid:`narr-${bird.id}`,type:'speech',label:`${short?short+' · ':''}Narration`,
+          shortLabel:short||'Narr.',dur:3,birdId:bird.id});
+        if(comp.includeDesc)
+          items.push({uid:`desc-${bird.id}`,type:'speech',label:`${short?short+' · ':''}Desc.`,
+            shortLabel:short||'Desc.',dur:4,birdId:bird.id});
+        if(comp.includeMnem&&bird.mnem)
+          items.push({uid:`mnem-${bird.id}`,type:'speech',label:`${short?short+' · ':''}Mnem.`,
+            shortLabel:short||'Mnem.',dur:2,birdId:bird.id});
+      } else if(hasDescOnly){
+        items.push({uid:`desc-${bird.id}`,type:'speech',label:`${short?short+' · ':''}Description`,
+          shortLabel:short||'Desc.',dur:4,birdId:bird.id});
+      }
+    }
+    function addBird(){
+      const durSec=comp.duration==='call'?5:Number(comp.duration);
+      items.push({uid:`bird-${bird.id}`,type:'bird',label:bird.name,
+        shortLabel:short||bird.name.split(' ')[0],dur:durSec,birdId:bird.id,birdObj:bird});
+    }
+
+    if(birdFirst){addBird();addSpeech();}
+    else{addSpeech();addBird();}
+  });
+
+  // Post-bird reflection
+  if(hasRef&&comp.reflectionWhen==='after'){
+    items.push({uid:'ref-post',type:'reflection',label:'Reflection',
+      shortLabel:'Refl.',dur:3});
+  }
+
+  // Ending
+  if(comp.ending==='summary'){
+    const lastBird=comp.birds[comp.birds.length-1];
+    if(lastBird){
+      items.push({uid:'ending-summary',type:'speech',label:'Closing summary',
+        shortLabel:'Summary',dur:4,birdId:lastBird.id,endingType:'summary'});
+    }
+  } else if(comp.ending==='gentle-close'){
+    items.push({uid:'ending-close',type:'reflection',label:'A moment to listen',
+      shortLabel:'Close',dur:4,endingType:'gentle-close'});
+  }
+  // 'bird' ending = no extra block, composition naturally ends on the last bird
+
+  sequence=items;
+}
+
+// ── Horizontal timeline rendering ──
+function renderTimeline(){
+  const el=document.getElementById('hTimeline');
+  const envStrip=document.getElementById('envStrip');
+  if(!sequence.length||!comp.birds.length){
+    el.innerHTML='<div class="h-empty">Select a bird to see composition</div>';
+    envStrip.style.display='none';return;
+  }
+
+  const hasEnv=comp.envLevel>0;
+  const envTypes=Object.entries(comp.envTypes).filter(([,v])=>v).map(([k])=>k).join('+');
+
+  if(hasEnv){
+    envStrip.style.display='';
+    envStrip.style.background=`rgba(139,184,232,${Math.min(.35,comp.envLevel/200)})`;
+    envStrip.title=`Environment: ${envTypes} at ${comp.envLevel}%`;
+  } else { envStrip.style.display='none'; }
+
+  let html='';
+
+  sequence.forEach((it,i)=>{
+    const isMuted=mutedBlocks[it.uid]||false;
+    const isActive=currentPlayingUid===it.uid;
+
+    html+=`<div class="h-block t-${it.type}${isMuted?' muted':''}${isActive?' playing':''}"
+      style="flex:${it.dur} 0 0" title="${it.label}" data-uid="${it.uid}" data-idx="${i}"
+      onclick="event.stopPropagation()">
+      <div class="h-block-inner" onclick="skipToBlock(${i})">
+        <div class="h-block-label">${it.label}</div>
+        <div class="h-block-sub">${it.dur}s</div>
+      </div>
+      <div class="h-block-mute" onclick="toggleMuteBlock('${it.uid}')"
+        title="${isMuted?'Unmute':'Mute'}">${isMuted?'✕':'M'}</div>
+    </div>`;
+
+    if(i<sequence.length-1){
+      const hasXf=comp.crossfade>0;
+      html+=`<div class="h-xfade${hasXf?'':' none'}">
+        <div class="h-xfade-icon">${hasXf?'⟷':'·'}</div>
+        <div class="h-xfade-time">${hasXf?comp.crossfade+'s':''}</div>
+      </div>`;
+    }
+  });
+
+  el.innerHTML=html;
+}
+
+function toggleMuteBlock(uid){
+  mutedBlocks[uid]=!mutedBlocks[uid];
+  renderTimeline();
+}
+
+// ── Audio engine ──
+function initAudio(){
+  if(audioCtx)return;
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  masterGain=audioCtx.createGain();masterGain.gain.value=1;
+  analyser=audioCtx.createAnalyser();
+  analyser.fftSize=128;analyser.smoothingTimeConstant=0.8;
+  masterGain.connect(analyser);
+  analyser.connect(audioCtx.destination);
+}
+
+function getOrCreateBirdAudio(bird){
+  // Key by bird id + source type so switching clean/field creates new chain
+  const key=bird.id+'_'+comp.source;
+  if(birdAudioEls[key])return birdAudioEls[key];
+  const audio=new Audio(bird.file);
+  audio.preload='auto';
+  initAudio();
+  const src=audioCtx.createMediaElementSource(audio);
+  const gain=audioCtx.createGain();gain.gain.value=1;
+
+  if(comp.source==='field'){
+    // Field recording: bandpass filter + noise layer for natural ambience
+    const lp=audioCtx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=6000;lp.Q.value=0.5;
+    const hp=audioCtx.createBiquadFilter();hp.type='highpass';hp.frequency.value=200;hp.Q.value=0.3;
+    src.connect(hp);hp.connect(lp);lp.connect(gain);
+    // Add slight hiss
+    const hissGain=audioCtx.createGain();hissGain.gain.value=0.04;
+    const hissLen=audioCtx.sampleRate*4;
+    const hissBuf=audioCtx.createBuffer(1,hissLen,audioCtx.sampleRate);
+    const hissData=hissBuf.getChannelData(0);
+    for(let i=0;i<hissLen;i++)hissData[i]=(Math.random()*2-1)*0.5;
+    const hissSrc=audioCtx.createBufferSource();hissSrc.buffer=hissBuf;hissSrc.loop=true;
+    hissSrc.connect(hissGain);hissGain.connect(gain);
+    birdAudioEls[key]={audio,source:src,gain,hissSrc,started:false};
+  } else {
+    // Clean: direct connection, full range
+    src.connect(gain);
+    birdAudioEls[key]={audio,source:src,gain};
+  }
+  gain.connect(masterGain);
+  return birdAudioEls[key];
+}
+
+function speakAndWait(text){
+  return new Promise(r=>{
+    if(!text){r();return;}
+    const u=new SpeechSynthesisUtterance(text);u.volume=1;u.rate=0.95;
+    u.onend=r;u.onerror=r;speechSynthesis.cancel();speechSynthesis.speak(u);
+  });
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function waitAudioEndOrDur(audio,dur){
+  if(dur==='call')dur='5';
+  const ms=(Number(dur)||10)*1000;
+  return new Promise(r=>{
+    const t=setTimeout(()=>{audio.pause();r();},ms);
+    audio.addEventListener('ended',()=>{clearTimeout(t);r();},{once:true});
+  });
+}
+
+// ── Environment ──
+function startEnv(){
+  stopEnv();if(!audioCtx||comp.envLevel===0)return;
+  const sr=audioCtx.sampleRate,len=sr*6,buf=audioCtx.createBuffer(2,len,sr);
+  for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+    for(let i=0;i<len;i++){const w=Math.random()*2-1;
+      b0=.99886*b0+w*.0555179;b1=.99332*b1+w*.0750759;b2=.96900*b2+w*.1538520;
+      b3=.86650*b3+w*.3104856;b4=.55000*b4+w*.5329522;b5=-.7616*b5-w*.0168980;
+      const pink=(b0+b1+b2+b3+b4+b5+b6+w*.5362)*.06;b6=w*.115926;
+      let s=0;
+      if(comp.envTypes.wind)s+=pink*(.6+.3*Math.sin(i/sr*.2+ch)+.15*Math.sin(i/sr*.07));
+      if(comp.envTypes.rain)s+=pink*.5+(Math.random()<.004?(Math.random()*2-1)*.35:0);
+      if(comp.envTypes.forest)s+=pink*.4+(Math.random()<.0006?Math.sin(i/sr*3000*(1+Math.random()))*.12*Math.exp(-((i%sr)/sr)*20):0);
+      d[i]=s;
+    }
+  }
+  const src=audioCtx.createBufferSource();src.buffer=buf;src.loop=true;
+  const lp=audioCtx.createBiquadFilter();lp.type='lowpass';
+  lp.frequency.value=comp.envTypes.rain?4000:comp.envTypes.forest?3000:2000;
+  const g=audioCtx.createGain();g.gain.value=comp.envLevel/100;
+  src.connect(lp);lp.connect(g);g.connect(masterGain);src.start();
+  envNodes={source:src,gain:g};
+}
+function stopEnv(){if(envNodes){try{envNodes.source.stop()}catch(e){}envNodes=null;}}
+
+// ── Visualizer ──
+function initVisualizer(){
+  const c=document.getElementById('visualizer');c.innerHTML='';
+  const colors=['#67AD5B','#7DBF6D','#5a9a4f','#8BC97F','#67AD5B','#4E8B43'];
+  for(let i=0;i<52;i++){
+    const bar=document.createElement('div');bar.className='viz-bar';
+    bar.style.background=colors[i%colors.length];
+    bar.style.height='1px';
+    bar.style.opacity=0.6+Math.random()*0.4;
+    c.appendChild(bar);
+  }
+}
+function startVisualizer(){
+  if(!analyser)return;
+  const bars=document.querySelectorAll('.viz-bar');
+  const buf=new Uint8Array(analyser.frequencyBinCount);
+  function draw(){
+    vizAnimId=requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(buf);
+    const step=Math.floor(buf.length/bars.length);
+    bars.forEach((bar,i)=>{
+      const v=buf[i*step]||0;
+      bar.style.height=Math.max(1,(v/255)*18)+'px';
+    });
+  }
+  draw();
+}
+function stopVisualizer(){
+  if(vizAnimId){cancelAnimationFrame(vizAnimId);vizAnimId=null;}
+  document.querySelectorAll('.viz-bar').forEach(b=>b.style.height='1px');
+}
+
+// ── Skip to block ──
+function skipToBlock(idx){
+  if(!isPlaying){
+    // Start playback from this block
+    skipToIdx=idx;
+    playComposition();
+  } else {
+    // Interrupt current and jump
+    skipToIdx=idx;
+    // Stop current audio/speech to break out of await
+    Object.values(birdAudioEls).forEach(ba=>{ba.audio.pause();ba.audio.currentTime=0;});
+    speechSynthesis.cancel();
+  }
+}
+
+// ── Play ──
+async function playComposition(){
+  if(isPlaying&&skipToIdx<0){stopAll();return;}
+  if(!comp.birds.length){toast('Select a bird first');return;}
+  comp.reflectionText=(document.getElementById('reflectionText')?.value||'').trim();
+  rebuildSequence();renderTimeline();
+
+  const startIdx=skipToIdx>=0?skipToIdx:0;
+  skipToIdx=-1;
+
+  if(!isPlaying){
+    isPlaying=true;document.getElementById('playBtn').innerHTML='&#9724;&ensp;Stop';
+    initAudio();if(audioCtx.state==='suspended')await audioCtx.resume();
+    startVisualizer();
+    if(comp.envLevel>0)startEnv();
+  }
+
+  for(let pi=startIdx;pi<sequence.length;pi++){
+    if(!isPlaying)break;
+    // Check for skip request
+    if(skipToIdx>=0){pi=skipToIdx-1;skipToIdx=-1;
+      Object.values(birdAudioEls).forEach(ba=>{ba.audio.pause();ba.audio.currentTime=0;});
+      speechSynthesis.cancel();continue;}
+
+    const it=sequence[pi];
+    if(mutedBlocks[it.uid])continue;
+
+    currentPlayingUid=it.uid;renderTimeline();
+
+    if(it.type==='bird'){
+      const bird=it.birdObj||comp.birds.find(b=>b.id===it.birdId);
+      if(bird){
+        const ba=getOrCreateBirdAudio(bird);
+        ba.audio.currentTime=0;ba.audio.loop=false;
+        if(ba.hissSrc&&!ba.started){ba.hissSrc.start();ba.started=true;}
+        // Ensure audio is loaded
+        if(ba.audio.readyState<3){
+          ba.audio.load();
+          await new Promise(r=>{
+            ba.audio.addEventListener('canplaythrough',r,{once:true});
+            setTimeout(r,6000);
+          });
+        }
+        if(!isPlaying||skipToIdx>=0)continue;
+        try{await ba.audio.play();}catch(e){console.warn('Audio play failed:',e);}
+        await waitAudioEndOrDur(ba.audio,comp.duration);
+        ba.audio.pause();
+      }
+    } else if(it.type==='speech'){
+      const bird=comp.birds.find(b=>b.id===it.birdId);
+      let text='';
+      if(it.endingType==='summary'){
+        const names=comp.birds.map(b=>b.name);
+        if(names.length===1) text=`This week you heard the ${names[0]}.`;
+        else if(names.length===2) text=`This week you heard the ${names[0]} and the ${names[1]}.`;
+        else text=`This week you heard ${names.slice(0,-1).join(', ')}, and the ${names[names.length-1]}.`;
+        text+=` These are some of the birds that share Union Bay with us.`;
+      } else if(it.uid.startsWith('narr-')&&bird){
+        text=NARRATIONS[comp.narration]?NARRATIONS[comp.narration](bird):'';
+      } else if(it.uid.startsWith('desc-')&&bird){
+        text=bird.desc||'';
+      } else if(it.uid.startsWith('mnem-')&&bird){
+        text=bird.mnem?`The mnemonic is: ${bird.mnem.phrase}`:'';
+      }
+      if(text)await speakAndWait(text);
+    } else if(it.type==='reflection'){
+      if(it.endingType==='gentle-close'){
+        const names=comp.birds.map(b=>b.name);
+        let close='You just listened to ';
+        if(names.length===1) close+=`the ${names[0]}. `;
+        else if(names.length===2) close+=`the ${names[0]} and the ${names[1]}. `;
+        else close+=`${names.slice(0,-1).join(', ')}, and the ${names[names.length-1]}. `;
+        close+='Now pause. What do you notice around you right now? What sounds are already there, waiting to be heard? Pay attention, and you might be surprised what you find.';
+        await speakAndWait(close);
+      } else if(comp.reflectionText){
+        await speakAndWait(comp.reflectionText);
+      }
+    }
+
+    if(!isPlaying||skipToIdx>=0)continue;
+
+    if(pi<sequence.length-1){
+      await sleep(comp.crossfade>0?comp.crossfade*1000:300);
+    }
+  }
+
+  if(skipToIdx<0){
+    currentPlayingUid=null;stopAll();
+  }
+}
+
+function stopAll(){
+  isPlaying=false;currentPlayingUid=null;
+  Object.values(birdAudioEls).forEach(ba=>{
+    ba.audio.pause();ba.audio.currentTime=0;
+    if(ba.hissSrc&&ba.started){try{ba.hissSrc.stop();}catch(e){}}
+  });
+  birdAudioEls={};
+  speechSynthesis.cancel();stopEnv();stopVisualizer();
+  document.getElementById('playBtn').innerHTML='&#9654;&ensp;Play';
+  renderTimeline();
+}
+
+// ── Recording ──
+let mediaRecorder=null,recordedChunks=[];
+async function recordComposition(){
+  if(mediaRecorder&&mediaRecorder.state==='recording'){mediaRecorder.stop();return;}
+  if(!comp.birds.length){toast('Select a bird first');return;}
+  initAudio();if(audioCtx.state==='suspended')await audioCtx.resume();
+  const dest=audioCtx.createMediaStreamDestination();masterGain.connect(dest);
+  const mimeType=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')?'audio/webm;codecs=opus':'audio/webm';
+  mediaRecorder=new MediaRecorder(dest.stream,{mimeType});recordedChunks=[];
+  mediaRecorder.ondataavailable=e=>{if(e.data.size>0)recordedChunks.push(e.data);};
+  mediaRecorder.onstop=()=>{
+    masterGain.disconnect(dest);
+    const blob=new Blob(recordedChunks,{type:mimeType});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;
+    const names=comp.birds.map(b=>b.name).join('-');
+    a.download=`composition-${names||'birds'}-${new Date().toISOString().slice(0,16).replace(/:/g,'-')}.webm`;
+    a.click();URL.revokeObjectURL(url);
+    document.getElementById('recBtn').innerHTML='&#9679;&ensp;Record';
+    document.getElementById('recBtn').classList.remove('recording');toast('Audio saved!');
+  };
+  mediaRecorder.start();
+  document.getElementById('recBtn').innerHTML='&#9724;&ensp;Stop rec';
+  document.getElementById('recBtn').classList.add('recording');
+  toast('Recording — press Play now');
+}
+
+// ── Save / Export / Import ──
+function getCompData(){
+  comp.reflectionText=(document.getElementById('reflectionText')?.value||'').trim();
+  rebuildSequence();
+  return {...comp,birds:comp.birds.map(b=>({name:b.name,sci:b.sci,file:b.file,id:b.id})),
+    sequence:sequence.map(s=>({uid:s.uid,type:s.type,label:s.label,dur:s.dur,muted:!!mutedBlocks[s.uid]})),
+    muted:mutedBlocks,timestamp:new Date().toISOString()};
+}
+
+function showSaveDialog(){
+  const modal=document.getElementById('saveModal');
+  const input=document.getElementById('saveNameInput');
+  const names=comp.birds.map(b=>b.name).join(' + ');
+  input.value=names?`${names} session`:'';
+  modal.classList.add('open');
+  setTimeout(()=>input.focus(),100);
+  input.onkeydown=e=>{if(e.key==='Enter')confirmSave();if(e.key==='Escape')closeSaveDialog();};
+}
+function closeSaveDialog(){document.getElementById('saveModal').classList.remove('open');}
+function confirmSave(){
+  const name=(document.getElementById('saveNameInput').value||'').trim();
+  if(!name){document.getElementById('saveNameInput').focus();return;}
+  const key='birdComp_'+Date.now();
+  const data=getCompData();
+  data.sessionName=name;
+  localStorage.setItem(key,JSON.stringify(data));
+  closeSaveDialog();
+}
+
+function saveSession(){showSaveDialog();}
+
+function exportJSON(){
+  const data=getCompData();
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;
+  a.download=`composition-${comp.birds.map(b=>b.name).join('-')||'session'}-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();URL.revokeObjectURL(url);
+}
+
+function triggerImportJSON(){document.getElementById('jsonImport').click();}
+
+function importJSON(evt){
+  const file=evt.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      applySessionData(data);
+    }catch(err){alert('Could not read JSON file.');}
+  };
+  reader.readAsText(file);
+  evt.target.value='';
+}
+
+function applySessionData(data){
+  stopAll();
+  // Restore birds
+  comp.birds=[];
+  if(data.birds&&Array.isArray(data.birds)){
+    data.birds.forEach(db=>{
+      const found=BIRDS.find(b=>b.id===db.id)||BIRDS.find(b=>b.name===db.name);
+      if(found)comp.birds.push(found);
+    });
+  }
+  // Restore simple settings
+  if(data.source)comp.source=data.source;
+  if(data.structure)comp.structure=data.structure;
+  if(data.narration)comp.narration=data.narration;
+  if(typeof data.includeDesc==='boolean')comp.includeDesc=data.includeDesc;
+  if(typeof data.includeMnem==='boolean')comp.includeMnem=data.includeMnem;
+  if(data.crossfade!==undefined)comp.crossfade=Number(data.crossfade);
+  if(data.reflectionText!==undefined)comp.reflectionText=data.reflectionText;
+  if(data.reflectionWhen)comp.reflectionWhen=data.reflectionWhen;
+  if(data.duration)comp.duration=data.duration;
+  if(data.envLevel!==undefined)comp.envLevel=Number(data.envLevel);
+  if(data.envTypes)comp.envTypes={wind:!!data.envTypes.wind,rain:!!data.envTypes.rain,forest:!!data.envTypes.forest};
+  if(data.ending)comp.ending=data.ending;
+  if(data.muted)mutedBlocks=data.muted;else mutedBlocks={};
+  birdAudioEls={};
+
+  // Update all UI controls
+  buildGrid();
+  document.getElementById('reflectionText').value=comp.reflectionText||'';
+  document.getElementById('envSlider').value=comp.envLevel;
+  document.getElementById('envVal').textContent=comp.envLevel;
+  document.querySelectorAll('[data-src]').forEach(b=>b.classList.toggle('on',b.dataset.src===comp.source));
+  document.querySelectorAll('[data-structure]').forEach(b=>b.classList.toggle('on',b.dataset.structure===comp.structure));
+  const showNarr=comp.structure!=='bird-only'&&comp.structure!=='desc-only';
+  document.getElementById('narrSub').style.display=showNarr?'':'none';
+  document.querySelectorAll('[data-narr]').forEach(b=>b.classList.toggle('on',b.dataset.narr===comp.narration));
+  document.querySelectorAll('[data-elem]').forEach(b=>{
+    const el=b.dataset.elem;
+    b.classList.toggle('on',el==='desc'?comp.includeDesc:comp.includeMnem);
+  });
+  document.querySelectorAll('[data-xfade]').forEach(b=>b.classList.toggle('on',Number(b.dataset.xfade)===comp.crossfade));
+  document.querySelectorAll('[data-refwhen]').forEach(b=>b.classList.toggle('on',b.dataset.refwhen===comp.reflectionWhen));
+  document.querySelectorAll('[data-dur]').forEach(b=>b.classList.toggle('on',b.dataset.dur===comp.duration));
+  document.querySelectorAll('[data-envtype]').forEach(b=>{
+    const t=b.dataset.envtype;
+    b.classList.toggle('on',!!comp.envTypes[t]);
+  });
+  document.querySelectorAll('[data-ending]').forEach(b=>b.classList.toggle('on',b.dataset.ending===comp.ending));
+  rebuildSequence();renderTimeline();
+}
+
+// ── Sessions panel ──
+function showSessionsPanel(){
+  const list=document.getElementById('sessionsList');
+  const sessions=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(!key.startsWith('birdComp_'))continue;
+    try{
+      const d=JSON.parse(localStorage.getItem(key));
+      d._key=key;sessions.push(d);
+    }catch(e){}
+  }
+  sessions.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+  if(!sessions.length){
+    list.innerHTML='<div class="sessions-empty">No saved sessions yet.</div>';
+  }else{
+    list.innerHTML=sessions.map(s=>{
+      const name=s.sessionName||'Untitled';
+      const birds=(s.birds||[]).map(b=>b.name).join(', ')||'No birds';
+      const date=s.timestamp?new Date(s.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'';
+      return `<div class="session-card">
+        <div>
+          <div class="session-name">${name}</div>
+          <div class="session-birds">${birds}</div>
+          <div class="session-meta">${date}</div>
+        </div>
+        <div class="session-actions">
+          <button class="session-action-btn" onclick="event.stopPropagation();loadSession('${s._key}')">Load</button>
+          <button class="session-action-btn danger" onclick="event.stopPropagation();deleteSession('${s._key}')">Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('sessionsModal').classList.add('open');
+}
+function closeSessionsPanel(){document.getElementById('sessionsModal').classList.remove('open');}
+function loadSession(key){
+  try{
+    const data=JSON.parse(localStorage.getItem(key));
+    applySessionData(data);
+    closeSessionsPanel();
+  }catch(e){alert('Could not load session.');}
+}
+function deleteSession(key){
+  localStorage.removeItem(key);
+  showSessionsPanel();// refresh list
+}
+
+function resetAll(){
+  stopAll();
+  comp={birds:[],source:'clean',structure:'summary-bird',narration:'field-guide',
+    includeDesc:true,includeMnem:true,crossfade:0.5,reflectionText:'',reflectionWhen:'before',
+    duration:'10',envLevel:30,envTypes:{wind:true,rain:false,forest:false},ending:'bird'};
+  sequence=[];mutedBlocks={};birdAudioEls={};
+  document.getElementById('reflectionText').value='';
+  document.getElementById('envSlider').value=30;document.getElementById('envVal').textContent='30';
+  document.querySelectorAll('[data-src]').forEach(b=>b.classList.toggle('on',b.dataset.src==='clean'));
+  document.querySelectorAll('[data-structure]').forEach(b=>b.classList.toggle('on',b.dataset.structure==='summary-bird'));
+  document.getElementById('narrSub').style.display='';
+  document.querySelectorAll('[data-narr]').forEach(b=>b.classList.toggle('on',b.dataset.narr==='field-guide'));
+  document.querySelectorAll('[data-elem]').forEach(b=>b.classList.add('on'));
+  document.querySelectorAll('[data-xfade]').forEach(b=>b.classList.toggle('on',Number(b.dataset.xfade)===0.5));
+  document.querySelectorAll('[data-refwhen]').forEach(b=>b.classList.toggle('on',b.dataset.refwhen==='before'));
+  document.querySelectorAll('[data-dur]').forEach(b=>b.classList.toggle('on',b.dataset.dur==='10'));
+  document.querySelectorAll('[data-envtype]').forEach(b=>b.classList.toggle('on',b.dataset.envtype==='wind'));
+  document.querySelectorAll('[data-ending]').forEach(b=>b.classList.toggle('on',b.dataset.ending==='bird'));
+  document.getElementById('narrSub').style.display='';
+  buildGrid();renderTimeline();toast('Reset');
+}
+
+function toast(msg){/* removed */}
+
+// ── Init ──
+document.getElementById('reflectionText').addEventListener('input',()=>{rebuildSequence();renderTimeline();});
+buildGrid();initVisualizer();rebuildSequence();renderTimeline();
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+});
+</script>
+</body>
+</html>
