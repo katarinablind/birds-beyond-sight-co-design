@@ -297,7 +297,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       <div class="step-sub">Choose what comes with the bird audio.</div>
       <div class="opts">
         <button class="opt" data-structure="bird-only" onclick="setStructure(this)">Bird audio only</button>
-        <button class="opt" data-structure="desc-only" onclick="setStructure(this)">Description only</button>
+        <button class="opt" data-structure="desc-only" onclick="setStructure(this)">Bird name only</button>
         <button class="opt on" data-structure="summary-bird" onclick="setStructure(this)">Summary, then bird</button>
         <button class="opt" data-structure="bird-summary" onclick="setStructure(this)">Bird first, then summary</button>
       </div>
@@ -562,6 +562,12 @@ function rebuildSequence(){
   const hasDescOnly=struct==='desc-only';
   const birdFirst=struct==='bird-summary';
 
+  // Intro summary for summary structures
+  if(hasSummary&&comp.birds.length>0){
+    items.push({uid:'intro-summary',type:'speech',label:'Introduction',
+      shortLabel:'Intro',dur:3,introSummary:true});
+  }
+
   // Pre-bird reflection
   if(hasRef&&comp.reflectionWhen==='before'){
     items.push({uid:'ref-pre',type:'reflection',label:'Reflection',
@@ -582,8 +588,8 @@ function rebuildSequence(){
           items.push({uid:`mnem-${bird.id}`,type:'speech',label:`${short?short+' · ':''}Mnem.`,
             shortLabel:short||'Mnem.',dur:2,birdId:bird.id});
       } else if(hasDescOnly){
-        items.push({uid:`desc-${bird.id}`,type:'speech',label:`${short?short+' · ':''}Description`,
-          shortLabel:short||'Desc.',dur:4,birdId:bird.id});
+        items.push({uid:`name-${bird.id}`,type:'speech',label:`${short?short+' · ':''}Name`,
+          shortLabel:short||'Name',dur:2,birdId:bird.id,nameOnly:true});
       }
     }
     function addBird(){
@@ -855,7 +861,12 @@ async function playComposition(){
     } else if(it.type==='speech'){
       const bird=comp.birds.find(b=>b.id===it.birdId);
       let text='';
-      if(it.endingType==='summary'){
+      if(it.introSummary){
+        const names=comp.birds.map(b=>b.name);
+        if(names.length===1) text=`This week, we'll listen to the ${names[0]} from Union Bay.`;
+        else if(names.length===2) text=`This week, we'll listen to the ${names[0]} and the ${names[1]} from Union Bay.`;
+        else text=`This week, we'll listen to ${names.slice(0,-1).join(', ')}, and the ${names[names.length-1]} from Union Bay.`;
+      } else if(it.endingType==='summary'){
         const names=comp.birds.map(b=>b.name);
         if(names.length===1) text=`This week you heard the ${names[0]}.`;
         else if(names.length===2) text=`This week you heard the ${names[0]} and the ${names[1]}.`;
@@ -863,6 +874,8 @@ async function playComposition(){
         text+=` These are some of the birds that share Union Bay with us.`;
       } else if(it.uid.startsWith('narr-')&&bird){
         text=NARRATIONS[comp.narration]?NARRATIONS[comp.narration](bird):'';
+      } else if(it.nameOnly&&bird){
+        text=bird.name;
       } else if(it.uid.startsWith('desc-')&&bird){
         text=bird.desc||'';
       } else if(it.uid.startsWith('mnem-')&&bird){
