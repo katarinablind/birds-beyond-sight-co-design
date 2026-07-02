@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jiu Jiu · Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#1a1a1a;
+  /* one brand accent — accessible green (AA on white) */
+  --green:#2f7d22;--green-light:#2f7d2214;--green-mid:#2f7d2238;--green-dim:#2f7d2299;
+  --green-bright:#67AD5B;        /* visualizations only */
+  --gray:#6C6C6C;--gray-light:#6C6C6C1c;
+  /* cool, non-beige neutrals */
+  --bg:#f6f7f8;--surface:#fff;--border:#e6e8ea;--text:#1a1a1a;
+  --R:13px;
+  --font:'Radio Canada Big',sans-serif;
+  --font-sub:'Source Serif 4',Georgia,serif;
+}
+html{font-size:16px;height:100%}
+body{background:var(--bg);font-family:var(--font);color:var(--text);
+  -webkit-font-smoothing:antialiased;height:100vh;overflow:hidden}
+
+/* ════ APP SHELL — Figma-studio layout ════ */
+.app{display:flex;height:100vh;overflow:hidden}
+.nav-rail{flex:0 0 172px;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:12px 10px;gap:2px;z-index:40;min-height:0}
+.nav-brand{display:flex;align-items:center;gap:9px;padding:4px 10px 14px;margin-bottom:6px;
+  border-bottom:1px solid var(--border);flex-shrink:0}
+.nav-brand-mark{width:28px;height:28px;border-radius:8px;background:var(--green);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-brand-mark svg{width:14px;height:14px;fill:#fff}
+.nav-brand-text{font-size:.8rem;font-weight:700;letter-spacing:-.02em;color:var(--text);line-height:1.2}
+.nav-item{width:100%;min-height:36px;border:none;border-radius:8px;background:transparent;
+  color:var(--gray);cursor:pointer;display:flex;align-items:center;gap:8px;
+  transition:all .12s;padding:8px 10px;font-family:var(--font);font-size:.68rem;font-weight:600;text-align:left}
+.nav-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;opacity:.65}
+.nav-item .nav-label{flex:1;min-width:0;line-height:1.2}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item:hover svg{opacity:.9}
+.nav-item.active{background:var(--green-light);color:var(--green)}
+.nav-item.active svg{opacity:1;stroke:var(--green)}
+.nav-item .badge{font-size:.56rem;font-weight:700;background:var(--gray-light);color:var(--gray);
+  border-radius:999px;padding:1px 7px;flex-shrink:0;line-height:1.4}
+.nav-item.active .badge{background:var(--green-mid);color:var(--green)}
+.nav-spacer{flex:1}
+.workspace{flex:1;display:flex;min-width:0;min-height:0;background:var(--bg)}
+
+/* lens panels */
+.lens-panel{display:none;min-height:0}
+.lens-panel.content-panel{flex:1;overflow-y:auto;padding:22px 28px 40px}
+.lens-panel.content-panel.active{display:block}
+.lens-panel.gallery-workspace{flex:1;min-height:0}
+.lens-panel.gallery-workspace.active{display:flex}
+.panel-desc{font-family:var(--font-sub);font-size:.74rem;color:var(--gray);
+  line-height:1.5;margin-bottom:18px;max-width:640px}
+.panel-desc b{color:var(--text);font-weight:600;font-family:var(--font)}
+
+/* ════ GALLERY — proto sidebar + dark stage ════ */
+.proto-sidebar{flex:0 0 292px;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;min-height:0}
+.proto-sidebar-head{padding:14px 14px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.ps-title{font-size:.82rem;font-weight:700;letter-spacing:-.02em;margin-bottom:10px}
+.cat-tabs{display:flex;flex-direction:column;gap:3px}
+.cat-tab{padding:7px 10px;border-radius:8px;border:none;background:transparent;
+  font-family:var(--font);font-size:.64rem;font-weight:600;color:var(--gray);cursor:pointer;
+  transition:all .12s;display:flex;align-items:center;justify-content:space-between;text-align:left;width:100%}
+.cat-tab:hover{background:var(--bg);color:var(--text)}
+.cat-tab.active{background:var(--green-light);color:var(--green)}
+.cat-tab .n{font-size:.56rem;opacity:.7;font-weight:700}
+.idea-list{flex:1;overflow-y:auto;padding:12px;scrollbar-width:thin;display:flex;flex-direction:column;gap:8px}
+.idea-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s;overflow:hidden;flex-shrink:0}
+.idea-card:hover{border-color:var(--green-dim)}
+.idea-card.active{border-color:var(--green);box-shadow:0 2px 14px -4px var(--green-mid)}
+.ic-summary{padding:12px 13px}
+.ic-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.ic-title{font-size:.8rem;font-weight:700;color:var(--black);line-height:1.25;flex:1;min-width:0}
+.ic-sub{font-family:var(--font-sub);font-size:.62rem;color:var(--gray);margin-top:3px;line-height:1.4}
+.ic-foot{display:flex;align-items:center;gap:7px;margin-top:8px;flex-wrap:wrap}
+.ic-foot .pos-label{font-size:.54rem;color:var(--gray);font-weight:600;line-height:1.3}
+.ic-expand{max-height:0;opacity:0;overflow:hidden;transition:max-height .3s ease,opacity .2s,padding .3s;
+  padding:0 12px;background:var(--bg)}
+.idea-card.expanded .ic-expand{max-height:480px;opacity:1;padding:0 12px 12px;border-top:1px solid var(--border)}
+.ic-expand .meta-lens{font-family:var(--font-sub);font-size:.66rem;line-height:1.5;color:var(--text);
+  background:var(--green-light);border-left:3px solid var(--green);border-radius:0 8px 8px 0;
+  padding:9px 11px;margin-top:10px}
+.ic-expand .meta-lens b{color:var(--green);font-weight:600;font-family:var(--font)}
+.ic-expand .meta-sec{margin-top:10px}
+.ic-expand .meta-lbl{font-size:.58rem;font-weight:700;color:var(--gray);margin-bottom:5px}
+.ic-expand .meta-row{display:flex;flex-wrap:wrap;gap:4px}
+
+/* gallery dark zone: stage + a11y panel */
+.stage-area{flex:1;display:flex;min-width:0;min-height:0;background:#0a0a0a}
+.stage{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+.stage-toolbar{flex:0 0 auto;display:flex;align-items:center;padding:0 16px;height:40px;
+  border-bottom:1px solid rgba(255,255,255,.07);background:#111}
+.stage-title{font-size:.76rem;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:-.01em}
+.stage-canvas{flex:1;display:flex;align-items:center;justify-content:center;
+  min-height:0;position:relative;transition:background .4s ease;overflow:auto}
+.stage-canvas[data-bg="studio"]{background:#0a0a0a}
+.stage-canvas[data-bg="outdoor"]{
+  background:linear-gradient(180deg,#5b8cba 0%,#7aab6e 38%,#3d6b35 72%,#2a4a24 100%)}
+.stage-canvas[data-bg="outdoor"]::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(255,255,255,.08),transparent);pointer-events:none}
+.phone-frame-wrap{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 28px 56px rgba(0,0,0,.55))}
+.phone-scale{overflow:hidden;flex:0 0 auto;line-height:0;transition:width .25s,height .25s}
+.phone-iframe{border:none;background:transparent;display:block;transform-origin:top left;
+  transition:width .25s,height .25s}
+.ext-card{border:2px dashed rgba(255,255,255,.2);border-radius:28px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;
+  text-align:center;padding:34px;background:rgba(255,255,255,.04)}
+.ext-card .ico-lg{color:var(--green-bright)}
+.ext-card .ico-lg svg{width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ext-card .ext-title{font-size:.82rem;font-weight:700;color:#fff}
+
+/* non-tech sketch board (photo of sketch + sticky note) */
+.sketch-board{display:flex;gap:26px;align-items:center;justify-content:center;flex-wrap:wrap;padding:24px}
+.sketch-photo{position:relative;width:290px;height:388px;background:#fff;border-radius:5px;
+  box-shadow:0 22px 54px -14px rgba(0,0,0,.62);padding:10px 10px 34px;transform:rotate(-1.5deg)}
+.sketch-photo img{width:100%;height:100%;object-fit:cover;border-radius:2px;display:block}
+.sketch-photo .cap{position:absolute;left:0;right:0;bottom:9px;text-align:center;
+  font-family:var(--font-sub);font-size:.62rem;color:#555}
+.sketch-photo .sketch-drop{display:none}
+.sketch-photo.missing img{display:none}
+.sketch-photo.missing .cap{display:none}
+.sketch-photo.missing .sketch-drop{width:100%;height:100%;border:2px dashed #cbd0d4;border-radius:2px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  color:#8a9098;text-align:center;padding:20px}
+.sketch-drop svg{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.sketch-drop span{font-size:.64rem;font-weight:500;font-family:var(--font-sub);line-height:1.5}
+.sketch-drop span b{font-family:var(--font);font-weight:700}
+.sticky{width:206px;min-height:206px;background:#fde68a;border-radius:2px;padding:15px 16px 18px;
+  box-shadow:0 14px 34px -10px rgba(0,0,0,.5);transform:rotate(2deg);display:flex;flex-direction:column}
+.sticky-lbl{font-size:.5rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9a7d1e;margin-bottom:8px}
+.sticky textarea{flex:1;border:none;background:transparent;resize:none;outline:none;
+  font-family:var(--font-sub);font-size:.84rem;line-height:1.5;color:#4a3f12;width:100%}
+.sticky textarea::placeholder{color:#b39a4a}
+/* prototype search + hide a11y panel for non-tech entries */
+.proto-search{width:100%;margin:8px 0 2px;padding:7px 11px;border:1px solid var(--border);
+  border-radius:9px;background:var(--surface);font-family:var(--font);font-size:.7rem;color:var(--text);
+  outline:none;transition:border-color .15s}
+.proto-search:focus{border-color:var(--green)}
+.proto-search::placeholder{color:var(--gray)}
+.idea-empty{font-family:var(--font-sub);font-size:.72rem;color:var(--gray);padding:16px 4px}
+.a11y-panel.hidden{display:none}
+
+/* dark a11y side panel */
+.a11y-panel{flex:0 0 196px;background:#111;border-left:1px solid rgba(255,255,255,.08);
+  display:flex;flex-direction:column;min-height:0}
+.a11y-panel-inner{height:100%;padding:10px;display:flex;flex-direction:column;gap:0;min-height:0}
+.a11y-section{display:flex;flex-direction:column;gap:8px}
+.a11y-section.preview{flex:0 0 auto;padding-bottom:14px;margin-bottom:18px;
+  border-bottom:1px solid rgba(255,255,255,.1)}
+.a11y-section.access{flex:1;min-height:0;gap:10px}
+.a11y-section-hdr{font-size:.76rem;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:-.01em}
+.a11y-row{display:flex;align-items:center;gap:6px}
+.a11y-lbl{font-size:.5rem;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.05em}
+.a11y-lbl.inline{flex:0 0 30px}
+.lv-toggle,.bg-toggle{display:flex;flex:1;background:rgba(255,255,255,.05);border-radius:999px;padding:2px;gap:2px;
+  border:1px solid rgba(255,255,255,.07)}
+.lv-btn,.bg-btn{flex:1;padding:5px 2px;border:none;border-radius:999px;background:transparent;
+  font-family:var(--font);font-size:.54rem;font-weight:600;color:rgba(255,255,255,.4);cursor:pointer;transition:all .12s}
+.lv-btn:hover,.bg-btn:hover{color:rgba(255,255,255,.75)}
+.lv-btn.on,.bg-btn.on{background:var(--green);color:#fff}
+.open-standalone{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;
+  padding:10px 12px;border-radius:8px;border:none;background:rgba(255,255,255,.12);
+  color:#fff;font-family:var(--font);font-size:.6rem;font-weight:600;cursor:pointer;transition:background .12s}
+.open-standalone:hover{background:rgba(255,255,255,.18)}
+/* VO zone — fills lower half of accessibility section */
+.vo-zone{flex:1;min-height:0;display:flex;flex-direction:column;gap:6px;
+  padding-top:8px;border-top:1px solid rgba(255,255,255,.07)}
+.vo-now{flex:0 0 auto;font-size:.58rem;line-height:1.42;color:rgba(255,255,255,.88);
+  background:rgba(103,173,91,.08);border:1px solid rgba(103,173,91,.2);border-radius:10px;padding:7px 9px;min-height:42px}
+.vo-controls{flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:center}
+.vo-toolbar{display:flex;align-items:center;justify-content:center;gap:12px}
+.vo-pill{width:26px;height:26px;border-radius:999px;border:1.5px solid rgba(103,173,91,.4);
+  background:rgba(103,173,91,.1);color:var(--green-bright);font-size:.48rem;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;padding:0}
+.vo-pill:hover{border-color:var(--green);background:rgba(103,173,91,.22);color:#fff}
+.vo-play{width:34px;height:34px;border-radius:50%;background:var(--green);border:none;cursor:pointer;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:transform .12s;padding:0}
+.vo-play::after{content:'';width:0;height:0;border-left:10px solid #fff;border-top:6px solid transparent;
+  border-bottom:6px solid transparent;margin-left:2px}
+.vo-play.playing::after{border:none;width:9px;height:9px;margin-left:0;background:#fff;border-radius:1px}
+.vo-play:hover{transform:scale(1.06)}
+.vo-play:active{transform:scale(.95)}
+.vo-tap{display:flex;align-items:center;justify-content:center;width:100%;
+  padding:6px 10px;border-radius:999px;border:none;background:var(--green);color:#fff;
+  font-family:var(--font);font-size:.54rem;font-weight:600;cursor:pointer;transition:all .12s}
+.vo-tap:hover:not(:disabled){background:#5a9c4f}
+.vo-tap:disabled{opacity:.28;cursor:not-allowed;background:rgba(255,255,255,.06);color:rgba(255,255,255,.3)}
+.vo-meta{font-size:.48rem;color:rgba(255,255,255,.3);line-height:1.35;flex-shrink:0;text-align:center}
+.vo-steps{flex:1;min-height:40px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;scrollbar-width:thin}
+.vo-step{font-size:.52rem;line-height:1.32;padding:4px 6px;border-radius:6px;cursor:pointer;
+  color:rgba(255,255,255,.38);border:1px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vo-step:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.7)}
+.vo-step.active{background:rgba(103,173,91,.15);border-color:rgba(103,173,91,.35);color:#b8ddb0}
+.vo-step .vo-idx{opacity:.45;margin-right:3px;font-size:.46rem;font-weight:700}
+.fid-meter{display:flex;gap:3px;margin-top:4px}
+.fid-meter i{flex:1;height:4px;border-radius:2px;background:var(--border)}
+.fid-meter i.on{background:var(--green)}
+.pos-glyph{display:grid;grid-template-columns:1fr 1fr;gap:2px;width:16px;height:16px;flex-shrink:0}
+.pg-cell{border-radius:2px;background:var(--border)}
+.pg-cell.on{background:var(--green)}
+.chip{font-size:.5rem;font-weight:600;border-radius:999px;padding:2px 7px;line-height:1.5;white-space:nowrap;
+  background:var(--gray-light);color:#555;border:1px solid var(--border)}
+.chip.mot{background:var(--green-light);color:var(--green);border:1px solid var(--green-mid)}
+.chip.api{background:var(--green-light);color:var(--green);border:1px solid var(--green-mid);font-weight:700}
+.fdot{display:inline-flex;align-items:center;gap:4px;font-size:.54rem;font-weight:700;color:var(--gray);flex-shrink:0}
+.fdot i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.f1{background:#cdd2cf}.f2{background:#a7c19c}.f3{background:#7aa86a}
+.f4{background:#4f9a3f}.f5{background:#2f7d22}
+
+/* (stage + a11y panel styles above) */
+
+/* ════ OVERVIEW LENS ════ */
+#panel-overview.content-panel{flex-direction:column;padding:10px 16px 14px;overflow:hidden}
+#panel-overview.content-panel.active{display:flex}
+.viz-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-bottom:8px;flex-shrink:0}
+.viz-modes{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.vizbtn{padding:6px 12px;border-radius:999px;border:1.5px solid var(--border);
+  background:var(--surface);font-family:var(--font);font-size:.64rem;font-weight:600;
+  color:var(--gray);cursor:pointer;transition:all .15s}
+.vizbtn:hover{border-color:var(--green-dim);color:var(--text)}
+.vizbtn.on{background:var(--green);color:#fff;border-color:var(--green)}
+.mot-filter{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-left:auto}
+.mot-filter .lbl{font-size:.58rem;font-weight:700;color:var(--gray);margin-right:2px}
+.motbtn{padding:5px 11px;border-radius:999px;border:1.5px solid var(--border);
+  background:var(--surface);font-family:var(--font);font-size:.6rem;font-weight:600;
+  color:var(--gray);cursor:pointer;transition:all .15s}
+.viz-stage{position:relative;flex:1;min-height:0;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:12px;overflow:hidden}
+.viz-stage canvas{display:block;width:100%;height:100%;cursor:pointer}
+.viz-tip{position:absolute;pointer-events:none;opacity:0;transition:opacity .1s;
+  background:var(--text);color:#fff;border-radius:8px;padding:6px 9px;
+  font-size:.62rem;font-weight:600;line-height:1.3;max-width:180px;z-index:5}
+.viz-tip.on{opacity:1}
+
+/* ════ FIDELITY LENS ════ */
+.fid-board{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:start}
+.fid-col{background:var(--surface);border:1.5px solid var(--border);border-radius:13px;
+  padding:11px;min-height:120px}
+.fid-colhead{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.fid-colhead .n{font-size:.74rem;font-weight:700;color:var(--black)}
+.fid-coldesc{font-family:var(--font-sub);font-size:.56rem;color:var(--gray);
+  line-height:1.4;margin-bottom:10px;min-height:30px}
+.fid-card{background:var(--bg);border:1px solid var(--border);border-radius:9px;
+  padding:8px 9px;margin-bottom:7px;cursor:pointer;transition:all .12s}
+.fid-card:hover{border-color:var(--green-dim);transform:translateY(-1px)}
+.fid-card .t{font-size:.66rem;font-weight:700;color:var(--black);line-height:1.2}
+.fid-card .s{font-family:var(--font-sub);font-size:.54rem;color:var(--gray);margin-top:2px;line-height:1.3}
+
+/* ════ SKILLS LENS ════ */
+.skill-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:13px}
+.skill-card{background:var(--surface);border:1.5px solid var(--border);border-radius:13px;
+  padding:14px;display:flex;flex-direction:column}
+.skill-card:hover{border-color:#6b4fb066}
+.sk-name{font-size:.74rem;font-weight:700;color:var(--black);font-family:'JetBrains Mono',var(--font);
+  display:flex;align-items:center;gap:7px}
+.sk-name .gem{width:7px;height:7px;border-radius:2px;background:#6b4fb0;transform:rotate(45deg)}
+.sk-when{font-family:var(--font-sub);font-size:.66rem;color:var(--gray);line-height:1.45;
+  margin:8px 0 11px;flex:1}
+.sk-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sk-used{font-size:.54rem;color:var(--green);font-weight:600}
+.copybtn{padding:5px 11px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);
+  font-family:var(--font);font-size:.58rem;font-weight:600;color:var(--gray);cursor:pointer;transition:all .15s}
+.copybtn:hover{border-color:#6b4fb0;color:#6b4fb0}
+.copybtn.done{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* ════ TOKENS LENS ════ */
+.tok-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;align-items:start}
+.tok-block{background:var(--surface);border:1.5px solid var(--border);border-radius:13px;padding:16px}
+.tok-h{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gray);margin-bottom:12px}
+.sw-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sw{width:34px;height:34px;border-radius:8px;border:1px solid rgba(0,0,0,.08);flex-shrink:0}
+.sw-info .n{font-size:.66rem;font-weight:600}
+.sw-info .v{font-family:'JetBrains Mono',monospace;font-size:.56rem;color:var(--gray)}
+.type-ramp>div{margin-bottom:10px;line-height:1.1}
+.tr-lbl{font-family:'JetBrains Mono',monospace;font-size:.5rem;color:var(--gray);display:block;margin-top:2px}
+.comp-demo{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.d-btn{padding:7px 16px;border-radius:999px;border:none;background:var(--green);color:#fff;font-family:var(--font);font-size:.7rem;font-weight:600}
+.d-pill{padding:5px 12px;border-radius:999px;border:1.5px solid var(--green);color:var(--green);font-size:.62rem;font-weight:600;background:var(--green-light)}
+.d-play{width:38px;height:38px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center}
+.d-play::after{content:'';border-left:11px solid #fff;border-top:6px solid transparent;border-bottom:6px solid transparent;margin-left:3px}
+.d-wave{display:flex;align-items:flex-end;gap:2px;height:30px}
+.d-wave i{width:3px;border-radius:2px;background:var(--green-dim)}
+/* API catalogue */
+.api-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.api-row:last-child{border-bottom:none}
+.api-status{font-size:.5rem;font-weight:700;border-radius:5px;padding:2px 6px;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0;margin-top:1px}
+.st-live{background:var(--green-light);color:var(--green)}
+.st-mock{background:var(--brown-light);color:#9a6b2e}
+.st-plan{background:var(--gray-light);color:var(--gray)}
+.api-info .n{font-size:.68rem;font-weight:700}
+.api-info .d{font-family:var(--font-sub);font-size:.6rem;color:var(--gray);line-height:1.4;margin-top:1px}
+.lic{display:inline-block;font-size:.5rem;font-weight:600;color:#c0392b;background:#FDECEA;border-radius:4px;padding:1px 5px;margin-top:3px}
+.lic.ok{color:var(--green);background:var(--green-light)}
+
+/* ── meta a11y chips ── */
+.chip.a11y-ok{background:var(--green-light);color:#2f7d22;border:1px solid var(--green-mid)}
+.chip.a11y-warn{background:#FFF3E0;color:#9a6b2e;border:1px solid #F9A82544}
+.chip.a11y-todo{background:var(--gray-light);color:var(--gray);border:1px solid #6C6C6C22}
+
+/* ════ ACCESSIBILITY LENS ════ */
+.a11y-banner{display:flex;gap:14px;align-items:center;background:var(--surface);
+  border:1.5px solid var(--green-mid);border-left:4px solid var(--green);border-radius:var(--R);
+  padding:14px 16px;margin-bottom:18px}
+.a11y-banner .big{font-size:1.5rem;font-weight:800;color:#2f7d22;line-height:1;font-family:var(--font)}
+.a11y-banner .txt{font-family:var(--font-sub);font-size:.72rem;line-height:1.5;color:var(--text)}
+.a11y-banner .txt b{font-family:var(--font);color:#2f7d22}
+.a11y-cols{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:start}
+@media(max-width:1000px){.a11y-cols{grid-template-columns:1fr}}
+.a11y-block{background:var(--surface);border:1.5px solid var(--border);border-radius:13px;padding:16px;margin-bottom:18px}
+.a11y-block .bh{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--gray);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+.a11y-block .bdesc{font-family:var(--font-sub);font-size:.62rem;color:var(--gray);line-height:1.45;margin-bottom:12px}
+/* contrast audit rows */
+.ca-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.ca-row:last-child{border-bottom:none}
+.ca-swatch{width:46px;height:30px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-size:.6rem;font-weight:700;border:1px solid rgba(0,0,0,.08)}
+.ca-info{flex:1;min-width:0}
+.ca-name{font-size:.64rem;font-weight:600;line-height:1.2}
+.ca-use{font-family:var(--font-sub);font-size:.54rem;color:var(--gray);margin-top:1px}
+.ca-ratio{font-family:'JetBrains Mono',monospace;font-size:.66rem;font-weight:700;flex-shrink:0;text-align:right;min-width:74px}
+.ca-badge{font-size:.5rem;font-weight:700;border-radius:5px;padding:2px 6px;flex-shrink:0;min-width:62px;text-align:center}
+.b-pass{background:var(--green-light);color:#2f7d22}
+.b-large{background:#FFF3E0;color:#9a6b2e}
+.b-fail{background:#FDECEA;color:#c0392b}
+.a11y-fix{background:var(--green-light);border-radius:9px;padding:10px 12px;margin-top:12px;
+  font-family:var(--font-sub);font-size:.62rem;line-height:1.5;color:var(--text)}
+.a11y-fix b{font-family:var(--font);color:#2f7d22}
+.a11y-fix code{font-family:'JetBrains Mono',monospace;font-size:.92em;background:#fff;padding:1px 5px;border-radius:4px;border:1px solid var(--green-mid)}
+/* checklist */
+.chk-group{margin-bottom:14px}
+.chk-gh{font-size:.6rem;font-weight:700;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.chk-gh .cnt{font-size:.52rem;color:var(--gray);font-weight:600}
+.chk-item{display:flex;gap:8px;align-items:flex-start;padding:5px 0;cursor:pointer;font-size:.66rem;line-height:1.4}
+.chk-box{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--border);flex-shrink:0;
+  margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.chk-item.done .chk-box{background:#2f7d22;border-color:#2f7d22}
+.chk-item.done .chk-box::after{content:'✓';color:#fff;font-size:.6rem;font-weight:800}
+.chk-item.done .chk-label{color:var(--gray);text-decoration:line-through}
+.chk-label b{font-weight:700}
+.chk-progress{height:6px;border-radius:3px;background:var(--border);overflow:hidden;margin-bottom:14px}
+.chk-progress i{display:block;height:100%;background:#2f7d22;transition:width .25s}
+/* quick-ref cards */
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:11px}
+.qr-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px}
+.qr-card .h{font-size:.62rem;font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.qr-card .l{font-family:var(--font-sub);font-size:.58rem;color:var(--gray);line-height:1.5}
+.qr-card .l b{font-family:var(--font);color:var(--text);font-weight:600}
+
+/* ════ APIs TAB ════ */
+.api-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.apicard{background:var(--surface);border:1.5px solid var(--border);border-radius:13px;padding:15px;display:flex;flex-direction:column}
+.apicard .top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.apicard .nm{font-size:.84rem;font-weight:700;line-height:1.15}
+.apicard .src{font-family:var(--font-sub);font-size:.58rem;color:var(--gray);margin-top:1px}
+.apicard .desc{font-family:var(--font-sub);font-size:.66rem;color:var(--text);line-height:1.5;margin:9px 0 11px}
+.apicard .meta-grid{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:.58rem;margin-bottom:11px}
+.apicard .mk{color:var(--gray);font-weight:600}
+.apicard .mv{color:var(--text)}
+.apicard .foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.plugbtn{padding:6px 13px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);
+  font-family:var(--font);font-size:.6rem;font-weight:600;color:var(--gray);cursor:pointer;transition:all .15s}
+.plugbtn:hover{border-color:var(--green);color:#2f7d22}
+.plugbtn.done{background:#2f7d22;color:#fff;border-color:#2f7d22}
+
+/* ════ KIT additions ════ */
+.kit-note{background:var(--surface);border:1.5px solid #C4955A55;border-left:4px solid var(--brown);
+  border-radius:var(--R);padding:13px 16px;margin-bottom:18px;font-family:var(--font-sub);
+  font-size:.72rem;line-height:1.55;color:var(--text)}
+.kit-note b{font-family:var(--font);color:#9a6b2e}
+.comp-lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.comp-item{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:13px;
+  display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center}
+.comp-item .demo{min-height:42px;display:flex;align-items:center;justify-content:center}
+.comp-item .cn{font-size:.56rem;font-weight:700;color:var(--text)}
+.comp-item .cc{font-family:'JetBrains Mono',monospace;font-size:.5rem;color:var(--gray)}
+.sw-badge{margin-left:auto;font-size:.48rem;font-weight:700;border-radius:4px;padding:1px 5px}
+
+/* ════ CLEANUP PASS — green + neutral, sentence-case labels, no divider lines ════ */
+.panel-head{text-transform:none;letter-spacing:0;font-size:.72rem;color:var(--text);font-weight:700}
+.tok-h{text-transform:none;letter-spacing:0;font-size:.72rem;color:var(--text)}
+.a11y-block .bh{text-transform:none;letter-spacing:0;font-size:.72rem;color:var(--text)}
+.a11y-block .bh span{font-size:.6rem}
+.meta-lbl{text-transform:none;letter-spacing:0}
+.api-status{text-transform:none;letter-spacing:0;font-weight:700}
+/* motivation filter → green */
+.motbtn:hover{border-color:var(--green-dim)}
+.motbtn.on{background:var(--green);color:#fff;border-color:var(--green)}
+/* skills → green, drop purple */
+.skill-card:hover{border-color:var(--green-dim)}
+.sk-name{font-family:var(--font)}
+.sk-name .gem{background:var(--green)}
+.copybtn:hover{border-color:var(--green);color:var(--green)}
+.chip.skill{background:var(--gray-light);color:#555;border:1px solid var(--border)}
+/* api 'mock' status → cool slate, not beige */
+.st-mock{background:#eaeef1;color:#566472}
+/* kit-note → neutral card, green accent */
+.kit-note{border:1.5px solid var(--border);border-left:4px solid var(--green)}
+.kit-note b{color:var(--green)}
+/* gap hints → calm slate, not beige */
+.gap-hint{color:#5b6b7a}
+.gap-hint b{color:#3f4d59}
+@media(max-width:900px){.proto-sidebar{flex:0 0 240px}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <nav class="nav-rail" id="navRail" aria-label="Main navigation"></nav>
+  <div class="workspace">
+
+    <!-- OVERVIEW -->
+    <div class="lens-panel content-panel active" id="panel-overview">
+      <div class="viz-toolbar">
+        <div class="viz-modes" id="vizModes"></div>
+        <div class="mot-filter" id="motFilter"></div>
+      </div>
+      <div class="viz-stage" id="vizStage">
+        <canvas id="vizCanvas" aria-label="Sharing overview visualization"></canvas>
+        <div class="viz-tip" id="vizTip"></div>
+      </div>
+    </div>
+
+    <!-- GALLERY -->
+    <div class="lens-panel gallery-workspace" id="panel-gallery">
+      <aside class="proto-sidebar">
+        <div class="proto-sidebar-head">
+          <div class="ps-title">Prototypes</div>
+          <input class="proto-search" id="protoSearch" type="search" placeholder="Search prototypes…"
+            oninput="setSearch(this.value)" aria-label="Search prototypes">
+          <div class="cat-tabs" id="catTabs"></div>
+        </div>
+        <div class="idea-list" id="ideaList"></div>
+      </aside>
+      <div class="stage-area">
+        <div class="stage">
+          <div class="stage-toolbar">
+            <span class="stage-title" id="stageTitle">—</span>
+          </div>
+          <div class="stage-canvas" id="stageCanvas" data-bg="studio">
+            <div class="phone-frame-wrap" id="phoneFrameWrap"><div id="phoneSlot"></div></div>
+          </div>
+        </div>
+        <aside class="a11y-panel" id="a11yPanel"></aside>
+      </div>
+    </div>
+
+    <!-- FIDELITY -->
+    <div class="lens-panel content-panel" id="panel-fidelity">
+      <div class="fid-board" id="fidBoard"></div>
+    </div>
+
+    <!-- SKILLS -->
+    <div class="lens-panel content-panel" id="panel-skills">
+      <div class="skill-grid" id="skillGrid"></div>
+    </div>
+
+    <!-- DESIGN KIT -->
+    <div class="lens-panel content-panel" id="panel-kit">
+      <div class="tok-grid" id="tokGrid"></div>
+    </div>
+
+    <!-- APIs -->
+    <div class="lens-panel content-panel" id="panel-apis">
+      <div class="api-grid" id="apiGrid"></div>
+    </div>
+
+    <!-- ACCESSIBILITY -->
+    <div class="lens-panel content-panel" id="panel-a11y">
+  <div class="a11y-banner">
+    <div class="big">AA</div>
+    <div class="txt"><b>WCAG 2.2 AA</b> floor · <b>AAA</b> target · audio-first.</div>
+  </div>
+  <div class="a11y-cols">
+    <div>
+      <div class="a11y-block" id="contrastBlock"></div>
+      <div class="a11y-block" id="quickRefBlock"></div>
+    </div>
+    <div class="a11y-block" id="checklistBlock"></div>
+  </div>
+    </div>
+
+  </div><!-- /workspace -->
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  TAXONOMY
+// ═══════════════════════════════════════════════════════════════
+const AUDIENCE=[
+  {id:'self',label:'Self'},
+  {id:'friend',label:'One friend'},
+  {id:'group',label:'Small group'},
+  {id:'community',label:'Local community'},
+  {id:'public',label:'Public'},
+];
+const TIME=[
+  {id:'colocated',label:'Live · co-located'},
+  {id:'remote',label:'Live · remote'},
+  {id:'async',label:'Asynchronous'},
+  {id:'retro',label:'Retrospective'},
+];
+const MOTIVATIONS={
+  remember:'Keep / remember',
+  connect:'Connect',
+  teach:'Teach / pass on',
+  belong:'Belong to a place',
+  collect:'Collect / identity',
+  witness:'Witness together',
+};
+const MOT_COLORS={remember:'#2f7d22',connect:'#4a7ab0',teach:'#7a5fa8',belong:'#c4955a',collect:'#6b8f71',witness:'#8b6b4a'};
+const FID_COLORS={1:'#cdd2cf',2:'#a7c19c',3:'#7aa86a',4:'#4f9a3f',5:'#2f7d22'};
+const SHARE_KINDS=['diary','gift','tool','map','feed','performance'];
+const POST_WHEN=['immediate','5min','30min','day','week','month','year','alltime'];
+const POST_LABELS={immediate:'Immediate','5min':'5 min','30min':'30 min',day:'Same day',week:'Week',month:'Month',year:'Year',alltime:'All time'};
+function shareKindNorm(k){const i=SHARE_KINDS.indexOf(k);return i<0?0.5:i/Math.max(SHARE_KINDS.length-1,1);}
+function postWhenNorm(w){const i=POST_WHEN.indexOf(w);return i<0?0.5:i/Math.max(POST_WHEN.length-1,1);}
+function norm5(v){return Math.max(0,Math.min(5,v))/5;}
+function stableHash(id){const s=String(id);let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return h;}
+// collapsed 2×2 sharing quadrants
+const QUADRANTS=[
+  {id:'intimate-live',col:'Intimate',row:'Live',auds:['self','friend'],times:['colocated','remote']},
+  {id:'intimate-reflective',col:'Intimate',row:'Reflective',auds:['self','friend'],times:['async','retro']},
+  {id:'communal-live',col:'Communal',row:'Live',auds:['group','community','public'],times:['colocated','remote']},
+  {id:'communal-reflective',col:'Communal',row:'Reflective',auds:['group','community','public'],times:['async','retro']},
+];
+const QUAD_GRID=[['intimate-live','communal-live'],['intimate-reflective','communal-reflective']];
+const QUAD_GAPS={
+  'intimate-live':['friend|remote'],
+  'communal-live':['group|colocated','community|colocated'],
+};
+function quadrantOf(r){
+  const intimate=['self','friend'].includes(r.aud);
+  const live=['colocated','remote'].includes(r.time);
+  if(intimate&&live)return'intimate-live';
+  if(intimate&&!live)return'intimate-reflective';
+  if(!intimate&&live)return'communal-live';
+  return'communal-reflective';
+}
+function positionLabel(r){return`${audLabel(r.aud)} · ${timeLabel(r.time)}`;}
+function posGlyphHTML(r){
+  const q=quadrantOf(r);
+  return`<span class="pos-glyph" title="${positionLabel(r)}">`+
+    QUADRANTS.map(x=>`<span class="pg-cell${x.id===q?' on':''}"></span>`).join('')+'</span>';
+}
+const FIDELITY=[
+  {n:1,label:'Sketch',desc:'Idea + still wireframe only'},
+  {n:2,label:'Static mock',desc:'On-brand screen, no interaction'},
+  {n:3,label:'Interactive',desc:'Clickable, fake data'},
+  {n:4,label:'Real media / audio',desc:'Live audio engine + real bird media'},
+  {n:5,label:'Validated',desc:'Tested with blind / LV birders'},
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  REGISTRY — every ideation we've explored
+//  embed:true  → live phone via prototypes.html?proto=N
+//  embed:false → opens full-screen (own file)
+// ═══════════════════════════════════════════════════════════════
+const REG=[
+  {id:1,t:'Audio Diary',sci:'Personal bird-sound journal',aud:'self',time:'retro',fid:4,
+    mot:['remember'],skills:[],apis:[],embed:true,proto:1,
+    reminisce:5,learnActive:1,learnPassive:2,audioFirst:5,audioCentrality:5,shareKind:'diary',memoryScope:1,retrospective:5,mindfulness:5,postWhen:'immediate',
+    lens:'<b>Slow, personal media.</b> You record for memory, not metrics — no likes, no feed, just your own listening over time.'},
+  {id:2,t:'Weekly Recap',sci:'A finite end-of-week review',aud:'self',time:'retro',fid:3,
+    mot:['remember'],skills:[],apis:[],embed:true,proto:2,
+    reminisce:4,learnActive:0,learnPassive:1,audioFirst:4,audioCentrality:4,shareKind:'diary',memoryScope:1,retrospective:4,mindfulness:4,postWhen:'week',
+    lens:'<b>Bounded, not infinite.</b> The week ends — one recap, then you\'re done.'},
+  {id:3,t:'Mostly Heard',sci:'My Birds, ranked by familiarity',aud:'self',time:'retro',fid:4,
+    mot:['collect','remember'],skills:[],apis:[],embed:true,proto:3,
+    reminisce:4,learnActive:1,learnPassive:2,audioFirst:4,audioCentrality:4,shareKind:'diary',memoryScope:1,retrospective:4,mindfulness:4,postWhen:'alltime',
+    lens:'<b>Depth over novelty.</b> Ranking by what you\'ve heard most rewards returning to old friends.'},
+  {id:4,t:'Learn by Listening',sci:'Ear-training quiz',aud:'self',time:'async',fid:3,
+    mot:['teach'],skills:[],apis:['xenocanto'],embed:true,proto:4,
+    reminisce:0,learnActive:5,learnPassive:1,audioFirst:5,audioCentrality:5,shareKind:'tool',memoryScope:1,retrospective:1,mindfulness:3,postWhen:'30min',
+    lens:'<b>Active, not passive.</b> You leave knowing more — ear literacy, not captured attention.'},
+  {id:5,t:'Alt-Text Nudges',sci:'Inclusive sharing prompts',aud:'public',time:'async',fid:3,
+    mot:['belong','connect'],skills:[],apis:[],embed:true,proto:5,
+    reminisce:0,learnActive:2,learnPassive:1,audioFirst:2,audioCentrality:1,shareKind:'feed',memoryScope:4,retrospective:1,mindfulness:2,postWhen:'day',
+    lens:'<b>Inclusive by default.</b> Nudges center blind & low-vision birders so no one is left out.'},
+  {id:6,t:'Group Soundscape',sci:'Shared map of nearby recordings',aud:'community',time:'async',fid:4,
+    mot:['belong','witness'],skills:['minimap-radar-overlay'],apis:['ebird','maps'],embed:true,proto:6,
+    reminisce:1,learnActive:1,learnPassive:3,audioFirst:5,audioCentrality:4,shareKind:'map',memoryScope:4,retrospective:2,mindfulness:3,postWhen:'day',
+    lens:'<b>Local over global.</b> A place-based community around Union Bay, not a context-collapsed global feed.'},
+  {id:7,t:'Audio Artifact',sci:'Share as a playable sound',aud:'friend',time:'async',fid:3,
+    mot:['connect'],skills:[],apis:[],embed:true,proto:7,
+    reminisce:1,learnActive:0,learnPassive:1,audioFirst:5,audioCentrality:5,shareKind:'gift',memoryScope:2,retrospective:1,mindfulness:4,postWhen:'immediate',
+    lens:'<b>Intimate, not viral.</b> A share is a one-to-one gift of sound, not a broadcast.'},
+  {id:8,t:'Bird Emoji = Sound',sci:'Send a bird, it chirps',aud:'friend',time:'async',fid:3,
+    mot:['connect'],skills:[],apis:[],embed:true,proto:8,
+    reminisce:0,learnActive:0,learnPassive:0,audioFirst:4,audioCentrality:3,shareKind:'gift',memoryScope:2,retrospective:1,mindfulness:2,postWhen:'immediate',
+    lens:'<b>Multi-sensory by design.</b> Sound is built into the message — accessible, not gated behind alt text.'},
+  {id:9,t:'Badges & Profile',sci:'Listening identity',aud:'self',time:'retro',fid:2,
+    mot:['collect'],skills:[],apis:[],embed:true,proto:9,
+    reminisce:3,learnActive:1,learnPassive:2,audioFirst:2,audioCentrality:1,shareKind:'diary',memoryScope:1,retrospective:4,mindfulness:2,postWhen:'alltime',
+    lens:'<b>Rewards listening, not clout.</b> Badges celebrate learning and time outdoors, never follower counts.'},
+  {id:10,t:'Season Wrapped',sci:'A personal look back',aud:'self',time:'retro',fid:3,
+    mot:['remember','collect'],skills:[],apis:[],embed:true,proto:10,
+    reminisce:5,learnActive:0,learnPassive:1,audioFirst:3,audioCentrality:3,shareKind:'performance',memoryScope:1,retrospective:5,mindfulness:3,postWhen:'year',
+    lens:'<b>Reflection, not ranking.</b> A look back at your own season — no leaderboard.'},
+  {id:11,t:'Bird Radio Play',sci:'Narrated long-form chapters',aud:'community',time:'async',fid:2,
+    mot:['teach','belong'],skills:[],apis:[],embed:true,proto:11,
+    reminisce:2,learnActive:1,learnPassive:4,audioFirst:4,audioCentrality:4,shareKind:'performance',memoryScope:4,retrospective:2,mindfulness:2,postWhen:'week',
+    lens:'<b>Long-form depth.</b> Narrated chapters reward sustained attention over dopamine clips.'},
+  {id:12,t:'Bird Toggle Grid',sci:'Hand-curated week',aud:'self',time:'async',fid:3,
+    mot:['collect'],skills:[],apis:[],embed:true,proto:12,
+    reminisce:2,learnActive:2,learnPassive:2,audioFirst:4,audioCentrality:4,shareKind:'tool',memoryScope:1,retrospective:2,mindfulness:3,postWhen:'week',
+    lens:'<b>You hold the controls.</b> You curate what you hear by hand — no algorithm decides.'},
+  {id:13,t:'Habitat Sonograph',sci:'Sound re-drawn as landscape',aud:'public',time:'async',fid:4,
+    mot:['teach','witness'],skills:['marching-squares-topology','svg-path-grow-animation'],apis:[],embed:true,proto:13,
+    reminisce:1,learnActive:2,learnPassive:2,audioFirst:4,audioCentrality:4,shareKind:'performance',memoryScope:5,retrospective:2,mindfulness:4,postWhen:'day',
+    lens:'<b>Translation, not exclusion.</b> Sound is re-presented visually & spatially so it crosses senses.'},
+  {id:14,t:'Bird Friends Map',sci:'Find-my-friends for last birds heard',aud:'group',time:'async',fid:4,
+    mot:['connect','belong'],skills:['minimap-radar-overlay'],apis:['ebird','maps'],embed:true,proto:14,
+    reminisce:1,learnActive:0,learnPassive:1,audioFirst:4,audioCentrality:3,shareKind:'map',memoryScope:3,retrospective:1,mindfulness:3,postWhen:'day',
+    lens:'<b>Presence over performance.</b> You see where friends are in the world, not what they broadcast to a feed.'},
+  {id:15,t:'Group Chat',sci:'In-Merlin chat of named audio clips',aud:'group',time:'async',fid:4,
+    mot:['connect','witness','teach'],skills:[],apis:[],embed:true,proto:15,
+    reminisce:0,learnActive:1,learnPassive:1,audioFirst:5,audioCentrality:5,shareKind:'gift',memoryScope:3,retrospective:1,mindfulness:2,postWhen:'30min',
+    lens:'<b>The clip is the message.</b> Naming the bird & place clearly means no one is excluded from the content.'},
+  {id:'stories',t:'Habitat IG Stories',sci:'Live sonograms in the bird\'s environment',aud:'public',time:'async',fid:4,
+    mot:['witness','connect'],skills:['highlightable-grass-field','proximity-audio-mapping'],apis:[],
+    reminisce:1,learnActive:1,learnPassive:2,audioFirst:5,audioCentrality:5,shareKind:'performance',memoryScope:5,retrospective:1,mindfulness:3,postWhen:'day',
+    embed:false,src:'sonogram.html',
+    lens:'<b>Familiar surface, deeper content.</b> Borrows the IG-story format people already know, but the payload is a place-rooted sonogram, not a vanity post.'},
+  {id:'compose',t:'Audio Composition Tool',sci:'Co-design workshop facilitation',aud:'group',time:'colocated',fid:4,
+    mot:['teach','witness'],skills:[],apis:[],embed:false,src:'index.html',scene:'outdoor',
+    reminisce:0,learnActive:3,learnPassive:1,audioFirst:5,audioCentrality:5,shareKind:'tool',memoryScope:4,retrospective:0,mindfulness:5,postWhen:'immediate',
+    lens:'<b>Made together, in the room.</b> A co-design tool for a co-located workshop — one shared screen building a composition with participants.'},
+  {id:'sketch-trailpost',t:'Trailhead Sound Post',sci:'Hand-sketched · non-tech',aud:'community',time:'colocated',fid:1,
+    mot:['belong','witness'],skills:[],apis:[],kind:'sketch',
+    note:'A physical post at the trailhead — press to hear the birds heard here most this week. No app, no screen.',img:'',
+    reminisce:1,learnActive:2,learnPassive:2,audioFirst:4,audioCentrality:4,shareKind:'map',memoryScope:5,retrospective:1,mindfulness:4,postWhen:'immediate',
+    lens:'<b>Non-tech, in place.</b> A hand-made idea that lives in the world, not on a screen.'},
+];
+
+// ── Non-tech sketch ideations: photo of a sketch + editable sticky note ──
+const SKETCH_DEFAULTS={kind:'sketch',sci:'Hand-sketched · non-tech',fid:1,mot:['belong'],skills:[],apis:[],
+  aud:'group',time:'colocated',note:'',img:'',
+  reminisce:2,learnActive:2,learnPassive:2,audioFirst:3,audioCentrality:3,shareKind:'map',
+  memoryScope:4,retrospective:2,mindfulness:4,postWhen:'immediate',
+  lens:'<b>Made by hand.</b> A non-tech idea we sketched ourselves.'};
+function makeSketch(o){return Object.assign({},SKETCH_DEFAULTS,o);}
+// Sketch photos live in the repo (e.g. sketches/foo.jpg) — set `img` on the entry.
+// Only the sticky-note text is editable + saved locally; the photo comes from the folder.
+let sketchData=JSON.parse(localStorage.getItem('jj-sketchdata')||'{}');    // {id:{note}}
+REG.filter(r=>r.kind==='sketch').forEach(r=>{const d=sketchData[r.id];
+  if(d&&d.note!=null)r.note=d.note;});
+
+function onStickyInput(id,ta){
+  const r=REG.find(x=>x.id===id);if(r)r.note=ta.value;
+  (sketchData[id]=sketchData[id]||{}).note=ta.value;
+  localStorage.setItem('jj-sketchdata',JSON.stringify(sketchData));
+}
+function renderSketchBoard(r,slot){
+  iframeEl=null;
+  const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const photo=`<div class="sketch-photo${r.img?'':' missing'}">
+      ${r.img?`<img src="${r.img}" alt="Sketch of ${esc(r.t)}" onerror="this.closest('.sketch-photo').classList.add('missing')">`:''}
+      <div class="sketch-drop"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span>Add a photo to the <b>sketches/</b> folder, then set <b>img</b> on this entry</span></div>
+      <div class="cap">${esc(r.t)}</div></div>`;
+  slot.innerHTML=`<div class="sketch-board">${photo}
+    <div class="sticky"><div class="sticky-lbl">Note</div>
+      <textarea placeholder="Write a note…" oninput="onStickyInput('${r.id}',this)">${esc(r.note)}</textarea></div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  VOICEOVER SCRIPTS — simulated VoiceOver swipe order per screen
+// ═══════════════════════════════════════════════════════════════
+const VO_SCRIPTS={
+  1:[
+    {say:'Audio Diary.',sel:'#proto-1 .screen-title'},
+    {say:'Your personal bird-sound journal. Capture what you hear, when you hear it.',sel:'#proto-1 .screen-sub'},
+    {say:'Morning at the marsh. Today at seven twenty-three A M, Union Bay. House Finch and Junco.',sel:'#proto-1 .card:nth-of-type(1)'},
+    {say:'Play recording. Button.',sel:'#proto-1 .card:nth-of-type(1) .play-circle',tap:true,after:'Playing marsh recording. House Finch and Junco.'},
+    {say:'Evening walk, crow calls. Yesterday at five forty-eight P M, Montlake Fill.',sel:'#proto-1 .card:nth-of-type(2)'},
+    {say:'Play recording. Button.',sel:'#proto-1 .card:nth-of-type(2) .play-circle',tap:true,after:'Playing. American Crow calls.'},
+    {say:'New recording. Button.',sel:'#proto-1 .pill.filled',tap:true,after:'New recording started.'},
+    {say:'Tab bar. Diary, selected. My Birds. Group. Profile.',sel:'#proto-1 .bottom-nav'},
+  ],
+  2:[
+    {say:'Weekly Recap. Week of May twenty-first.',sel:'#proto-2 .section-label'},
+    {say:'Play week highlight. Button.',sel:'#proto-2 .hero-play',tap:true,after:'Playing your week in sound.'},
+    {say:'This week you heard the House Finch, the Dark-eyed Junco, and for the first time, the American Robin.',sel:'#proto-2 div[style*="max-width:280px"]'},
+    {say:'House Finch. Heard four times. Play. Button.',sel:'#proto-2 .card:nth-of-type(1) .play-circle',tap:true,after:'Playing House Finch clip.'},
+    {say:'Dark-eyed Junco. Heard two times. Play. Button.',sel:'#proto-2 .card:nth-of-type(2) .play-circle',tap:true,after:'Playing Junco clip.'},
+    {say:'American Robin. Heard one time. New. Play. Button.',sel:'#proto-2 .card:nth-of-type(3) .play-circle',tap:true,after:'Playing your first Robin.'},
+    {say:'Share this recap. Button.',sel:'#proto-2 .pill.filled',tap:true,after:'Share sheet opened.'},
+  ],
+  3:[
+    {say:'My Birds.',sel:'#proto-3 .screen-title'},
+    {say:'Ranked by how often you have heard them. Tap any row to play.',sel:'#proto-3 .screen-sub'},
+    {say:'All time, selected. This week. New.',sel:'#proto-3 .pill.active'},
+    {say:'One. House Finch. Heard twelve times. Play. Button.',sel:'#proto-3 .card:nth-of-type(1) .play-circle',tap:true,after:'Playing House Finch.'},
+    {say:'Two. Dark-eyed Junco. Heard eight times. Play. Button.',sel:'#proto-3 .card:nth-of-type(2) .play-circle',tap:true,after:'Playing Junco.'},
+    {say:'Three. American Crow. Heard six times. Play. Button.',sel:'#proto-3 .card:nth-of-type(3) .play-circle',tap:true,after:'Playing Crow.'},
+  ],
+  4:[
+    {say:'Learn by Listening.',sel:'#proto-4 .screen-title'},
+    {say:'Train your ear. You leave knowing more than when you opened it.',sel:'#proto-4 .screen-sub'},
+    {say:'What bird is this? Play sound clip. Button.',sel:'#proto-4 .hero-play',tap:true,after:'Playing mystery bird call.'},
+    {say:'Answer choices. American Robin. House Finch. Dark-eyed Junco.',sel:'#proto-4 .quiz-pill'},
+    {say:'House Finch. Button. Selected.',sel:'#proto-4 .quiz-pill[data-correct]',tap:true,after:'Correct. House Finch.'},
+  ],
+  5:[
+    {say:'Accessible Sharing.',sel:'#proto-5 .screen-title'},
+    {say:'Gentle nudges so everyone can enjoy posts — accessibility as the default.',sel:'#proto-5 .screen-sub'},
+    {say:'Post from birder_jane. Photo of a bird. Missing alt text alert.',sel:'#proto-5 #nudge1'},
+    {say:'Add alt text. Button.',sel:'#proto-5 .pill.filled',tap:true,after:'Alt text field opened.'},
+    {say:'Post from marsh_observer. Alt text added. American Robin at Union Bay boardwalk.',sel:'#proto-5 .nudge.success'},
+  ],
+  6:[
+    {say:'Group Soundscape.',sel:'#proto-6 .screen-title'},
+    {say:'Friends near Union Bay sharing recordings on a shared map. Tap a pin to listen.',sel:'#proto-6 .screen-sub'},
+    {say:'Map. Five pins nearby. Sarah, Marcus, you, Aliya, Jake.',sel:'#proto-6 .map-area'},
+    {say:'Sarah. American Robin at Union Bay. Fifteen minutes ago. Play. Button.',sel:'#proto-6 .card:nth-of-type(1) .play-circle',tap:true,after:'Playing Sarah\'s Robin recording.'},
+    {say:'Marcus. House Finch at Montlake Fill. One hour ago. Play. Button.',sel:'#proto-6 .card:nth-of-type(2) .play-circle',tap:true,after:'Playing Marcus\'s Finch.'},
+    {say:'Tab bar. Soundscape, selected.',sel:'#proto-6 .bottom-nav'},
+  ],
+  7:[
+    {say:'Share as Audio.',sel:'#proto-7 .screen-title'},
+    {say:'Your share is not a screenshot — it is a sound. A portable, playable gift.',sel:'#proto-7 .screen-sub'},
+    {say:'Audio artifact. Morning at Union Bay. Recorded by you, May twenty-eighth. House Finch and stream sounds.',sel:'#proto-7 .card'},
+    {say:'Play preview. Button.',sel:'#proto-7 .hero-play',tap:true,after:'Playing. House Finch at Union Bay.'},
+    {say:'Send to.',sel:'#proto-7 .section-label'},
+    {say:'Message. Button.',sel:'#proto-7 .pill:nth-of-type(1)',tap:true,after:'Message selected.'},
+    {say:'Copy link. Button.',sel:'#proto-7 .pill:nth-of-type(2)',tap:true,after:'Link copied.'},
+    {say:'Group. Button.',sel:'#proto-7 .pill:nth-of-type(3)',tap:true,after:'Group share selected.'},
+    {say:'AirDrop. Button.',sel:'#proto-7 .pill:nth-of-type(4)',tap:true,after:'AirDrop selected.'},
+  ],
+  8:[
+    {say:'Bird Emoji equals Sound.',sel:'#proto-8 .screen-title'},
+    {say:'Send a bird emoji and it chirps when opened — sound built into the message.',sel:'#proto-8 .screen-sub'},
+    {say:'Incoming. Guess what I heard at the lake.',sel:'#proto-8 .chat-bubble:first-of-type'},
+    {say:'Your message. Bird emoji with House Finch clip. Play. Button.',sel:'#proto-8 .chat-sound',tap:true,after:'Playing House Finch chirp.'},
+    {say:'Reply. OMG I can hear it, so pretty.',sel:'#proto-8 .chat-bubble:nth-of-type(3)'},
+    {say:'Message field. Type or attach a bird sound.',sel:'#proto-8 div[style*="border-radius:20px"]'},
+    {say:'Send. Button.',sel:'#proto-8 div[style*="background:var(--green)"]',tap:true,after:'Message sent.'},
+  ],
+  9:[
+    {say:'You. Profile.',sel:'#proto-9 .screen-title'},
+    {say:'Listening since March twenty twenty-six. Union Bay.',sel:'#proto-9 .screen-sub'},
+    {say:'Six species identified. Thirty-four recordings. Twelve day streak.',sel:'#proto-9 div[style*="grid-template-columns"]'},
+    {say:'Pinned bird audio. House Finch warble. Your best recording. Play. Button.',sel:'#proto-9 .card .play-circle',tap:true,after:'Playing your best House Finch warble.'},
+    {say:'Badges earned by listening. Bird Nerd. Ear Badge. Early Bird.',sel:'#proto-9 .section-label:nth-of-type(2)'},
+    {say:'Tab bar. Profile, selected.',sel:'#proto-9 .bottom-nav'},
+  ],
+  10:[
+    {say:'Season Wrapped. Spring twenty twenty-six.',sel:'#proto-10 div[style*="font-size:1.5rem"]'},
+    {say:'Your listening journey — just for you.',sel:'#proto-10 div[style*="font-family:var(--font-sub)"]'},
+    {say:'Six unique species identified, all by ear.',sel:'#proto-10 .wrapped-card:nth-of-type(1)'},
+    {say:'Most heard bird. House Finch. Twelve times this season.',sel:'#proto-10 .wrapped-card:nth-of-type(2)'},
+    {say:'Listening streak. Twelve days. Your longest daily run.',sel:'#proto-10 .wrapped-card:nth-of-type(3)'},
+    {say:'Share your wrapped. Button.',sel:'#proto-10 .pill.filled',tap:true,after:'Share sheet opened.'},
+  ],
+  11:[
+    {say:'Bird Radio Play.',sel:'#proto-11 .screen-title'},
+    {say:'Narrated chapters about the birds of Union Bay. Listen long-form, like a podcast.',sel:'#proto-11 .screen-sub'},
+    {say:'Now playing. Chapter one, The Morning Chorus. Eight minutes.',sel:'#proto-11 .card'},
+    {say:'Play. Button.',sel:'#proto-11 .hero-play',tap:true,after:'Playing chapter one.'},
+    {say:'Episode two. Marsh Voices. Blackbird and Mallard. Six minutes. Play. Button.',sel:'#proto-11 .card:nth-of-type(3) .play-circle',tap:true,after:'Playing Marsh Voices.'},
+    {say:'Episode three. The Crow Network. Five minutes. Play. Button.',sel:'#proto-11 .card:nth-of-type(4) .play-circle',tap:true,after:'Playing Crow Network.'},
+  ],
+  12:[
+    {say:'This Week\'s Birds.',sel:'#proto-12 .screen-title'},
+    {say:'You curate what you hear. Toggle birds, tap to play, or shuffle.',sel:'#proto-12 .screen-sub'},
+    {say:'House Finch. On.',sel:'#proto-12 .bird-toggle:nth-of-type(1)',tap:true,after:'House Finch toggled.'},
+    {say:'Junco. On.',sel:'#proto-12 .bird-toggle:nth-of-type(2)'},
+    {say:'Robin. Off.',sel:'#proto-12 .bird-toggle:nth-of-type(3)',tap:true,after:'Robin added to your week.'},
+    {say:'Shuffle a bird from this week. Button.',sel:'#proto-12 .pill.filled',tap:true,after:'Random bird picked from your week.'},
+  ],
+  13:[
+    {say:'Habitat Sonograph.',sel:'#proto-13 .screen-title'},
+    {say:'The waveform becomes the landscape. A bird\'s sound, re-presented as the place it lives.',sel:'#proto-13 .screen-sub'},
+    {say:'House Finch. Suburban edges, open canopy. Sonogram terrain.',sel:'#proto-13 .card:nth-of-type(1)'},
+    {say:'Play soundscape. Button.',sel:'#proto-13 .card:nth-of-type(1) .play-circle',tap:true,after:'Playing House Finch habitat sound.'},
+    {say:'Red-winged Blackbird. Marsh, cattails, water edge.',sel:'#proto-13 .card:nth-of-type(2)'},
+    {say:'Dark-eyed Junco. Forest floor, dense understory.',sel:'#proto-13 .card:nth-of-type(3)'},
+  ],
+  14:[
+    {say:'Bird Friends.',sel:'#proto-14 .screen-title'},
+    {say:'Where your friends last heard something. Tap an avatar to explore their recordings.',sel:'#proto-14 .screen-sub'},
+    {say:'Map of Union Bay. Maya at wetlands. Kira at Montlake Fill. James on campus. Sam on Eastlake.',sel:'#proto-14 .fmap-wrap'},
+    {say:'Maya. Red-winged Blackbird at Union Bay Wetlands. Twelve minutes ago. Play. Button.',sel:'#proto-14 .card:nth-of-type(1) .play-circle',tap:true,after:'Playing Maya\'s Blackbird.'},
+    {say:'Kira. American Robin at Montlake Fill. Twenty-eight minutes ago. Play. Button.',sel:'#proto-14 .card:nth-of-type(2) .play-circle',tap:true,after:'Playing Kira\'s Robin.'},
+    {say:'Sam pin on map. House Finch on Eastlake. Button.',sel:'#proto-14 .fpin[data-key="sam"]',tap:true,after:'Opening Sam\'s recordings.'},
+  ],
+  15:[
+    {say:'Union Bay Birders. Group chat.',sel:'#proto-15 .grpchat-name'},
+    {say:'Five people. Four recordings this morning.',sel:'#proto-15 .grpchat-meta'},
+    {say:'Maya. Red-winged Blackbird at Union Bay Wetlands. Play clip. Button.',sel:'#proto-15 .chatrow:nth-of-type(1) .mini-play',tap:true,after:'Playing Maya\'s clip.'},
+    {say:'Kira. American Robin at Montlake Fill. Play clip. Button.',sel:'#proto-15 .chatrow:nth-of-type(2) .mini-play',tap:true,after:'Playing Kira\'s clip.'},
+    {say:'You. Dark-eyed Junco at Arboretum. Play clip. Button.',sel:'#proto-15 .chatrow.sent .mini-play',tap:true,after:'Playing your Junco clip.'},
+    {say:'Message field. Send a bird.',sel:'#proto-15 .chat-ibox'},
+    {say:'Send. Button.',sel:'#proto-15 .chat-ibtn:last-of-type',tap:true,after:'Message sent.'},
+  ],
+  stories:[
+    {say:'Habitat I G Stories. Full-screen sonogram in the bird environment.'},
+    {say:'Live sonogram overlay on marsh habitat. Tap to listen.'},
+    {say:'Swipe up for species name and location.'},
+    {say:'Proximity audio. Sound grows louder as you move toward the habitat.'},
+  ],
+  compose:[
+    {say:'Audio Composition Tool. Co-design workshop.'},
+    {say:'Bird track one. House Finch. Volume slider.'},
+    {say:'Environment track. Marsh ambience.'},
+    {say:'Field guide narration style. Include species description.'},
+    {say:'Play composition. Button.',tap:true,after:'Playing composition.'},
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  GAP HINTS — the user's own scenarios, shown in empty cells
+// ═══════════════════════════════════════════════════════════════
+const GAPS={
+  'group|colocated':'<b>Gap — try this.</b> Group walk, <b>one person runs Merlin</b>, the ID is shared to everyone present.',
+  'friend|remote':'<b>Gap — try this.</b> Long-distance bird friends listening <b>together, live</b> from two places.',
+  'community|colocated':'<b>Gap.</b> A guided group hearing the same bird at once.',
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  SKILLS shelf
+// ═══════════════════════════════════════════════════════════════
+const SKILLS=[
+  {name:'highlightable-grass-field',when:'Habitat backdrops (marsh, tall grass) that brighten & sway near the cursor.',used:'Used in IG Stories'},
+  {name:'proximity-audio-mapping',when:'Cursor-/distance-driven birdsong gain — "walk toward the sound" soundscapes.',used:'Planned for Stories'},
+  {name:'marching-squares-topology',when:'Sonar / contour styling — drawing sound as terrain or iso-lines.',used:'Used in Sonograph'},
+  {name:'svg-path-grow-animation',when:'Drawing-on sonograms, growth & lifecycle reveals via stroke-dashoffset.',used:'Used in Sonograph'},
+  {name:'minimap-radar-overlay',when:'Frosted map / radar HUD with player chevron and POI markers.',used:'Used in Friends Map'},
+  {name:'realtime-presence-ping',when:'"A friend just heard a robin" — ephemeral live pings between viewers.',used:'Next: live sharing'},
+  {name:'filled-band-topology',when:'Stylized habitat maps as height-bucketed filled color bands.',used:'For map styling'},
+  {name:'3d-terrain-contours',when:'3D heightmap habitats with overlaid contour lines (Three.js).',used:'Optional depth'},
+  {name:'swimming-fish-tank',when:'Autonomous ambient creatures (gulls, ducks) drifting across a scene.',used:'Ambient life'},
+  {name:'generative-tree-mesh',when:'Procedural 3D trees / forest backdrops (Three.js).',used:'Forest habitats'},
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  APIs catalogue (mostly v1 — shown as planned)
+// ═══════════════════════════════════════════════════════════════
+const APIS=[
+  {n:'eBird API 2.0',status:'mock',d:'Recent sightings, hotspots, taxonomy. Free, key-gated. Primary real data for maps & group ideas.',lic:'Free w/ key',ok:true},
+  {n:'Xeno-canto',status:'mock',d:'Open, mostly CC-licensed bird audio archive. The prototyping sound source.',lic:'CC — usable',ok:true},
+  {n:'BirdNET',status:'plan',d:'The engine behind Merlin Sound ID. Use as a clearly-labeled "Merlin-like" ID demo.',lic:'Check terms',ok:false},
+  {n:'Macaulay Library',status:'plan',d:'Cornell\'s official media archive — the production source.',lic:'Restricted — not redistributable',ok:false},
+  {n:'MapLibre GL + MapTiler',status:'plan',d:'Real vector maps you can restyle to match Jiu Jiu, with custom markers, routes & layers on top. Open-source engine; free tile key.',lic:'Open · free tier',ok:true},
+  {n:'Web Audio sonogram',status:'live',d:'Live AnalyserNode waveforms & spectrograms. Ships as a kit component.',lic:'Built-in',ok:true},
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  CATEGORY GROUPS — for the dashboard / "sections" feel
+// ═══════════════════════════════════════════════════════════════
+const GROUPS=[
+  {id:'self',label:'Personal & retrospective',auds:['self']},
+  {id:'oneone',label:'One-to-one',auds:['friend']},
+  {id:'group',label:'Group & community',auds:['group','community']},
+  {id:'public',label:'Public / outward',auds:['public']},
+];
+function groupOf(r){return GROUPS.find(g=>g.auds.includes(r.aud))||GROUPS[2];}
+
+// ═══════════════════════════════════════════════════════════════
+//  WCAG CONTRAST ENGINE — real ratios, computed live (no fabrication)
+// ═══════════════════════════════════════════════════════════════
+function _lum(hex){
+  hex=hex.replace('#','');
+  const v=[0,2,4].map(i=>parseInt(hex.substr(i,2),16)/255)
+    .map(c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4));
+  return 0.2126*v[0]+0.7152*v[1]+0.0722*v[2];
+}
+function contrast(a,b){
+  const L1=_lum(a),L2=_lum(b),hi=Math.max(L1,L2),lo=Math.min(L1,L2);
+  return (hi+0.05)/(lo+0.05);
+}
+function rateContrast(r){
+  if(r>=4.5)return{cls:'b-pass',label:'AA ✓'};
+  if(r>=3)return{cls:'b-large',label:'Large only'};
+  return{cls:'b-fail',label:'Fails'};
+}
+// Token pairs actually used in the product
+const CONTRAST_PAIRS=[
+  {name:'Body text on white',use:'Card titles, copy',fg:'#1a1a1a',bg:'#ffffff'},
+  {name:'Secondary gray on white',use:'Meta, captions',fg:'#6C6C6C',bg:'#ffffff'},
+  {name:'Brand green text on white',use:'Lens emphasis, links',fg:'#67AD5B',bg:'#ffffff'},
+  {name:'White on brand green',use:'Play buttons, active pills',fg:'#ffffff',bg:'#67AD5B'},
+  {name:'White on accessible green',use:'Proposed button fill',fg:'#ffffff',bg:'#2f7d22'},
+  {name:'Brown text on white',use:'Land accent labels',fg:'#C4955A',bg:'#ffffff'},
+  {name:'Blue text on white',use:'Water accent labels',fg:'#8BB8E8',bg:'#ffffff'},
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  PRE-SHARE A11Y CHECKLIST  (from the guidelines doc §10)
+//  persisted in localStorage so the team's progress sticks
+// ═══════════════════════════════════════════════════════════════
+const CHECKLIST=[
+  {g:'Visual',items:[
+    'All text & UI components pass <b>4.5:1</b> contrast',
+    'No color-only information (checked w/ deuteranopia sim)',
+    'Dark mode checked, or explicitly out of scope',
+    'Body text ≥16px, labels ≥14px',
+    'Touch targets ≥48×48pt, ≥8pt apart',
+  ]},
+  {g:'Screen reader',items:[
+    'Every icon-only button has a text label',
+    'Reading order matches logical flow',
+    'Decorative elements hidden from a11y tree',
+    'No two elements share the same label',
+    'Dynamic updates use live regions',
+    'Heading hierarchy H1→H2→H3 defined',
+  ]},
+  {g:'Audio-first',items:[
+    'No audio autoplays without user action',
+    'Listening / processing / result states have text equivalents',
+    'Play / pause / replay available & accessible',
+    'Reduce-Motion tested or mocked',
+    'Waveforms have a text alternative',
+  ]},
+  {g:'Scale & reflow',items:[
+    'Layout holds at 200% system text size',
+    'Primary actions reachable at 400% zoom',
+    'Tested at 320px narrow width',
+  ]},
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  TABS / ROUTER
+// ═══════════════════════════════════════════════════════════════
+const TABS=[
+  {id:'overview',label:'Overview',cnt:REG.length,icon:'<svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="12" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M6 6l6 6M18 6l-6 6M6 18l6-6M18 18l-6-6" stroke="currentColor" fill="none" stroke-width="1.2"/></svg>'},
+  {id:'gallery',label:'Gallery',cnt:REG.length,icon:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>'},
+  {id:'fidelity',label:'Fidelity',cnt:5,icon:'<svg viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-6"/><path d="M22 20V8"/></svg>'},
+  {id:'a11y',label:'Accessibility',cnt:'AA',icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="4" r="2"/><path d="M5 8h14"/><path d="M7 8l2 12"/><path d="M17 8l-2 12"/><path d="M9 13h6"/></svg>'},
+  {id:'kit',label:'Design kit',cnt:null,icon:'<svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>'},
+  {id:'apis',label:'APIs',cnt:APIS.length,icon:'<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>'},
+  {id:'skills',label:'Skills',cnt:SKILLS.length,icon:'<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'},
+];
+const NAV_BADGE_TABS=new Set(['gallery','apis','skills']);
+const navRail=document.getElementById('navRail');
+navRail.innerHTML=`<div class="nav-brand" title="Jiu Jiu">
+  <div class="nav-brand-mark"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg></div>
+  <span class="nav-brand-text">Jiu Jiu</span></div>`;
+TABS.forEach((t,i)=>{
+  const b=document.createElement('button');
+  b.className='nav-item'+(t.id==='overview'?' active':'');
+  b.title=t.label;
+  b.innerHTML=`<span class="nav-ico">${t.icon}</span><span class="nav-label">${t.label}</span>`+
+    (NAV_BADGE_TABS.has(t.id)&&t.cnt!=null?`<span class="badge">${t.cnt}</span>`:'');
+  b.onclick=()=>showTab(t.id);
+  navRail.appendChild(b);
+});
+function showTab(id){
+  if(id!=='gallery')voPause();
+  navRail.querySelectorAll('.nav-item').forEach((b,i)=>b.classList.toggle('active',TABS[i].id===id));
+  document.querySelectorAll('.lens-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(id==='overview'){requestAnimationFrame(()=>{resizeViz();renderOverview();});}
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GALLERY
+// ═══════════════════════════════════════════════════════════════
+const ideaList=document.getElementById('ideaList');
+let current=null,iframeEl=null,stageBg='studio';
+const IFRAME_BASE_W=375,IFRAME_BASE_H=740,IFRAME_ZOOM=0.88;
+const BUILD_V='&_v='+Date.now(); // cache-bust prototypes.html so edits show without a hard refresh
+const LV_FONT=[1,1.28,1.55,1.85];
+const LV_LABELS=['S','M','L','XL'];
+let lvLevel=0;
+const voState={playing:false,idx:0,started:false};
+let voGen=0; // invalidates stale speech callbacks so pause is reliable
+
+function getVoSteps(r){
+  if(!r)return[];
+  let steps;
+  if(r.embed&&VO_SCRIPTS[r.proto])steps=VO_SCRIPTS[r.proto];
+  else if(VO_SCRIPTS[r.id])steps=VO_SCRIPTS[r.id];
+  else steps=[
+    {say:`${r.t}. ${r.sci}`},
+    {say:'Full VoiceOver annotation in progress for this screen.'},
+  ];
+  return steps;
+}
+
+function voApplyFocus(step){
+  if(!iframeEl||!iframeEl._ready||!step?.sel)return;
+  iframeEl.contentWindow.postMessage({type:'voFocus',sel:step.sel},'*');
+}
+
+function voClearFocus(){
+  if(iframeEl&&iframeEl._ready)iframeEl.contentWindow.postMessage({type:'voFocus',sel:null},'*');
+}
+
+function updateVoUI(full){
+  const panel=document.getElementById('a11yPanel');
+  if(!current||!panel)return;
+  if(full||!panel.querySelector('.a11y-panel-inner')){
+    renderA11yPanel(current);
+    return;
+  }
+  const steps=getVoSteps(current);
+  const step=steps[voState.idx];
+  const playBtn=document.getElementById('voPlayBtn');
+  if(playBtn)playBtn.classList.toggle('playing',voState.playing);
+  const now=document.getElementById('voNow');
+  if(now)now.textContent=step?.say||'—';
+  const meta=document.getElementById('voMeta');
+  if(meta){
+    const hint=step?.tap?' · tap to activate':'';
+    meta.textContent=step?`Step ${voState.idx+1} of ${steps.length}${hint}`:'';
+  }
+  const actBtn=document.getElementById('voActBtn');
+  if(actBtn)actBtn.disabled=!step?.tap;
+  // Only highlight / focus once the screen reader has actually been started —
+  // no green before the user presses play.
+  panel.querySelectorAll('.vo-step').forEach((el,i)=>el.classList.toggle('active',voState.started&&i===voState.idx));
+  if(voState.started)voApplyFocus(step);
+  else voClearFocus();
+}
+
+function applyPhoneDimensions(){
+  // Frame size is FIXED regardless of low-vision level — the content inside the
+  // iframe scales via the lvScale message, so we see reflow inside a constant frame.
+  const iw=IFRAME_BASE_W,ih=IFRAME_BASE_H;
+  const cw=Math.round(iw*IFRAME_ZOOM),ch=Math.round(ih*IFRAME_ZOOM);
+  const scaleEl=document.querySelector('.phone-scale');
+  if(scaleEl){scaleEl.style.width=cw+'px';scaleEl.style.height=ch+'px';}
+  if(iframeEl){
+    iframeEl.style.width=iw+'px';
+    iframeEl.style.height=ih+'px';
+    iframeEl.style.transform=`scale(${IFRAME_ZOOM})`;
+  }
+  const ext=document.querySelector('.ext-card');
+  if(ext){ext.style.width=cw+'px';ext.style.height=ch+'px';}
+}
+
+function renderA11yPanel(r){
+  const panel=document.getElementById('a11yPanel');
+  // non-tech sketches have no accessibility options
+  panel.classList.toggle('hidden', !!r && r.kind==='sketch');
+  if(!r || r.kind==='sketch'){panel.innerHTML='';return;}
+  const steps=getVoSteps(r);
+  const step=steps[voState.idx];
+  const stepsHtml=steps.map((s,i)=>
+    `<div class="vo-step${voState.started&&voState.idx===i?' active':''}" onclick="voJump(${i})" title="${s.say}"><span class="vo-idx">${i+1}</span>${s.say}</div>`
+  ).join('');
+  panel.innerHTML=`<div class="a11y-panel-inner">
+    <div class="a11y-section preview">
+      <div class="a11y-section-hdr">Preview</div>
+      <div class="a11y-row">
+        <span class="a11y-lbl inline">Scene</span>
+        <div class="bg-toggle">
+          <button class="bg-btn${stageBg==='studio'?' on':''}" onclick="setStageBg('studio')">Studio</button>
+          <button class="bg-btn${stageBg==='outdoor'?' on':''}" onclick="setStageBg('outdoor')">Outdoor</button>
+        </div>
+      </div>
+      <button class="open-standalone" onclick="openStandalone()">Open prototype ↗</button>
+    </div>
+    <div class="a11y-section access">
+      <div class="a11y-section-hdr">Accessibility</div>
+      <div class="a11y-row">
+        <span class="a11y-lbl inline">Size</span>
+        <div class="lv-toggle">${LV_LABELS.map((l,i)=>`<button class="lv-btn${lvLevel===i?' on':''}" onclick="setLvSize(${i})">${l}</button>`).join('')}</div>
+      </div>
+      <div class="vo-zone">
+        <div class="a11y-lbl">VoiceOver</div>
+        <div class="vo-now" id="voNow">${step?.say||'—'}</div>
+        <div class="vo-controls">
+          <div class="vo-toolbar">
+            <button class="vo-pill" onclick="voPrev()" title="Previous" aria-label="Previous">◀</button>
+            <button class="vo-play${voState.playing?' playing':''}" id="voPlayBtn" onclick="voToggle()" title="Play / Pause" aria-label="Play or pause"></button>
+            <button class="vo-pill" onclick="voNext()" title="Next" aria-label="Next">▶</button>
+          </div>
+          <button class="vo-tap" id="voActBtn" onclick="voActivate()" title="Double-tap to activate" ${step?.tap?'':'disabled'}>Double-tap</button>
+        </div>
+        <div class="vo-meta" id="voMeta">${step?`Step ${voState.idx+1} of ${steps.length}${step.tap?' · tap to activate':''}`:'—'}</div>
+        <div class="vo-steps">${stepsHtml}</div>
+      </div>
+    </div>
+  </div>`;
+  // only focus an element in the phone once the screen reader has started
+  if(voState.started)voApplyFocus(step);
+  else voClearFocus();
+}
+
+function openStandalone(){
+  if(!current)return;
+  const url=current.embed?`prototypes.html?embed=1&proto=${current.proto}`:current.src;
+  window.open(url,'_blank','noopener');
+}
+
+function voSpeakStep(i){
+  const steps=getVoSteps(current);
+  if(!steps.length)return;
+  voState.started=true;
+  voState.idx=Math.max(0,Math.min(i,steps.length-1));
+  const step=steps[voState.idx];
+  voApplyFocus(step);
+  const myGen=++voGen; // any earlier utterance's callbacks are now stale
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(step.say);
+  u.rate=0.92;
+  u.onend=()=>{
+    if(myGen!==voGen)return;               // paused / superseded — do nothing
+    if(voState.playing&&voState.idx<steps.length-1){
+      voState.idx++;
+      voSpeakStep(voState.idx);
+    }else{
+      voState.playing=false;
+      updateVoUI();
+    }
+  };
+  u.onerror=()=>{if(myGen!==voGen)return;voState.playing=false;updateVoUI();};
+  window.speechSynthesis.speak(u);
+  updateVoUI();
+}
+
+function voActivate(){
+  const steps=getVoSteps(current);
+  const step=steps[voState.idx];
+  if(!step?.tap||!step.sel)return;
+  voPause();
+  if(iframeEl&&iframeEl._ready){
+    iframeEl.contentWindow.postMessage({type:'voActivate',sel:step.sel},'*');
+  }
+  const u=new SpeechSynthesisUtterance(step.after||'Activated.');
+  u.rate=0.92;
+  window.speechSynthesis.speak(u);
+}
+
+function voToggle(){
+  if(voState.playing){voPause();return;}
+  if(!current)return;
+  voState.playing=true;
+  voSpeakStep(voState.idx);
+}
+
+function voPause(){
+  voGen++;                       // invalidate any in-flight utterance callback
+  voState.playing=false;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.cancel(); // some engines need a second nudge
+  updateVoUI();
+}
+
+function voNext(){
+  const steps=getVoSteps(current);
+  if(!steps.length||voState.idx>=steps.length-1)return;
+  voState.started=true;
+  voState.idx++;
+  if(voState.playing)voSpeakStep(voState.idx);
+  else updateVoUI();
+}
+
+function voPrev(){
+  if(voState.idx<=0)return;
+  voState.started=true;
+  voState.idx--;
+  if(voState.playing)voSpeakStep(voState.idx);
+  else updateVoUI();
+}
+
+function voJump(i){
+  voState.started=true;
+  voState.idx=i;
+  if(voState.playing)voSpeakStep(i);
+  else updateVoUI();
+}
+
+function setLvSize(level){
+  lvLevel=level;
+  applyPhoneDimensions();
+  if(iframeEl&&iframeEl._ready){
+    iframeEl.contentWindow.postMessage({type:'lvScale',fontScale:LV_FONT[level]},'*');
+  }
+  document.querySelectorAll('.lv-btn').forEach((b,i)=>b.classList.toggle('on',i===level));
+}
+
+function setStageBg(bg){
+  stageBg=bg;
+  document.getElementById('stageCanvas').dataset.bg=bg;
+  document.querySelectorAll('.bg-btn').forEach(b=>{
+    b.classList.toggle('on',(bg==='studio'&&b.textContent==='Studio')||(bg==='outdoor'&&b.textContent==='Outdoor'));
+  });
+}
+
+function audLabel(id){return AUDIENCE.find(a=>a.id===id).label;}
+function timeLabel(id){return TIME.find(t=>t.id===id).label;}
+function fidotHTML(f){return `<span class="fdot"><i class="f${f}"></i>F${f}</span>`;}
+
+// ── category filters ──
+let galleryCat='all';
+const catTabs=document.getElementById('catTabs');
+function renderCatTabs(){
+  const tabs=[{id:'all',label:'All prototypes',n:REG.length},
+    ...GROUPS.map(g=>({id:g.id,label:g.label,n:REG.filter(r=>groupOf(r).id===g.id).length}))]
+    .filter(t=>t.n>0);
+  catTabs.innerHTML=tabs.map(t=>
+    `<button class="cat-tab${t.id===galleryCat?' active':''}" onclick="setCat('${t.id}')">${t.label} <span class="n">${t.n}</span></button>`).join('');
+}
+function setCat(id){galleryCat=id;renderCatTabs();renderIdeaList();}
+
+function cardExpandHTML(r){
+  const fidMeter=`<div class="fid-meter">${[1,2,3,4,5].map(n=>`<i class="${n<=r.fid?'on':''}"></i>`).join('')}</div>`;
+  return `<div class="ic-expand">
+    <div class="meta-lens">${r.lens}</div>
+    <div class="meta-sec"><div class="meta-lbl">Sharing</div>
+      <div class="meta-row"><span class="chip aud">${audLabel(r.aud)}</span>
+        <span class="chip">${timeLabel(r.time)}</span>
+        ${r.mot.map(x=>`<span class="chip mot">${MOTIVATIONS[x]}</span>`).join('')}</div></div>
+    <div class="meta-sec"><div class="meta-lbl">Fidelity — ${FIDELITY[r.fid-1].label}</div>${fidMeter}</div>
+    ${r.skills.length?`<div class="meta-sec"><div class="meta-lbl">Skills</div>
+      <div class="meta-row">${r.skills.map(s=>`<span class="chip skill">${s}</span>`).join('')}</div></div>`:''}
+    ${r.apis.length?`<div class="meta-sec"><div class="meta-lbl">APIs</div>
+      <div class="meta-row">${r.apis.map(a=>`<span class="chip api">${a}</span>`).join('')}</div></div>`:''}
+  </div>`;
+}
+
+function ideaCardHTML(r){
+  const on=current&&current.id===r.id;
+  return `<div class="idea-card${on?' active expanded':''}" data-id="${r.id}" onclick="selectIdea(${typeof r.id==='number'?r.id:`'${r.id}'`})">
+    <div class="ic-summary">
+      <div class="ic-top"><div class="ic-title">${r.t}</div>${fidotHTML(r.fid)}</div>
+      <div class="ic-sub">${r.sci}</div>
+      <div class="ic-foot">${posGlyphHTML(r)}<span class="pos-label">${positionLabel(r)}</span></div>
+    </div>${on?cardExpandHTML(r):''}</div>`;
+}
+let searchQuery='';
+function setSearch(q){searchQuery=(q||'').trim().toLowerCase();renderIdeaList();}
+function renderIdeaList(){
+  let items;
+  if(searchQuery){
+    // search spans every category
+    items=[];
+    GROUPS.forEach(g=>REG.filter(r=>groupOf(r).id===g.id).forEach(r=>items.push(r)));
+    items=items.filter(r=>(r.t+' '+r.sci+' '+r.mot.join(' ')).toLowerCase().includes(searchQuery));
+  }else if(galleryCat==='all'){
+    items=[];
+    GROUPS.forEach(g=>REG.filter(r=>groupOf(r).id===g.id).forEach(r=>items.push(r)));
+  }else{
+    items=REG.filter(r=>groupOf(r).id===galleryCat);
+  }
+  ideaList.innerHTML=items.length?items.map(ideaCardHTML).join('')
+    :'<div class="idea-empty">No prototypes match “'+searchQuery+'”.</div>';
+}
+
+function selectIdea(id){
+  const r=REG.find(x=>x.id===id);current=r;
+  voPause();
+  voState.idx=0;
+  voState.started=false;   // fresh prototype → no SR highlight until started
+  voClearFocus();
+  if(galleryCat!=='all' && groupOf(r).id!==galleryCat){galleryCat=groupOf(r).id;renderCatTabs();}
+  renderIdeaList();
+  renderPhone(r);
+  renderA11yPanel(r);
+  document.getElementById('stageTitle').textContent=r.t;
+  setStageBg(r.scene||'studio');
+  // clear any focus that lands after the screen-switch message settles
+  setTimeout(()=>{if(!voState.started)voClearFocus();},80);
+  requestAnimationFrame(()=>{
+    const el=document.querySelector(`.idea-card[data-id="${id}"]`);
+    el?.scrollIntoView({block:'nearest',behavior:'smooth'});
+  });
+}
+
+function renderPhone(r){
+  const slot=document.getElementById('phoneSlot');
+  if(r.kind==='sketch'){renderSketchBoard(r,slot);return;}
+  if(r.embed){
+    // reuse the iframe & postMessage to switch (fast); only set src once
+    if(!iframeEl){
+      iframeEl=document.createElement('iframe');
+      iframeEl.className='phone-iframe';
+      iframeEl.src='prototypes.html?embed=1&proto='+r.proto+BUILD_V;
+      iframeEl.onload=()=>{iframeEl._ready=true;
+        iframeEl.contentWindow.postMessage({type:'lvScale',fontScale:LV_FONT[lvLevel]},'*');
+        if(!voState.started)iframeEl.contentWindow.postMessage({type:'voFocus',sel:null},'*');
+        applyPhoneDimensions();};
+    }
+    let scale=slot.querySelector('.phone-scale');
+    if(!scale){
+      slot.innerHTML='';
+      scale=document.createElement('div');scale.className='phone-scale';
+      scale.appendChild(iframeEl);slot.appendChild(scale);
+    }
+    if(iframeEl._ready)iframeEl.contentWindow.postMessage({type:'goto',proto:r.proto},'*');
+    else iframeEl.src='prototypes.html?embed=1&proto='+r.proto+BUILD_V;
+    if(iframeEl._ready)iframeEl.contentWindow.postMessage({type:'lvScale',fontScale:LV_FONT[lvLevel]},'*');
+    applyPhoneDimensions();
+  }else{
+    iframeEl=null;
+    slot.innerHTML=`<div class="ext-card">
+      <div class="ico-lg">${r.id==='stories'?`<svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><line x1="11" y1="18" x2="13" y2="18"/></svg>`:`<svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>`}</div>
+      <div class="ext-title">${r.t}</div>
+      <p style="font-family:var(--font-sub);font-size:.66rem;color:rgba(255,255,255,.55);max-width:220px;line-height:1.45">${r.sci}</p></div>`;
+    applyPhoneDimensions();
+  }
+}
+
+// derive honest a11y status flags from what we know about each ideation
+function a11yFlags(r){
+  const f=[];
+  f.push({c:'a11y-ok',t:'Audio-first ✓'});                       // whole product is audio-first
+  if(r.fid>=4)f.push({c:'a11y-warn',t:'Live audio — needs SR state labels'});
+  const colorCoded=['minimap-radar-overlay'].some(s=>r.skills.includes(s))||r.id===13;
+  if(colorCoded)f.push({c:'a11y-warn',t:'Color-coded — add text labels'});
+  f.push({c:'a11y-todo',t:'SR labels: TODO in prototype'});
+  if(getVoSteps(r).length>2)f.push({c:'a11y-ok',t:'VO walkthrough ✓'});
+  return f;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  OVERVIEW — five lenses
+// ═══════════════════════════════════════════════════════════════
+const AUD_IDS=['self','friend','group','community','public'];
+const VIZ_MODES=[
+  {id:'sharing',label:'Sharing'},
+  {id:'audio',label:'Audio'},
+  {id:'learning',label:'Learning'},
+  {id:'timeline',label:'Timeline'},
+  {id:'mindful',label:'Mindfulness'},
+];
+let motFilterOn=null,vizMode='sharing';
+const vizCanvas=document.getElementById('vizCanvas');
+const vizCtx=vizCanvas.getContext('2d');
+const vizStage=document.getElementById('vizStage');
+const vizTip=document.getElementById('vizTip');
+const MARK_R=7;
+
+function audNorm(aud){return AUD_IDS.indexOf(aud)/Math.max(AUD_IDS.length-1,1);}
+function liveReflectNorm(time){return['colocated','remote'].includes(time)?0:1;}
+function motColor(r){return MOT_COLORS[r.mot[0]]||'#2f7d22';}
+function filteredReg(){return REG.filter(r=>!motFilterOn||r.mot.includes(motFilterOn));}
+function regIndex(r){return REG.findIndex(x=>x.id===r.id)+1;}
+function learnAmount(r){return Math.min(1,(r.learnActive+r.learnPassive)/10);}
+function learnActiveShare(r){return r.learnActive/(r.learnActive+r.learnPassive+0.01);}
+function audioDrivenScore(r){return(norm5(r.audioFirst)+norm5(r.audioCentrality))/2;}
+
+function plotRect(w,h,mode){
+  if(mode==='mindful')return{left:0,right:0,top:0,bottom:0};
+  if(mode==='sharing')return{left:48,right:48,top:36,bottom:40};
+  if(mode==='learning')return{left:56,right:56,top:36,bottom:40};
+  return{left:48,right:48,top:36,bottom:40};
+}
+function innerBox(w,h,pr){
+  return{x0:pr.left,y0:pr.top,x1:w-pr.right,y1:h-pr.bottom,
+    iw:w-pr.left-pr.right,ih:h-pr.top-pr.bottom};
+}
+
+function rawPos(r,mode,w,h){
+  const pr=plotRect(w,h,mode),b=innerBox(w,h,pr);
+  if(mode==='sharing')return{x:b.x0+audNorm(r.aud)*b.iw,y:b.y0+liveReflectNorm(r.time)*b.ih};
+  if(mode==='audio'){
+    const score=audioDrivenScore(r);
+    return{x:b.x0+(1-score)*b.iw,y:b.y0+b.ih/2};
+  }
+  if(mode==='learning'){
+    return{x:b.x0+learnActiveShare(r)*b.iw,y:b.y0+(1-learnAmount(r))*b.ih};
+  }
+  if(mode==='timeline'){
+    return{x:b.x0+postWhenNorm(r.postWhen)*b.iw,y:b.y0+b.ih/2};
+  }
+  if(mode==='mindful'){
+    const cx=w/2,cy=h/2,maxR=Math.min(w,h)*0.46;
+    const ang=stableHash(r.id)*0.013;
+    const dist=(1-norm5(r.mindfulness))*maxR;
+    return{x:cx+Math.cos(ang)*dist,y:cy+Math.sin(ang)*dist};
+  }
+  return{x:w/2,y:h/2};
+}
+
+function spreadKey(r,mode,w,h){
+  const p=rawPos(r,mode,w,h);
+  if(mode==='audio'||mode==='timeline'){
+    const b=innerBox(w,h,plotRect(w,h,mode));
+    return`${mode}|${Math.round((p.x-b.x0)/b.iw*28)}`;
+  }
+  const pr=plotRect(w,h,mode);
+  return`${mode}|${Math.round((p.x-pr.left)/14)}|${Math.round((p.y-pr.top)/14)}`;
+}
+
+function buildSpreadMap(items,w,h){
+  const mode=vizMode;
+  const groups={};
+  items.forEach(r=>{(groups[spreadKey(r,mode,w,h)]=groups[spreadKey(r,mode,w,h)]||[]).push(r);});
+  const pos=new Map();
+  Object.values(groups).forEach(group=>{
+    group.sort((a,b)=>String(a.id).localeCompare(String(b.id),undefined,{numeric:true}));
+    const base=rawPos(group[0],mode,w,h);
+    if(group.length===1){pos.set(group[0],base);return;}
+    const ring=Math.min(mode==='audio'||mode==='timeline'?50:32,10+group.length*4);
+    group.forEach((r,i)=>{
+      const ang=(i/group.length)*Math.PI*2-Math.PI/2;
+      pos.set(r,{x:base.x+Math.cos(ang)*ring,y:base.y+Math.sin(ang)*ring});
+    });
+  });
+  return pos;
+}
+
+let vizPlotMap=new Map(),vizItemKey='';
+function syncVizLayout(items,w,h){
+  const key=`${vizMode}|${items.map(r=>r.id).join('|')}`;
+  if(key===vizItemKey&&vizPlotMap.size)return;
+  vizItemKey=key;
+  vizPlotMap=buildSpreadMap(items,w,h);
+}
+function plotXY(r){return vizPlotMap.get(r)||{x:0,y:0};}
+
+function resizeViz(){
+  const rect=vizStage.getBoundingClientRect();
+  const dpr=window.devicePixelRatio||1;
+  vizCanvas.width=Math.round(rect.width*dpr);
+  vizCanvas.height=Math.round(rect.height*dpr);
+  vizCtx.setTransform(dpr,0,0,dpr,0,0);
+}
+
+function hitTest(mx,my,items){
+  for(let i=items.length-1;i>=0;i--){
+    const r=items[i],p=plotXY(r);
+    if((mx-p.x)**2+(my-p.y)**2<=(MARK_R+4)**2)return r;
+  }
+  return null;
+}
+
+function showVizTip(r,x,y){
+  if(!r){vizTip.classList.remove('on');return;}
+  vizTip.textContent=r.t;
+  vizTip.classList.add('on');
+  const sr=vizStage.getBoundingClientRect();
+  let left=x+10,top=y-10;
+  if(left+160>sr.width)left=x-170;
+  vizTip.style.left=Math.max(6,left)+'px';
+  vizTip.style.top=Math.max(6,top)+'px';
+}
+
+function lblStyle(){
+  vizCtx.fillStyle='#1a1a1a';
+  vizCtx.font='600 11px Radio Canada Big,sans-serif';
+}
+
+function drawCrosshair(b){
+  vizCtx.strokeStyle='rgba(26,26,26,.09)';vizCtx.lineWidth=1;
+  vizCtx.beginPath();
+  vizCtx.moveTo(b.x0+b.iw/2,b.y0);vizCtx.lineTo(b.x0+b.iw/2,b.y1);
+  vizCtx.moveTo(b.x0,b.y0+b.ih/2);vizCtx.lineTo(b.x1,b.y0+b.ih/2);
+  vizCtx.stroke();
+}
+
+function drawSharingAxes(w,h){
+  const pr=plotRect(w,h,'sharing'),b=innerBox(w,h,pr);
+  drawCrosshair(b);
+  lblStyle();
+  vizCtx.textBaseline='middle';
+  vizCtx.textAlign='center';vizCtx.fillText('Live',b.x0+b.iw/2,b.y0-14);
+  vizCtx.fillText('Reflective',b.x0+b.iw/2,b.y1+16);
+  vizCtx.textAlign='left';vizCtx.fillText('Self',b.x0,b.y0+b.ih/2);
+  vizCtx.textAlign='right';vizCtx.fillText('Public',b.x1,b.y0+b.ih/2);
+}
+
+function drawLinearAxis(w,h,mode,leftLbl,rightLbl){
+  const pr=plotRect(w,h,mode),b=innerBox(w,h,pr);
+  const y=b.y0+b.ih/2;
+  vizCtx.strokeStyle='rgba(26,26,26,.14)';vizCtx.lineWidth=1.5;
+  vizCtx.beginPath();vizCtx.moveTo(b.x0,y);vizCtx.lineTo(b.x1,y);vizCtx.stroke();
+  lblStyle();vizCtx.textBaseline='top';
+  vizCtx.textAlign='left';vizCtx.fillText(leftLbl,b.x0,y+10);
+  vizCtx.textAlign='right';vizCtx.fillText(rightLbl,b.x1,y+10);
+}
+
+function drawAudioAxis(w,h){
+  drawLinearAxis(w,h,'audio','Audio-driven','Background / afterthought');
+}
+
+function drawTimelineAxis(w,h){
+  drawLinearAxis(w,h,'timeline','Right after birding','All time');
+}
+
+function drawLearningAxes(w,h){
+  const pr=plotRect(w,h,'learning'),b=innerBox(w,h,pr);
+  drawCrosshair(b);
+  lblStyle();vizCtx.textBaseline='middle';
+  vizCtx.textAlign='center';vizCtx.fillText('More learning',b.x0+b.iw/2,b.y0-14);
+  vizCtx.fillText('Less learning',b.x0+b.iw/2,b.y1+16);
+  vizCtx.textAlign='left';vizCtx.fillText('Passive',b.x0,b.y0+b.ih/2);
+  vizCtx.textAlign='right';vizCtx.fillText('Active',b.x1,b.y0+b.ih/2);
+}
+
+function drawMindfulField(w,h){
+  const cx=w/2,cy=h/2,maxR=Math.hypot(w,h)*0.58;
+  const g=vizCtx.createRadialGradient(cx,cy,0,cx,cy,maxR);
+  g.addColorStop(0,'rgba(47,125,34,0.38)');
+  g.addColorStop(0.22,'rgba(67,130,55,0.22)');
+  g.addColorStop(0.48,'rgba(103,173,91,0.1)');
+  g.addColorStop(0.72,'rgba(250,252,251,0.85)');
+  g.addColorStop(1,'#fafcfb');
+  vizCtx.fillStyle=g;
+  vizCtx.fillRect(0,0,w,h);
+  lblStyle();vizCtx.globalAlpha=0.55;vizCtx.textBaseline='middle';
+  vizCtx.textAlign='left';vizCtx.fillText('Less mindful',18,h-22);
+  vizCtx.textAlign='right';vizCtx.fillText('Less mindful',w-18,h-22);
+  vizCtx.textAlign='center';vizCtx.globalAlpha=0.45;
+  vizCtx.fillText('More mindful',cx,cy);
+  vizCtx.globalAlpha=1;
+}
+
+function drawItem(r,p){
+  vizCtx.beginPath();vizCtx.arc(p.x,p.y,MARK_R,0,Math.PI*2);
+  vizCtx.fillStyle=motColor(r);vizCtx.fill();
+  vizCtx.fillStyle='#fff';
+  vizCtx.font='600 7px Radio Canada Big,sans-serif';
+  vizCtx.textAlign='center';vizCtx.textBaseline='middle';
+  vizCtx.fillText(String(regIndex(r)),p.x,p.y+0.5);
+}
+
+function drawItems(items){items.forEach(r=>drawItem(r,plotXY(r)));}
+
+function renderOverview(){
+  const w=vizStage.clientWidth,h=vizStage.clientHeight;
+  const items=filteredReg();
+  syncVizLayout(items,w,h);
+  if(vizMode==='mindful')drawMindfulField(w,h);
+  else{
+    vizCtx.fillStyle='#fafcfb';vizCtx.fillRect(0,0,w,h);
+    if(vizMode==='sharing')drawSharingAxes(w,h);
+    else if(vizMode==='audio')drawAudioAxis(w,h);
+    else if(vizMode==='learning')drawLearningAxes(w,h);
+    else if(vizMode==='timeline')drawTimelineAxis(w,h);
+  }
+  drawItems(items);
+}
+
+const motFilterEl=document.getElementById('motFilter');
+motFilterEl.innerHTML='<span class="lbl">Motivation</span>';
+Object.entries(MOTIVATIONS).forEach(([k,v])=>{
+  const b=document.createElement('button');b.className='motbtn';b.textContent=v;
+  b.onclick=()=>{motFilterOn=motFilterOn===k?null:k;
+    motFilterEl.querySelectorAll('.motbtn').forEach(x=>x.classList.toggle('on',x===b&&motFilterOn));
+    vizItemKey='';renderOverview();};
+  motFilterEl.appendChild(b);
+});
+
+document.getElementById('vizModes').innerHTML='';
+VIZ_MODES.forEach(m=>{
+  const b=document.createElement('button');
+  b.className='vizbtn'+(m.id===vizMode?' on':'');
+  b.textContent=m.label;
+  b.onclick=()=>{vizMode=m.id;
+    document.querySelectorAll('.vizbtn').forEach(x=>x.classList.toggle('on',x===b));
+    vizItemKey='';renderOverview();};
+  document.getElementById('vizModes').appendChild(b);
+});
+
+vizCanvas.addEventListener('mousemove',e=>{
+  const r=vizCanvas.getBoundingClientRect();
+  showVizTip(hitTest(e.clientX-r.left,e.clientY-r.top,filteredReg()),e.clientX-r.left,e.clientY-r.top);
+});
+vizCanvas.addEventListener('mouseleave',()=>showVizTip(null));
+vizCanvas.addEventListener('click',e=>{
+  const r=vizCanvas.getBoundingClientRect();
+  const hit=hitTest(e.clientX-r.left,e.clientY-r.top,filteredReg());
+  if(hit)fromGrid(hit.id);
+});
+window.addEventListener('resize',()=>{
+  if(document.getElementById('panel-overview').classList.contains('active')){
+    vizItemKey='';resizeViz();renderOverview();
+  }
+});
+
+
+
+
+
+// ═══════════════════════════════════════════════════════════════
+//  FIDELITY BOARD
+// ═══════════════════════════════════════════════════════════════
+function fromGrid(id){showTab('gallery');selectIdea(isNaN(id)?id:+id);}
+
+function renderFid(){
+  const b=document.getElementById('fidBoard');
+  b.innerHTML=FIDELITY.map(f=>{
+    const items=REG.filter(r=>r.fid===f.n);
+    return `<div class="fid-col">
+      <div class="fid-colhead"><i class="fdot"><i class="f${f.n}"></i></i>
+        <span class="n">${f.n} · ${f.label}</span></div>
+      <div class="fid-coldesc">${f.desc}</div>
+      ${items.map(r=>`<div class="fid-card" onclick="fromGrid('${r.id}')">
+        <div class="t">${r.t}</div><div class="s">${r.sci}</div></div>`).join('')||
+        '<div class="fid-coldesc" style="opacity:.5">—</div>'}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SKILLS
+// ═══════════════════════════════════════════════════════════════
+function renderSkills(){
+  const g=document.getElementById('skillGrid');
+  g.innerHTML=SKILLS.map(s=>`<div class="skill-card">
+    <div class="sk-name"><span class="gem"></span>${s.name}</div>
+    <div class="sk-when">${s.when}</div>
+    <div class="sk-foot"><span class="sk-used">${s.used}</span>
+      <button class="copybtn" onclick="copySkill(this,'${s.name}')">Copy prompt</button></div>
+  </div>`).join('');
+}
+function copySkill(btn,name){
+  const prompt=`Use the ${name} skill to `;
+  navigator.clipboard?.writeText(prompt);
+  btn.textContent='Copied ✓';btn.classList.add('done');
+  setTimeout(()=>{btn.textContent='Copy prompt';btn.classList.remove('done');},1400);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DESIGN KIT  (tokens + accessible tokens + component library)
+// ═══════════════════════════════════════════════════════════════
+function renderKit(){
+  // Palette that actually matters for these wireframes: greys + the one key green + text.
+  const swatches=[
+    ['#e3e5e6','Wireframe grey','structure & placeholders'],
+    ['#2f7d22','Key green','the one point per screen'],
+    ['#1a1a1a','Text','titles & body'],
+    ['#6c6c6c','Secondary','meta & captions'],
+    ['#ffffff','Surface','cards'],
+    ['#e6e8ea','Border','dividers & outlines'],
+  ];
+  const swHTML=swatches.map(([v,n,d])=>`<div class="sw-row">
+    <div class="sw" style="background:${v}"></div>
+    <div class="sw-info"><div class="n">${n}</div><div class="v">${d} · ${v}</div></div></div>`).join('');
+
+  const comps=[
+    {n:'Button',c:'.d-btn',demo:`<button class="d-btn">Play</button>`},
+    {n:'Pill / tag',c:'.pill',demo:`<span class="d-pill">House Finch</span>`},
+    {n:'Play',c:'.play-circle',demo:`<div class="d-play"></div>`},
+    {n:'Waveform',c:'.waveform',demo:`<div class="d-wave">${[10,18,26,14,22,30,16,20,12,24].map(h=>`<i style="height:${h}px"></i>`).join('')}</div>`},
+    {n:'Location',c:'.clip-loctag',demo:`<span class="d-pill" style="font-size:.54rem">Union Bay</span>`},
+    {n:'Card',c:'.card',demo:`<div style="width:52px;height:34px;border:1px solid var(--border);border-radius:8px;background:#fff"></div>`},
+  ];
+  const compHTML=comps.map(c=>`<div class="comp-item">
+    <div class="demo">${c.demo}</div>
+    <div class="cn">${c.n}</div><div class="cc">${c.c}</div></div>`).join('');
+
+  document.getElementById('tokGrid').innerHTML=`
+    <div class="tok-block" style="grid-column:1/-1">
+      <div class="tok-h">How the prototypes read</div>
+      <div style="display:flex;gap:26px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+        <div style="display:flex;gap:9px;align-items:center">
+          <span style="width:26px;height:26px;border-radius:6px;background:#e3e5e6;flex:none"></span>
+          <span style="font-size:.72rem"><b>Grey</b> — everything, at placeholder fidelity</span></div>
+        <div style="display:flex;gap:9px;align-items:center">
+          <span style="width:26px;height:26px;border-radius:6px;background:#2f7d22;flex:none"></span>
+          <span style="font-size:.72rem"><b>Green</b> — the one element that's the point of the screen</span></div>
+      </div>
+      <div style="font-family:var(--font-sub);font-size:.7rem;color:var(--gray);line-height:1.5">Don't add detail we don't have yet. Show structure in grey; make the single thing that makes a prototype <i>that</i> prototype green, so it's readable at a glance.</div>
+    </div>
+    <div class="tok-block"><div class="tok-h">Palette</div>${swHTML}</div>
+    <div class="tok-block"><div class="tok-h">Type</div><div class="type-ramp">
+      <div style="font-size:1.05rem;font-weight:700">Radio Canada Big<span class="tr-lbl">titles & labels · 600–700</span></div>
+      <div style="font-family:var(--font-sub);font-size:.74rem;color:var(--gray)">Source Serif 4 — captions & the ethical-media lens.<span class="tr-lbl">body ≥16px</span></div>
+    </div></div>
+    <div class="tok-block"><div class="tok-h">Minimums</div>
+      <div class="qr-grid">
+        <div class="qr-card"><div class="h">Touch</div><div class="l"><b>48×48pt</b> · 56pt+ for Play. ≥8pt apart.</div></div>
+        <div class="qr-card"><div class="h">Text</div><div class="l">Body <b>≥16px</b> in <b>rem</b> so it scales.</div></div>
+      </div>
+    </div>
+    <div class="tok-block" style="grid-column:1/-1"><div class="tok-h">Components — the only building blocks</div>
+      <div class="comp-lib">${compHTML}</div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  APIs TAB
+// ═══════════════════════════════════════════════════════════════
+const API_DETAIL={
+  'eBird API 2.0':{src:'Cornell Lab of Ornithology',auth:'Free API key',data:'Recent sightings, hotspots, taxonomy, regions',use:'Real pins for the Friends Map & Group Soundscape'},
+  'Xeno-canto':{src:'xeno-canto.org',auth:'None (public)',data:'Open, mostly CC-licensed call recordings',use:'The prototyping sound bank — swap in real species audio'},
+  'BirdNET':{src:'Cornell / Chemnitz (Merlin engine)',auth:'Research / check terms',data:'On-device acoustic ID from a recording',use:'A clearly-labelled "Merlin-like" Sound ID demo'},
+  'Macaulay Library':{src:'Cornell Lab',auth:'Restricted',data:'Cornell\'s official photo / audio archive',use:'Production media — NOT redistributable in a public build'},
+  'MapLibre GL + MapTiler':{src:'MapLibre (OSS) · MapTiler tiles',auth:'Free MapTiler key',data:'Vector basemap + your own markers, pins, routes & GeoJSON overlays',use:'Real, restyled map under the Friends Map & Group Soundscape pins'},
+  'Web Audio sonogram':{src:'Browser-native',auth:'Built-in',data:'AnalyserNode FFT → live waveform / spectrogram',use:'Ships today as a kit component'},
+};
+function renderApis(){
+  document.getElementById('apiGrid').innerHTML=APIS.map(a=>{
+    const d=API_DETAIL[a.n]||{};
+    const st=a.status==='live'?'st-live':a.status==='mock'?'st-mock':'st-plan';
+    return `<div class="apicard">
+      <div class="top"><div><div class="nm">${a.n}</div><div class="src">${d.src||''}</div></div>
+        <span class="api-status ${st}">${a.status}</span></div>
+      <div class="desc">${a.d}</div>
+      <div class="meta-grid">
+        <span class="mk">Returns</span><span class="mv">${d.data||'—'}</span>
+        <span class="mk">Auth</span><span class="mv">${d.auth||'—'}</span>
+        <span class="mk">Use here</span><span class="mv">${d.use||'—'}</span>
+      </div>
+      <div class="foot"><span class="lic ${a.ok?'ok':''}">${a.lic}</span>
+        <button class="plugbtn" onclick="plugApi(this,'${a.n}')">${a.status==='plan'?'Plan stub':'Copy plug snippet'}</button></div>
+    </div>`;
+  }).join('');
+}
+function plugApi(btn,name){
+  const snippet=`// ${name} — mock-first adapter\nconst USE_LIVE = false; // flip when key is set\nexport async function fetch_${name.replace(/[^a-z0-9]/gi,'_').toLowerCase()}(params){\n  if(!USE_LIVE) return import('./fixtures/${name.replace(/[^a-z0-9]/gi,'-').toLowerCase()}.json');\n  // TODO: live call\n}`;
+  navigator.clipboard?.writeText(snippet);
+  btn.textContent='Copied ✓';btn.classList.add('done');
+  setTimeout(()=>{btn.textContent='Copy plug snippet';btn.classList.remove('done');},1500);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ACCESSIBILITY TAB
+// ═══════════════════════════════════════════════════════════════
+function renderA11y(){
+  // 1 — live contrast audit
+  const rows=CONTRAST_PAIRS.map(p=>{
+    const r=contrast(p.fg,p.bg),rate=rateContrast(r);
+    return `<div class="ca-row">
+      <div class="ca-swatch" style="background:${p.bg};color:${p.fg}">Aa</div>
+      <div class="ca-info"><div class="ca-name">${p.name}</div><div class="ca-use">${p.use}</div></div>
+      <div class="ca-ratio">${r.toFixed(2)}:1</div>
+      <span class="ca-badge ${rate.cls}">${rate.label}</span></div>`;
+  }).join('');
+  document.getElementById('contrastBlock').innerHTML=`
+    <div class="bh">Live contrast audit</div>
+    ${rows}
+    <div class="a11y-fix"><b>Real finding:</b> the brand green at <code>#67AD5B</code> only reaches <b>2.73:1</b> — it fails AA as both text and as a white-on-green button. Introduce <code>--green-text:#2f7d22</code> (<b>5.15:1</b>) for any text-bearing or interactive element; keep bright green for large decorative fills only.</div>`;
+
+  // 2 — quick reference
+  document.getElementById('quickRefBlock').innerHTML=`
+    <div class="bh">Quick reference</div>
+    <div class="qr-grid">
+      <div class="qr-card"><div class="h">Targets</div><div class="l"><b>48×48pt</b> floor · 56pt+ for Play/Identify · ≥8pt apart</div></div>
+      <div class="qr-card"><div class="h">Audio-first</div><div class="l"><b>No autoplay.</b> Every listening / result state needs a <b>text equivalent</b>.</div></div>
+      <div class="qr-card"><div class="h">Labels</div><div class="l">Icon buttons get real labels ("Start Sound ID", not "mic"). Unique per screen.</div></div>
+      <div class="qr-card"><div class="h">No color-only</div><div class="l">Pair color with text/icon. Don't rely on red↔green (8% can't tell).</div></div>
+      <div class="qr-card"><div class="h">Reflow</div><div class="l">Holds at <b>200%</b> text & <b>400%</b> zoom; test at 320px.</div></div>
+      <div class="qr-card"><div class="h">Motion</div><div class="l">Respect <b>Reduce Motion</b>; cross-fade, not slide. Pausable.</div></div>
+      <div class="qr-card"><div class="h">SR swipes</div><div class="l">If sighted = 3 taps, blind ≤ <b>5 swipes</b>. Count them.</div></div>
+      <div class="qr-card"><div class="h">Test it</div><div class="l">VoiceOver on, <b>screen off</b>, complete the task by ear before sharing.</div></div>
+    </div>`;
+
+  // 3 — interactive pre-share checklist (persisted)
+  renderChecklist();
+}
+function ckKey(g,i){return 'jj-a11y-'+g+'-'+i;}
+function renderChecklist(){
+  const total=CHECKLIST.reduce((n,g)=>n+g.items.length,0);
+  let done=0;
+  const groups=CHECKLIST.map(grp=>{
+    const items=grp.items.map((it,i)=>{
+      const on=localStorage.getItem(ckKey(grp.g,i))==='1';if(on)done++;
+      return `<div class="chk-item${on?' done':''}" onclick="toggleChk('${grp.g}',${i},this)">
+        <div class="chk-box"></div><div class="chk-label">${it}</div></div>`;
+    }).join('');
+    return `<div class="chk-group"><div class="chk-gh">${grp.g}
+      <span class="cnt">${grp.items.length}</span></div>${items}</div>`;
+  }).join('');
+  document.getElementById('checklistBlock').innerHTML=`
+    <div class="bh">Pre-share checklist
+      <span id="ckPct" style="font-weight:700;color:#2f7d22">${Math.round(done/total*100)}%</span></div>
+    <div class="chk-progress"><i id="ckBar" style="width:${done/total*100}%"></i></div>
+    ${groups}`;
+}
+function toggleChk(g,i,el){
+  const k=ckKey(g,i),on=localStorage.getItem(k)==='1';
+  localStorage.setItem(k,on?'0':'1');
+  el.classList.toggle('done',!on);
+  const total=CHECKLIST.reduce((n,gr)=>n+gr.items.length,0);
+  let done=0;CHECKLIST.forEach(gr=>gr.items.forEach((_,j)=>{if(localStorage.getItem(ckKey(gr.g,j))==='1')done++;}));
+  document.getElementById('ckBar').style.width=(done/total*100)+'%';
+  document.getElementById('ckPct').textContent=Math.round(done/total*100)+'%';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+renderCatTabs();renderIdeaList();
+resizeViz();renderOverview();renderFid();renderSkills();renderKit();renderApis();renderA11y();
+selectIdea(1);
+</script>
+</body>
+</html>

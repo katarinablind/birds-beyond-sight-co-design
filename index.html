@@ -315,6 +315,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
             <button class="opt on" data-elem="mnem" onclick="toggleElem(this)">Mnemonic phrase</button>
           </div>
         </div>
+        <div style="margin-top:10px">
+          <div class="sub-label">Narration volume</div>
+          <div class="slider-row">
+            <span class="slider-label">Quiet</span>
+            <input type="range" min="10" max="100" value="80" id="narrVolSlider" oninput="setNarrVol(this.value)">
+            <span class="slider-label" style="text-align:right">Loud</span>
+            <span class="slider-val" id="narrVolVal">80</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -367,7 +376,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="step-num">7</div>
     <div class="step">
       <div class="step-q">How much environmental sound?</div>
-      <div class="step-sub">Add wind, ambient noise, a sense of place.</div>
+      <div class="step-sub">Add natural ambience — a sense of place.</div>
       <div class="slider-row">
         <span class="slider-label">None</span>
         <input type="range" min="0" max="100" value="30" id="envSlider" oninput="setEnv(this.value)">
@@ -375,9 +384,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         <span class="slider-val" id="envVal">30</span>
       </div>
       <div class="opts" style="margin-top:10px">
-        <button class="opt on" data-envtype="wind" onclick="toggleEnvType(this)">Wind</button>
+        <button class="opt on" data-envtype="stream" onclick="toggleEnvType(this)">Stream</button>
         <button class="opt" data-envtype="rain" onclick="toggleEnvType(this)">Rain</button>
-        <button class="opt" data-envtype="forest" onclick="toggleEnvType(this)">Forest</button>
+        <button class="opt" data-envtype="leaves" onclick="toggleEnvType(this)">Leaves</button>
       </div>
     </div>
   </div>
@@ -449,8 +458,9 @@ let comp={
   reflectionText:'',
   reflectionWhen:'before',
   duration:'10',
+  narrVol:80,
   envLevel:30,
-  envTypes:{wind:true,rain:false,forest:false},
+  envTypes:{stream:true,rain:false,leaves:false},
   ending:'bird', // 'bird' | 'summary' | 'gentle-close'
 };
 let sequence=[];       // built from state, respects order
@@ -498,6 +508,12 @@ function toggleBird(i){
 function setSrc(el){
   comp.source=el.dataset.src;
   document.querySelectorAll('[data-src]').forEach(b=>b.classList.toggle('on',b.dataset.src===comp.source));
+  // Clear cached audio so new source type takes effect
+  Object.values(birdAudioEls).forEach(ba=>{
+    ba.audio.pause();ba.audio.currentTime=0;
+    if(ba.hissSrc&&ba.started){try{ba.hissSrc.stop();}catch(e){}}
+  });
+  birdAudioEls={};
   rebuildSequence();renderTimeline();
 }
 function setStructure(el){
@@ -534,15 +550,25 @@ function setDur(el){
   document.querySelectorAll('[data-dur]').forEach(b=>b.classList.toggle('on',b.dataset.dur===comp.duration));
   rebuildSequence();renderTimeline();
 }
+function setNarrVol(val){
+  comp.narrVol=Number(val);
+  document.getElementById('narrVolVal').textContent=val;
+}
 function setEnv(val){
   comp.envLevel=Number(val);
   document.getElementById('envVal').textContent=val;
+  // Update env gain in real-time during playback
+  if(envNodes&&envNodes.gain){
+    envNodes.gain.gain.value=comp.envLevel/100;
+  }
   renderTimeline();
 }
 function toggleEnvType(el){
   const t=el.dataset.envtype;
   comp.envTypes[t]=!comp.envTypes[t];
   el.classList.toggle('on',comp.envTypes[t]);
+  // Restart env sound with new type during playback
+  if(isPlaying&&comp.envLevel>0)startEnv();
   renderTimeline();
 }
 function setEnding(el){
@@ -698,18 +724,24 @@ function getOrCreateBirdAudio(bird){
   const gain=audioCtx.createGain();gain.gain.value=1;
 
   if(comp.source==='field'){
-    // Field recording: bandpass filter + noise layer for natural ambience
-    const lp=audioCtx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=6000;lp.Q.value=0.5;
-    const hp=audioCtx.createBiquadFilter();hp.type='highpass';hp.frequency.value=200;hp.Q.value=0.3;
-    src.connect(hp);hp.connect(lp);lp.connect(gain);
-    // Add slight hiss
-    const hissGain=audioCtx.createGain();hissGain.gain.value=0.04;
+    // Field recording: narrower frequency range, noise floor, slight distance feel
+    const lp=audioCtx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=4500;lp.Q.value=0.7;
+    const hp=audioCtx.createBiquadFilter();hp.type='highpass';hp.frequency.value=350;hp.Q.value=0.5;
+    // Slight mid-range bump for "recorded on phone/recorder" character
+    const mid=audioCtx.createBiquadFilter();mid.type='peaking';mid.frequency.value=1200;mid.gain.value=3;mid.Q.value=0.8;
+    // Reduce volume slightly — sounds more distant
+    gain.gain.value=0.82;
+    src.connect(hp);hp.connect(lp);lp.connect(mid);mid.connect(gain);
+    // Ambient hiss / noise floor
+    const hissGain=audioCtx.createGain();hissGain.gain.value=0.08;
     const hissLen=audioCtx.sampleRate*4;
     const hissBuf=audioCtx.createBuffer(1,hissLen,audioCtx.sampleRate);
     const hissData=hissBuf.getChannelData(0);
     for(let i=0;i<hissLen;i++)hissData[i]=(Math.random()*2-1)*0.5;
     const hissSrc=audioCtx.createBufferSource();hissSrc.buffer=hissBuf;hissSrc.loop=true;
-    hissSrc.connect(hissGain);hissGain.connect(gain);
+    // Filter hiss to sound like recorder self-noise
+    const hissLp=audioCtx.createBiquadFilter();hissLp.type='lowpass';hissLp.frequency.value=3000;
+    hissSrc.connect(hissLp);hissLp.connect(hissGain);hissGain.connect(gain);
     birdAudioEls[key]={audio,source:src,gain,hissSrc,started:false};
   } else {
     // Clean: direct connection, full range
@@ -723,8 +755,28 @@ function getOrCreateBirdAudio(bird){
 function speakAndWait(text){
   return new Promise(r=>{
     if(!text){r();return;}
-    const u=new SpeechSynthesisUtterance(text);u.volume=1;u.rate=0.95;
-    u.onend=r;u.onerror=r;speechSynthesis.cancel();speechSynthesis.speak(u);
+    speechSynthesis.cancel();
+    // Small delay after cancel to let the engine settle
+    setTimeout(()=>{
+      const u=new SpeechSynthesisUtterance(text);u.volume=(comp.narrVol||80)/100;u.rate=0.95;
+      let resolved=false;
+      const done=()=>{if(!resolved){resolved=true;r();}};
+      u.onend=done;
+      u.onerror=()=>{
+        // Retry once on error — Chrome sometimes fails on first attempt
+        setTimeout(()=>{
+          const u2=new SpeechSynthesisUtterance(text);u2.volume=(comp.narrVol||80)/100;u2.rate=0.95;
+          u2.onend=done;u2.onerror=done;
+          speechSynthesis.speak(u2);
+        },100);
+      };
+      speechSynthesis.speak(u);
+      // Chrome bug workaround: resume speechSynthesis periodically
+      const keepAlive=setInterval(()=>{
+        if(resolved||!speechSynthesis.speaking){clearInterval(keepAlive);return;}
+        speechSynthesis.pause();speechSynthesis.resume();
+      },5000);
+    },80);
   });
 }
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
@@ -741,24 +793,58 @@ function waitAudioEndOrDur(audio,dur){
 // ── Environment ──
 function startEnv(){
   stopEnv();if(!audioCtx||comp.envLevel===0)return;
-  const sr=audioCtx.sampleRate,len=sr*6,buf=audioCtx.createBuffer(2,len,sr);
-  for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
-    for(let i=0;i<len;i++){const w=Math.random()*2-1;
+  const sr=audioCtx.sampleRate,len=sr*8,buf=audioCtx.createBuffer(2,len,sr);
+  for(let ch=0;ch<2;ch++){
+    const d=buf.getChannelData(ch);
+    // Pink noise generator (Voss-McCartney)
+    let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+    for(let i=0;i<len;i++){
+      const w=Math.random()*2-1;
       b0=.99886*b0+w*.0555179;b1=.99332*b1+w*.0750759;b2=.96900*b2+w*.1538520;
       b3=.86650*b3+w*.3104856;b4=.55000*b4+w*.5329522;b5=-.7616*b5-w*.0168980;
       const pink=(b0+b1+b2+b3+b4+b5+b6+w*.5362)*.06;b6=w*.115926;
+      const t=i/sr; // time in seconds
       let s=0;
-      if(comp.envTypes.wind)s+=pink*(.6+.3*Math.sin(i/sr*.2+ch)+.15*Math.sin(i/sr*.07));
-      if(comp.envTypes.rain)s+=pink*.5+(Math.random()<.004?(Math.random()*2-1)*.35:0);
-      if(comp.envTypes.forest)s+=pink*.4+(Math.random()<.0006?Math.sin(i/sr*3000*(1+Math.random()))*.12*Math.exp(-((i%sr)/sr)*20):0);
+
+      // Stream: gentle water flow with slow undulation and occasional bubbles
+      if(comp.envTypes.stream){
+        const flow=pink*(.35+.2*Math.sin(t*.3+ch*1.5)+.1*Math.sin(t*.13)+.08*Math.sin(t*.7));
+        // Occasional water trickle/bubble sounds
+        const bubble=(Math.random()<.002)?Math.sin(t*2400*(1+Math.random()*.5))*.08*Math.exp(-((i%Math.floor(sr*.05))/(sr*.05))*8):0;
+        s+=flow+bubble;
+      }
+
+      // Rain: patter of drops with occasional heavier drops
+      if(comp.envTypes.rain){
+        const steady=pink*.25;
+        // Light drops
+        const lightDrop=(Math.random()<.008)?(Math.random()*2-1)*.15*Math.exp(-((i%Math.floor(sr*.02))/(sr*.02))*12):0;
+        // Heavy drops
+        const heavyDrop=(Math.random()<.001)?(Math.random()*2-1)*.3*Math.exp(-((i%Math.floor(sr*.04))/(sr*.04))*6):0;
+        s+=steady+lightDrop+heavyDrop;
+      }
+
+      // Leaves: rustling with gentle gusts
+      if(comp.envTypes.leaves){
+        const gust=.3+.25*Math.sin(t*.15+ch)+.15*Math.sin(t*.4)+.1*Math.sin(t*1.1);
+        const rustle=pink*gust*.5;
+        // Occasional leaf flutter — short bursts of higher-freq noise
+        const flutter=(Math.random()<.003)?pink*1.2*Math.exp(-((i%Math.floor(sr*.03))/(sr*.03))*10):0;
+        s+=rustle+flutter;
+      }
+
       d[i]=s;
     }
   }
   const src=audioCtx.createBufferSource();src.buffer=buf;src.loop=true;
+  // Shape the frequency profile per type
   const lp=audioCtx.createBiquadFilter();lp.type='lowpass';
-  lp.frequency.value=comp.envTypes.rain?4000:comp.envTypes.forest?3000:2000;
+  lp.frequency.value=comp.envTypes.rain?5000:comp.envTypes.leaves?2500:1800;
+  // Soften the top end further for stream
+  const hp=audioCtx.createBiquadFilter();hp.type='highpass';
+  hp.frequency.value=comp.envTypes.stream?80:40;hp.Q.value=0.3;
   const g=audioCtx.createGain();g.gain.value=comp.envLevel/100;
-  src.connect(lp);lp.connect(g);g.connect(masterGain);src.start();
+  src.connect(hp);hp.connect(lp);lp.connect(g);g.connect(masterGain);src.start();
   envNodes={source:src,gain:g};
 }
 function stopEnv(){if(envNodes){try{envNodes.source.stop()}catch(e){}envNodes=null;}}
@@ -811,9 +897,12 @@ function skipToBlock(idx){
 }
 
 // ── Play ──
+let playLock=false;
 async function playComposition(){
   if(isPlaying&&skipToIdx<0){stopAll();return;}
+  if(playLock)return;
   if(!comp.birds.length){toast('Select a bird first');return;}
+  playLock=true;
   comp.reflectionText=(document.getElementById('reflectionText')?.value||'').trim();
   rebuildSequence();renderTimeline();
 
@@ -906,10 +995,11 @@ async function playComposition(){
   if(skipToIdx<0){
     currentPlayingUid=null;stopAll();
   }
+  playLock=false;
 }
 
 function stopAll(){
-  isPlaying=false;currentPlayingUid=null;
+  isPlaying=false;currentPlayingUid=null;playLock=false;
   Object.values(birdAudioEls).forEach(ba=>{
     ba.audio.pause();ba.audio.currentTime=0;
     if(ba.hissSrc&&ba.started){try{ba.hissSrc.stop();}catch(e){}}
@@ -1021,8 +1111,9 @@ function applySessionData(data){
   if(data.reflectionText!==undefined)comp.reflectionText=data.reflectionText;
   if(data.reflectionWhen)comp.reflectionWhen=data.reflectionWhen;
   if(data.duration)comp.duration=data.duration;
+  if(data.narrVol!==undefined)comp.narrVol=Number(data.narrVol);
   if(data.envLevel!==undefined)comp.envLevel=Number(data.envLevel);
-  if(data.envTypes)comp.envTypes={wind:!!data.envTypes.wind,rain:!!data.envTypes.rain,forest:!!data.envTypes.forest};
+  if(data.envTypes)comp.envTypes={stream:!!(data.envTypes.stream||data.envTypes.wind),rain:!!data.envTypes.rain,leaves:!!(data.envTypes.leaves||data.envTypes.forest)};
   if(data.ending)comp.ending=data.ending;
   if(data.muted)mutedBlocks=data.muted;else mutedBlocks={};
   birdAudioEls={};
@@ -1032,6 +1123,8 @@ function applySessionData(data){
   document.getElementById('reflectionText').value=comp.reflectionText||'';
   document.getElementById('envSlider').value=comp.envLevel;
   document.getElementById('envVal').textContent=comp.envLevel;
+  document.getElementById('narrVolSlider').value=comp.narrVol||80;
+  document.getElementById('narrVolVal').textContent=comp.narrVol||80;
   document.querySelectorAll('[data-src]').forEach(b=>b.classList.toggle('on',b.dataset.src===comp.source));
   document.querySelectorAll('[data-structure]').forEach(b=>b.classList.toggle('on',b.dataset.structure===comp.structure));
   const showNarr=comp.structure!=='bird-only'&&comp.structure!=='desc-only';
@@ -1104,7 +1197,7 @@ function resetAll(){
   stopAll();
   comp={birds:[],source:'clean',structure:'summary-bird',narration:'field-guide',
     includeDesc:true,includeMnem:true,crossfade:0.5,reflectionText:'',reflectionWhen:'before',
-    duration:'10',envLevel:30,envTypes:{wind:true,rain:false,forest:false},ending:'bird'};
+    duration:'10',narrVol:80,envLevel:30,envTypes:{stream:true,rain:false,leaves:false},ending:'bird'};
   sequence=[];mutedBlocks={};birdAudioEls={};
   document.getElementById('reflectionText').value='';
   document.getElementById('envSlider').value=30;document.getElementById('envVal').textContent='30';
@@ -1116,7 +1209,8 @@ function resetAll(){
   document.querySelectorAll('[data-xfade]').forEach(b=>b.classList.toggle('on',Number(b.dataset.xfade)===0.5));
   document.querySelectorAll('[data-refwhen]').forEach(b=>b.classList.toggle('on',b.dataset.refwhen==='before'));
   document.querySelectorAll('[data-dur]').forEach(b=>b.classList.toggle('on',b.dataset.dur==='10'));
-  document.querySelectorAll('[data-envtype]').forEach(b=>b.classList.toggle('on',b.dataset.envtype==='wind'));
+  document.querySelectorAll('[data-envtype]').forEach(b=>b.classList.toggle('on',b.dataset.envtype==='stream'));
+  document.getElementById('narrVolSlider').value=80;document.getElementById('narrVolVal').textContent='80';
   document.querySelectorAll('[data-ending]').forEach(b=>b.classList.toggle('on',b.dataset.ending==='bird'));
   document.getElementById('narrSub').style.display='';
   buildGrid();renderTimeline();toast('Reset');

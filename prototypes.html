@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jiu Jiu — Concept Prototypes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#1a1a1a;
+  /* accessible interactive green — passes WCAG AA on white (5.15:1) */
+  --green:#2f7d22;
+  --green-light:#2f7d2214;
+  --green-mid:#2f7d2238;
+  --green-dim:#2f7d2299;
+  --green-bright:#67AD5B;   /* illustration / habitat art only */
+  --gray:#6C6C6C;
+  --gray-light:#6C6C6C1f;
+  --brown:#C4955A;          /* illustration only */
+  --blue:#8BB8E8;           /* illustration only */
+  --bg:#f7f8f7;
+  --surface:#fff;
+  --border:#e7e8e7;
+  --text:#1a1a1a;
+  --R:14px;
+  --font:'Radio Canada Big',sans-serif;
+  --font-sub:'Source Serif 4',Georgia,serif;
+}
+html{font-size:16px}
+body{background:#eaecea;font-family:var(--font);color:var(--text);
+  min-height:100vh;-webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;align-items:center;padding:24px 16px 60px}
+
+/* ── Inline icon system (replaces all emoji) ── */
+.ico{width:1em;height:1em;display:inline-block;vertical-align:-.14em;
+  fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ── Page header ── */
+.page-header{text-align:center;margin-bottom:18px;max-width:420px}
+.page-title{font-size:1.1rem;font-weight:700;color:var(--black);letter-spacing:-.02em}
+.page-sub{font-family:var(--font-sub);font-size:.72rem;color:var(--gray);margin-top:4px;line-height:1.5}
+
+/* ── Two-column layout ── */
+.main-layout{display:flex;gap:28px;align-items:flex-start;width:100%;max-width:860px}
+.left-col{flex:0 0 340px;display:flex;flex-direction:column;gap:16px;
+  position:sticky;top:24px;align-self:flex-start}
+.right-col{flex:0 0 auto}
+@media(max-width:780px){.main-layout{flex-direction:column;align-items:center}.left-col{position:static;width:100%;flex:unset}}
+
+/* ── Segment control ── */
+.seg-wrap{background:transparent;padding:0;
+  width:100%;display:flex;flex-direction:column;align-items:stretch}
+.seg-row{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start;
+  background:var(--surface);border-radius:10px;padding:4px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);border:1px solid var(--border)}
+.seg-btn{padding:6px 10px;border-radius:7px;border:none;background:transparent;
+  font-family:var(--font);font-size:.58rem;font-weight:600;color:var(--gray);
+  cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1.2}
+.seg-btn:hover{color:var(--black)}
+.seg-btn.active{background:var(--green);color:#fff;box-shadow:0 2px 7px rgba(103,173,91,.4)}
+.seg-label{font-size:.56rem;color:var(--gray);margin-top:6px;font-family:var(--font-sub);
+  text-align:left}
+
+/* ── Phone frame ── */
+.phone-frame{width:375px;height:740px;background:var(--bg);
+  border-radius:46px;overflow:hidden;position:relative;
+  box-shadow:0 0 0 11px #131313, 0 0 0 12.5px #2c2c2c,
+    0 30px 60px -18px rgba(0,0,0,.5), 0 8px 20px -8px rgba(0,0,0,.3);
+  margin-top:16px;display:flex;flex-direction:column}
+.status-bar{height:50px;flex-shrink:0;display:flex;align-items:center;
+  justify-content:space-between;padding:6px 30px 0;position:relative;z-index:5}
+.status-bar .time{font-size:.74rem;font-weight:600;color:var(--black);letter-spacing:.01em}
+.status-bar .icons{display:flex;align-items:center;gap:7px;color:var(--black)}
+.status-bar .icons svg{display:block}
+.status-notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:86px;height:26px;background:#000;border-radius:999px}
+.home-indicator{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:124px;height:5px;border-radius:3px;background:#1a1a1a;opacity:.22;z-index:20;pointer-events:none}
+
+/* ── Screen content area (scrollable) ── */
+.screen{flex:1;overflow-y:auto;padding:8px 20px 76px;display:none;
+  flex-direction:column;scrollbar-width:none;position:relative}
+.screen::-webkit-scrollbar{display:none}
+.screen.active{display:flex}
+.screen-title{font-size:1.1rem;font-weight:700;color:var(--black);margin-bottom:2px;letter-spacing:-.01em}
+.screen-sub{font-family:var(--font-sub);font-size:.7rem;color:var(--gray);margin-bottom:16px;
+  line-height:1.5}
+
+/* ── Shared components ── */
+.card{background:var(--surface);border:1px solid #efeee9;border-radius:16px;
+  padding:14px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.035),0 4px 12px -6px rgba(0,0,0,.06);
+  transition:border-color .15s,transform .15s,box-shadow .15s}
+.card:hover{box-shadow:0 2px 4px rgba(0,0,0,.04),0 8px 20px -8px rgba(0,0,0,.1)}
+.card-row{display:flex;align-items:center;gap:12px}
+.card-title{font-size:.78rem;font-weight:600;color:var(--black)}
+.card-meta{font-size:.6rem;color:var(--gray);font-family:var(--font-sub);margin-top:2px}
+.card-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;
+  justify-content:center;font-size:.9rem;flex-shrink:0}
+@keyframes flashPick{0%{transform:scale(1)}40%{transform:scale(1.03)}100%{transform:scale(1)}}
+.card.flash{animation:flashPick .5s ease;border-color:var(--green)}
+
+.pill{display:inline-flex;align-items:center;padding:6px 13px;border-radius:999px;font-size:.62rem;
+  font-weight:600;font-family:var(--font);border:1.5px solid var(--border);
+  background:var(--surface);color:var(--gray);cursor:pointer;transition:all .15s}
+.pill:hover{border-color:var(--green-dim);color:var(--green)}
+.pill.active{border-color:var(--green);color:var(--green);background:var(--green-light)}
+.pill.filled{background:var(--green);color:#fff;border-color:var(--green)}
+.pill.filled:hover{background:#5a9c4f}
+
+/* ── Play button (real audio) ── */
+.play-circle{width:44px;height:44px;border-radius:50%;background:var(--green);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:transform .12s,background .15s;flex-shrink:0;position:relative}
+.play-circle:hover{transform:scale(1.07)}
+.play-circle:active{transform:scale(.95)}
+.play-circle::after{content:'';width:0;height:0;border-left:12px solid #fff;
+  border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:3px;
+  transition:all .1s}
+.play-circle.playing::after{border:none;width:11px;height:11px;margin-left:0;
+  background:linear-gradient(90deg,#fff 0 34%,transparent 34% 66%,#fff 66% 100%)}
+.play-circle.gray{background:var(--gray)}
+
+/* ── Waveform ── */
+.waveform{height:34px;display:flex;align-items:flex-end;gap:1.5px;padding:4px 0}
+.wf-bar{width:2.5px;border-radius:1.5px 1.5px 0 0;background:var(--green-dim);
+  transition:height .08s linear}
+.wf-bar.lit{background:var(--green)}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;
+  border-radius:999px;font-size:.56rem;font-weight:600;background:var(--green-light);
+  color:var(--green);border:1px solid var(--green-mid)}
+
+/* ── Bottom nav ── */
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;height:74px;
+  background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-top:1px solid rgba(0,0,0,.05);
+  display:flex;align-items:flex-start;justify-content:space-around;padding:12px 18px 0;z-index:10}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-size:.52rem;font-weight:600;color:#b0afa9;cursor:pointer;transition:color .15s}
+.nav-item.active{color:var(--green)}
+.nav-icon{display:flex;align-items:center;justify-content:center;height:22px}
+.nav-icon svg{display:block}
+
+/* ── Sonograph canvas ── */
+.sonograph{width:100%;height:120px;border-radius:10px;overflow:hidden;margin:4px 0 0;display:block}
+
+/* ── Map ── */
+.map-area{background:var(--green-light);border-radius:var(--R);height:210px;
+  position:relative;overflow:hidden;margin-bottom:14px;
+  border:1.5px solid var(--green-mid)}
+.map-pin{position:absolute;width:30px;height:30px;border-radius:50% 50% 50% 2px;
+  transform:rotate(45deg);
+  background:var(--green);border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2);
+  cursor:pointer;transition:transform .15s}
+.map-pin span{transform:rotate(-45deg);display:block;width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:.6rem;font-weight:700}
+.map-pin:hover{transform:rotate(45deg) scale(1.18)}
+.map-pin.playing{background:var(--brown);animation:pinPulse 1s ease-in-out infinite}
+@keyframes pinPulse{0%,100%{box-shadow:0 2px 8px rgba(0,0,0,.2)}50%{box-shadow:0 2px 16px rgba(196,149,90,.7)}}
+
+/* ── Compare cards (Learn) ── */
+.vs-row{display:flex;gap:8px;align-items:stretch;margin-bottom:0}
+.vs-card{flex:1;background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--R);padding:12px;text-align:center;cursor:pointer;transition:all .15s}
+.vs-card:hover{border-color:var(--green-dim)}
+.vs-label{font-size:.62rem;font-weight:600;color:var(--gray);margin-bottom:8px}
+.vs-divider{display:flex;align-items:center;justify-content:center;font-size:.58rem;
+  font-weight:700;color:var(--gray);padding:0 2px}
+
+/* ── Quiz ── */
+.quiz-pill{position:relative;transition:all .2s}
+.quiz-pill.correct{background:var(--green);color:#fff;border-color:var(--green)}
+.quiz-pill.wrong{background:#FDECEA;color:#c0392b;border-color:#e6b0aa}
+.quiz-feedback{font-size:.6rem;font-weight:600;margin-top:12px;min-height:16px}
+.quiz-feedback.ok{color:var(--green)}
+.quiz-feedback.no{color:#c0392b}
+
+/* ── Alt text nudge ── */
+.nudge{background:#FFF3E0;border:1.5px solid #F9A825;border-radius:var(--R);
+  padding:12px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:flex-start}
+.nudge-icon{font-size:1rem;flex-shrink:0}
+.nudge-text{font-size:.66rem;line-height:1.5;color:var(--black)}
+.nudge-text strong{color:#E65100}
+.nudge.success{background:#E8F5E9;border-color:var(--green)}
+.nudge.success .nudge-text strong{color:var(--green)}
+
+/* ── Chat ── */
+.chat-bubble{max-width:74%;padding:9px 13px;border-radius:16px 16px 16px 4px;
+  background:var(--surface);border:1px solid var(--border);
+  margin-bottom:8px;font-size:.74rem;line-height:1.35}
+.chat-bubble.sent{margin-left:auto;border-radius:16px 16px 4px 16px;
+  background:var(--green);color:#fff;border-color:var(--green)}
+.chat-sound{display:flex;align-items:center;gap:8px;margin-top:8px;padding:7px 10px;
+  border-radius:10px;background:rgba(255,255,255,.18);cursor:pointer;transition:background .15s}
+.chat-bubble.sent .chat-sound:hover{background:rgba(255,255,255,.28)}
+.chat-sound .mini-play{width:22px;height:22px;border-radius:50%;background:#fff;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-sound .mini-play::after{content:'';width:0;height:0;border-left:7px solid var(--green);
+  border-top:4px solid transparent;border-bottom:4px solid transparent;margin-left:2px}
+.chat-sound.playing .mini-play::after{border:none;width:7px;height:7px;margin-left:0;
+  background:linear-gradient(90deg,var(--green) 0 34%,transparent 34% 66%,var(--green) 66% 100%)}
+.chat-sound .cs-label{font-size:.56rem;font-weight:600}
+
+/* ── Toggle grid ── */
+.bird-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.bird-toggle{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--R);
+  padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;position:relative}
+.bird-toggle:hover{border-color:var(--green-dim)}
+.bird-toggle.on{border-color:var(--green);background:var(--green-light)}
+.bird-toggle .bt-name{font-size:.6rem;font-weight:600;color:var(--black);margin-top:5px}
+.bird-toggle .bt-icon{font-size:1.3rem;transition:opacity .15s}
+.bird-toggle:not(.on) .bt-icon{opacity:.3}
+.bird-toggle .bt-state{position:absolute;top:6px;right:7px;font-size:.46rem;
+  color:var(--green);font-weight:700;opacity:0;transition:opacity .15s}
+.bird-toggle.on .bt-state{opacity:1}
+
+/* ── Wrapped ── */
+.wrapped-card{background:var(--black);border-radius:var(--R);padding:22px 20px;
+  color:#fff;margin-bottom:10px;text-align:center}
+.wrapped-label{font-size:.58rem;color:var(--green);font-weight:600;
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.wrapped-big{font-size:2rem;font-weight:700;line-height:1.1}
+.wrapped-sub{font-size:.66rem;color:#aaa;font-family:var(--font-sub);margin-top:4px}
+
+/* ── Big hero play (recap/share) ── */
+.hero-play{width:84px;height:84px;border-radius:50%;background:var(--green);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;margin:0 auto;
+  box-shadow:0 6px 24px rgba(103,173,91,.35);transition:transform .12s;position:relative}
+.hero-play:hover{transform:scale(1.06)}
+.hero-play::after{content:'';width:0;height:0;border-left:22px solid #fff;
+  border-top:13px solid transparent;border-bottom:13px solid transparent;margin-left:5px}
+.hero-play.playing::after{border:none;width:22px;height:22px;margin-left:0;
+  background:linear-gradient(90deg,#fff 0 34%,transparent 34% 66%,#fff 66% 100%)}
+
+.section-label{font-size:.58rem;font-weight:600;color:var(--gray);margin-bottom:8px;
+  text-transform:uppercase;letter-spacing:.06em}
+
+/* ── Friend Map (proto-14) ── */
+.fmap-wrap{position:relative;overflow:hidden;border-radius:var(--R);
+  margin:0 -20px 14px;border-bottom:1px solid var(--border)}
+.fmap-svg{width:100%;display:block}
+.fpin{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;
+  cursor:pointer;transform:translate(-50%,-50%);z-index:5;-webkit-tap-highlight-color:transparent}
+.fpin-ring{width:38px;height:38px;border-radius:50%;border:2.5px solid var(--green);
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:700;color:var(--black);
+  box-shadow:0 2px 10px rgba(0,0,0,.18);transition:all .2s;position:relative}
+.fpin.active .fpin-ring{border-color:var(--brown);box-shadow:0 2px 16px rgba(196,149,90,.45);transform:scale(1.12)}
+.fpin.you .fpin-ring{border-color:var(--blue);background:#e8f3ff}
+.fpin.you .fpin-ring::before{content:'';position:absolute;width:38px;height:38px;
+  border-radius:50%;border:2px solid var(--blue);opacity:0;
+  animation:youPing 2.2s ease-out infinite}
+@keyframes youPing{0%{opacity:.55;transform:scale(1)}100%{opacity:0;transform:scale(2)}}
+.fpin-chip{font-size:.43rem;font-weight:600;background:#fff;border-radius:999px;
+  padding:2px 5px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.14);
+  color:var(--black);max-width:76px;text-align:center;overflow:hidden;text-overflow:ellipsis;
+  border:1px solid #ece9e4}
+/* Detail slide-up panel — anchored to .screen, not .fmap-wrap */
+.fdetail{position:absolute;bottom:74px;left:0;right:0;background:#fff;
+  border-radius:14px 14px 0 0;padding:12px 14px 18px;
+  box-shadow:0 -4px 24px rgba(0,0,0,.18);
+  transform:translateY(110%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:20}
+.fdetail.open{transform:translateY(0)}
+.fdetail-handle{width:32px;height:3px;border-radius:2px;background:#e0ddd8;margin:0 auto 10px}
+.fdetail-hdr{font-size:.7rem;font-weight:700;color:var(--black);margin-bottom:8px;
+  display:flex;align-items:center;gap:7px}
+.fdetail-av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:.56rem;font-weight:700;color:#fff;flex-shrink:0}
+.frec{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid #f0ede8}
+.frec:last-child{border-bottom:none}
+.frec-info{flex:1}
+.frec-bird{font-size:.68rem;font-weight:700;color:var(--black)}
+.frec-meta{font-size:.5rem;color:var(--gray);margin-top:1px}
+.fdetail-close{font-size:.58rem;color:var(--gray);text-align:center;
+  margin-top:8px;cursor:pointer;padding-top:4px}
+
+/* ── Group Chat (proto-15) ── */
+.grpchat-hdr{display:flex;align-items:center;gap:9px;padding-bottom:11px;
+  border-bottom:1px solid var(--border);margin-bottom:10px;flex-shrink:0}
+.grpchat-av{width:36px;height:36px;border-radius:50%;background:var(--green);
+  display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+.grpchat-name{font-size:.78rem;font-weight:700;color:var(--black)}
+.grpchat-meta{font-size:.52rem;color:var(--gray);margin-top:1px}
+.chatrow{display:flex;gap:7px;align-items:flex-end;margin-bottom:10px}
+.chatrow.sent{flex-direction:row-reverse}
+.chatrow-av{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:.52rem;font-weight:700;color:#fff;flex-shrink:0}
+.clipbub{max-width:82%;background:var(--surface);border:1px solid var(--border);
+  border-radius:14px 14px 14px 2px;padding:10px 12px}
+.chatrow.sent .clipbub{border-radius:14px 14px 2px 14px;
+  background:var(--green-light);border-color:var(--green-mid)}
+.clip-bname{font-size:.78rem;font-weight:700;color:var(--black);margin-bottom:3px;line-height:1.2}
+.clip-loctag{display:inline-flex;align-items:center;gap:3px;font-size:.5rem;font-weight:600;
+  color:var(--green);background:var(--green-light);border:1px solid var(--green-mid);
+  border-radius:999px;padding:2px 7px;margin-bottom:7px}
+.clip-wfrow{display:flex;align-items:center;gap:8px}
+.miniwf{display:flex;align-items:flex-end;gap:1.5px;height:22px;flex:1}
+.mwfbar{width:2px;border-radius:1px;background:var(--green-dim)}
+.chatrow.sent .mwfbar{background:var(--green)}
+.clip-dur{font-size:.48rem;color:var(--gray)}
+.clip-foot{font-size:.48rem;color:var(--gray);margin-top:5px}
+.textbub{max-width:82%;background:var(--surface);border:1px solid var(--border);
+  border-radius:14px 14px 14px 2px;padding:9px 12px;font-size:.7rem;
+  color:var(--black);line-height:1.45}
+.chatrow.sent .textbub{border-radius:14px 14px 2px 14px;
+  background:var(--green);color:#fff;border-color:var(--green)}
+.chat-bottom{position:absolute;bottom:0;left:0;right:0;background:rgba(250,250,248,.94);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-top:1px solid var(--border);padding:10px 16px 20px;
+  display:flex;gap:8px;align-items:center;z-index:5}
+.chat-ibox{flex:1;height:34px;border:1.5px solid var(--border);border-radius:17px;
+  background:var(--surface);display:flex;align-items:center;padding:0 12px;
+  font-size:.68rem;color:var(--gray);font-family:var(--font)}
+.chat-ibtn{width:32px;height:32px;border-radius:50%;background:var(--green);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  cursor:pointer;font-size:.7rem;font-weight:700;color:#fff}
+
+/* ── Ethical media lens panel ── */
+.lens{width:100%;background:var(--surface);
+  border:1.5px solid var(--green-mid);border-left:4px solid var(--green);
+  border-radius:var(--R);padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.lens-tag{font-size:.58rem;font-weight:700;color:var(--green);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.lens-text{font-family:var(--font-sub);font-size:.76rem;line-height:1.55;color:var(--text)}
+.lens-text strong{color:var(--green);font-weight:600}
+
+/* ── Embed mode (when iframed inside playground.html) ── */
+html.embed-mode{font-size:calc(16px * var(--lv-font,1))}
+body.embed{padding:0;background:transparent;justify-content:center}
+body.embed .page-header,body.embed .left-col{display:none}
+body.embed .main-layout{display:block;max-width:none;gap:0}
+body.embed .right-col{margin:0 auto}
+/* Frame stays a FIXED size; only the content inside scales with --lv-font,
+   so large-text mode shows real reflow/overflow, not a bigger phone. */
+body.embed .phone-frame{
+  width:375px;
+  height:740px;
+  border-radius:46px;
+  margin:0 auto;
+  margin-top:0;
+  cursor:none;
+  box-shadow:0 0 0 9px #141414,0 28px 56px -12px rgba(0,0,0,.7)}
+body.embed .play-circle{width:calc(44px * var(--lv-font,1))!important;height:calc(44px * var(--lv-font,1))!important}
+body.embed .hero-play{width:calc(84px * var(--lv-font,1))!important;height:calc(84px * var(--lv-font,1))!important}
+body.embed .status-bar{height:calc(50px * var(--lv-font,1))}
+body.embed .bottom-nav{padding:calc(10px * var(--lv-font,1)) calc(16px * var(--lv-font,1))}
+body.embed .card{padding:calc(14px * var(--lv-font,1));border-radius:calc(16px * var(--lv-font,1))}
+body.embed .pill{padding:calc(6px * var(--lv-font,1)) calc(13px * var(--lv-font,1))}
+body.embed .card-icon{width:calc(36px * var(--lv-font,1));height:calc(36px * var(--lv-font,1))}
+body.embed .vo-sr-focus{outline:3px solid #67AD5B!important;outline-offset:3px;
+  box-shadow:0 0 0 5px rgba(103,173,91,.35)!important;border-radius:8px}
+body.embed .vo-sr-press{transform:scale(.95);transition:transform .15s}
+
+/* ── Mid-fidelity wireframe skin (how prototypes read in the playground) ──
+   Everything is neutral grey by default; only the ONE element that is the
+   point of each screen (.wf-key) is rendered in real brand green. */
+body.embed{--green:#9ca2a2;--green-light:#eceeec;--green-mid:#dcdfdc;--green-dim:#c0c4c0;
+  --brown:#b6b6b4;--blue:#c2c6ca}
+/* Screen name + description live in the studio panels, not inside the frame. */
+body.embed .screen-title,body.embed .screen-sub{display:none}
+body.embed .screen{padding-top:4px}
+body.embed .chatrow-av,body.embed .grpchat-av,body.embed .fpin-ring,body.embed .map-pin,
+body.embed .fpin-chip,body.embed .s-avatar,body.embed .card-icon{filter:grayscale(1) brightness(1.02)}
+body.embed .sonograph,body.embed canvas{filter:grayscale(1) contrast(.92)}
+/* the key element → real green tokens + a soft green ring so it clearly stands out */
+body.embed .wf-key{--green:#2f7d22;--green-light:#2f7d2218;--green-mid:#2f7d2240;--green-dim:#2f7d2299;
+  filter:none!important}
+body.embed .wf-key:not(.wf-illus){box-shadow:0 0 0 2px rgba(47,125,34,.5);border-radius:12px}
+body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
+  box-shadow:0 0 0 6px rgba(47,125,34,.16);border-radius:12px}
+.tapdot{position:fixed;width:32px;height:32px;border-radius:50%;
+  background:rgba(103,173,91,.20);border:2px solid rgba(103,173,91,.55);
+  transform:translate(-50%,-50%);pointer-events:none;z-index:9999;opacity:0;
+  transition:opacity .15s,width .08s,height .08s,background .08s}
+.tapdot.show{opacity:1}
+.tapdot.press{width:21px;height:21px;background:rgba(103,173,91,.42)}
+@keyframes tapRipple{from{opacity:.45;transform:translate(-50%,-50%) scale(.3)}
+  to{opacity:0;transform:translate(-50%,-50%) scale(2.3)}}
+.tapripple{position:fixed;width:38px;height:38px;border-radius:50%;
+  border:2px solid var(--green);transform:translate(-50%,-50%);
+  pointer-events:none;z-index:9998;animation:tapRipple .5s ease-out forwards}
+
+/* ── Cleanup: sentence-case labels (no eyebrow), no decorative dividers, icon colors ── */
+.section-label{text-transform:none;letter-spacing:0;font-size:.64rem;color:var(--gray);font-weight:700}
+.lens-tag{text-transform:none;letter-spacing:0;font-size:.68rem}
+.wrapped-label{text-transform:none;letter-spacing:0;font-size:.62rem}
+.card-icon{color:var(--green)}
+.card-icon[style*="gray-light"]{color:var(--gray)}
+.grpchat-av{color:#fff}
+.grpchat-hdr{border-bottom:none;margin-bottom:6px}
+.frec{border-bottom:none}
+</style>
+</head>
+<body>
+
+<!-- Icon sprite (line icons, inherit currentColor) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-bird" viewBox="0 0 24 24"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 1 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><polyline points="22 4 12 14 9 11"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></symbol>
+</defs></svg>
+
+<div class="page-header">
+  <div class="page-title">Jiu Jiu — Concept Prototypes</div>
+  <div class="page-sub">Audio-first social sharing for birding — bringing blind and low-vision perspectives to the wider birding community by using the attention economy for good.</div>
+</div>
+
+<div class="main-layout">
+<div class="left-col">
+  <div class="seg-wrap">
+    <div class="seg-row" id="segRow"></div>
+    <div class="seg-label" id="segLabel">Audio Diary</div>
+  </div>
+  <!-- Ethical media lens -->
+  <div class="lens">
+    <div class="lens-tag">Ethical media lens</div>
+    <div class="lens-text" id="lensText"></div>
+  </div>
+</div><!-- end left-col -->
+<div class="right-col">
+<div class="phone-frame">
+  <div class="status-bar">
+    <div class="status-notch"></div>
+    <span class="time">9:41</span>
+    <span class="icons">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2.4 4.6a9 9 0 0 1 12.2 0"/><path d="M4.9 7.2a5.4 5.4 0 0 1 7.2 0"/><path d="M7.3 9.7a2 2 0 0 1 2.4 0"/></svg>
+      <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x="1" y="1" width="21" height="11" rx="3.2" stroke="currentColor" stroke-width="1.1" opacity=".4"/><rect x="2.6" y="2.6" width="17.8" height="7.8" rx="1.7" fill="currentColor"/><rect x="23.4" y="4.3" width="1.8" height="4.4" rx=".9" fill="currentColor" opacity=".4"/></svg>
+    </span>
+  </div>
+
+  <!-- ═══ 1. AUDIO DIARY ═══ -->
+  <div class="screen active" id="proto-1">
+    <div class="screen-title">Audio Diary</div>
+    <div class="screen-sub">Your personal bird-sound journal. Capture what you hear, when you hear it.</div>
+
+    <div class="card">
+      <div class="card-row">
+        <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-mic"/></svg></div>
+        <div style="flex:1">
+          <div class="card-title">Morning at the marsh</div>
+          <div class="card-meta">Today, 7:23 AM · Union Bay</div>
+        </div>
+        <div class="play-circle" style="width:34px;height:34px" data-file="birds/house-finch.mp3" data-wf="wf-d1"></div>
+      </div>
+      <div class="waveform" id="wf-d1" style="margin-top:10px"></div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+        <span class="badge"><svg class="ico"><use href="#i-bird"/></svg> House Finch</span>
+        <span class="badge"><svg class="ico"><use href="#i-bird"/></svg> Junco</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-row">
+        <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-mic"/></svg></div>
+        <div style="flex:1">
+          <div class="card-title">Evening walk — crow calls</div>
+          <div class="card-meta">Yesterday, 5:48 PM · Montlake Fill</div>
+        </div>
+        <div class="play-circle" style="width:34px;height:34px" data-file="birds/common-crow.mp3" data-wf="wf-d2"></div>
+      </div>
+      <div class="waveform" id="wf-d2" style="margin-top:10px"></div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <span class="badge"><svg class="ico"><use href="#i-bird"/></svg> American Crow</span>
+      </div>
+    </div>
+
+    <button class="pill filled" style="align-self:center;padding:11px 26px;font-size:.68rem;margin-top:14px">+ New recording</button>
+
+    <div class="bottom-nav">
+      <div class="nav-item active"><span class="nav-icon"><svg class="ico"><use href="#i-mic"/></svg></span>Diary</div>
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-bird"/></svg></span>My Birds</div>
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-pin"/></svg></span>Group</div>
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-user"/></svg></span>Profile</div>
+    </div>
+  </div>
+
+  <!-- ═══ 2. WEEKLY RECAP ═══ -->
+  <div class="screen" id="proto-2">
+    <div style="text-align:center;margin-top:24px">
+      <div class="section-label" style="color:var(--green)">Weekly Recap</div>
+      <div style="font-size:2.1rem;font-weight:700;color:var(--black);line-height:1.1">Week of<br>May 21</div>
+    </div>
+
+    <div style="margin:26px 0">
+      <div class="hero-play" data-file="birds/house-finch.mp3" data-wf="wf-recap"></div>
+    </div>
+    <div class="waveform" id="wf-recap" style="justify-content:center;margin-bottom:20px"></div>
+
+    <div style="text-align:center;font-family:var(--font-sub);font-size:.74rem;color:var(--gray);
+      line-height:1.6;max-width:280px;margin:0 auto 24px">
+      This week you heard the <strong style="color:var(--black)">House Finch</strong>,
+      the <strong style="color:var(--black)">Dark-eyed Junco</strong>,
+      and — for the first time — the <strong style="color:var(--black)">American Robin</strong>.
+    </div>
+
+    <div class="section-label">This week's birds</div>
+    <div class="card"><div class="card-row">
+      <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
+      <div style="flex:1"><div class="card-title">House Finch</div><div class="card-meta">Heard 4 times</div></div>
+      <div class="play-circle" style="width:30px;height:30px" data-file="birds/house-finch.mp3"></div></div>
+    </div>
+    <div class="card"><div class="card-row">
+      <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
+      <div style="flex:1"><div class="card-title">Dark-eyed Junco</div><div class="card-meta">Heard 2 times</div></div>
+      <div class="play-circle" style="width:30px;height:30px" data-file="birds/dark-eyed-junco.mp3"></div></div>
+    </div>
+    <div class="card"><div class="card-row">
+      <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
+      <div style="flex:1"><div class="card-title">American Robin</div><div class="card-meta">Heard 1 time · New!</div></div>
+      <div class="play-circle" style="width:30px;height:30px" data-file="birds/american-robin.mp3"></div></div>
+    </div>
+
+    <button class="pill filled" style="align-self:center;padding:11px 26px;margin-top:14px">Share this recap</button>
+  </div>
+
+  <!-- ═══ 3. MOSTLY HEARD ═══ -->
+  <div class="screen" id="proto-3">
+    <div class="screen-title">My Birds</div>
+    <div class="screen-sub">Ranked by how often you've heard them — your old friends, not the newest trend. Tap to play.</div>
+
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      <span class="pill active" onclick="selectPill(this)">All time</span>
+      <span class="pill" onclick="selectPill(this)">This week</span>
+      <span class="pill" onclick="selectPill(this)">New</span>
+    </div>
+
+    <div class="card"><div class="card-row">
+      <div style="font-size:.78rem;font-weight:700;color:var(--green);width:18px">1</div>
+      <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
+      <div style="flex:1"><div class="card-title">House Finch</div><div class="card-meta">Heard 12 times · 0:34</div></div>
+      <div class="play-circle" style="width:30px;height:30px" data-file="birds/house-finch.mp3"></div></div>
+    </div>
+    <div class="card"><div class="card-row">
+      <div style="font-size:.78rem;font-weight:700;color:var(--green);width:18px">2</div>
+      <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
+      <div style="flex:1"><div class="card-title">Dark-eyed Junco</div><div class="card-meta">Heard 8 times · 0:22</div></div>
+      <div class="play-circle" style="width:30px;height:30px" data-file="birds/dark-eyed-junco.mp3"></div></div>
+    </div>
+    <div class="card"><div class="card-row">
+      <div style="font-size:.78rem;font-weight:700;color:var(--green);width:18px">3</div>
+      <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
+      <div style="flex:1"><div class="card-title">American Crow</div><div class="card-meta">Heard 6 times · 0:18</div></div>
+      <div class="play-circle" style="width:30px;height:30px" data-file="birds/common-crow.mp3"></div></div>
+    </div>
+
+    <div class="section-label" style="margin-top:14px">Old friends</div>
+    <div class="card" style="opacity:.75"><div class="card-row">
+      <div class="card-icon" style="background:var(--gray-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
+      <div style="flex:1"><div class="card-title">Mallard Duck</div><div class="card-meta">Last heard 3 weeks ago</div></div>
+      <div class="play-circle gray" style="width:30px;height:30px" data-file="birds/mallard-duck.mp3"></div></div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-mic"/></svg></span>Diary</div>
+      <div class="nav-item active"><span class="nav-icon"><svg class="ico"><use href="#i-bird"/></svg></span>My Birds</div>
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-pin"/></svg></span>Group</div>
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-user"/></svg></span>Profile</div>
+    </div>
+  </div>
+
+  <!-- ═══ 4. LEARN BY LISTENING ═══ -->
+  <div class="screen" id="proto-4">
+    <div class="screen-title">Learn by Listening</div>
+    <div class="screen-sub">Train your ear. You leave the app knowing more than when you opened it.</div>
+
+    <div class="section-label">What bird is this?</div>
+    <div class="card" style="text-align:center;padding:18px">
+      <div class="hero-play" style="width:64px;height:64px" data-file="birds/house-finch.mp3" data-wf="wf-quiz"></div>
+      <div class="waveform" id="wf-quiz" style="justify-content:center;margin-top:12px"></div>
+      <div style="font-size:.62rem;color:var(--gray);margin-top:8px">Listen, then choose:</div>
+      <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap">
+        <span class="pill quiz-pill" onclick="answerQuiz(this)">American Robin</span>
+        <span class="pill quiz-pill" data-correct="1" onclick="answerQuiz(this)">House Finch</span>
+        <span class="pill quiz-pill" onclick="answerQuiz(this)">Dark-eyed Junco</span>
+      </div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+    </div>
+
+    <div class="section-label" style="margin-top:6px">Your recording vs. reference</div>
+    <div class="card">
+      <div class="vs-row">
+        <div class="vs-card" style="background:var(--green-light);border-color:var(--green-mid)">
+          <div class="vs-label" style="color:var(--green)">Yours</div>
+          <div class="play-circle" style="width:34px;height:34px;margin:0 auto" data-file="birds/house-finch.mp3"></div>
+          <div style="font-size:.52rem;color:var(--gray);margin-top:8px">Field · 0:12</div>
+        </div>
+        <div class="vs-divider">vs</div>
+        <div class="vs-card">
+          <div class="vs-label">Reference</div>
+          <div class="play-circle" style="width:34px;height:34px;margin:0 auto" data-file="birds/house-finch.mp3"></div>
+          <div style="font-size:.52rem;color:var(--gray);margin-top:8px">Clean · library</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--green-light);border-color:var(--green-mid);text-align:center;padding:12px">
+      <div style="font-size:.62rem;font-weight:600;color:var(--green)">3 of 5 correct today — your ear is getting sharper.</div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-mic"/></svg></span>Diary</div>
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-bird"/></svg></span>My Birds</div>
+      <div class="nav-item active"><span class="nav-icon"></span>Learn</div>
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-user"/></svg></span>Profile</div>
+    </div>
+  </div>
+
+  <!-- ═══ 5. ALT TEXT NUDGES ═══ -->
+  <div class="screen" id="proto-5">
+    <div class="screen-title">Accessible Sharing</div>
+    <div class="screen-sub">Gentle nudges that help everyone post inclusively — accessibility as the default.</div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:.7rem"><svg class="ico"><use href="#i-user"/></svg></div>
+        <div><div class="card-title" style="font-size:.68rem">birder_jane</div><div class="card-meta">Just now</div></div>
+      </div>
+      <div style="background:var(--gray-light);border-radius:10px;height:110px;display:flex;align-items:center;justify-content:center;margin-bottom:10px">
+        <span style="font-size:2rem;color:var(--green)"><svg class="ico"><use href="#i-bird"/></svg></span>
+      </div>
+      <div class="nudge" id="nudge1">
+        <div class="nudge-icon"><svg class="ico"><use href="#i-alert"/></svg></div>
+        <div class="nudge-text"><strong>Missing alt text.</strong> Blind and low-vision birders won't be able to enjoy this. Add a description so your post reaches everyone.</div>
+      </div>
+      <button class="pill filled" style="width:100%;justify-content:center;padding:9px" onclick="addAlt(this)">+ Add alt text</button>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:.7rem"><svg class="ico"><use href="#i-user"/></svg></div>
+        <div><div class="card-title" style="font-size:.68rem">marsh_observer</div><div class="card-meta">2 min ago</div></div>
+      </div>
+      <div class="nudge success">
+        <div class="nudge-icon"><svg class="ico"><use href="#i-alert"/></svg></div>
+        <div class="nudge-text"><strong>Double-check the AI description.</strong> Auto-generated alt text is often vague or wrong — your blind followers depend on you getting it right.</div>
+      </div>
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:9px;padding:10px;font-size:.62rem;color:var(--gray);font-style:italic">
+        "A bird on a branch" <span style="color:#c44;font-weight:600"><svg class="ico"><use href="#i-back"/></svg> too vague</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ 6. GROUP SOUNDSCAPE ═══ -->
+  <div class="screen" id="proto-6">
+    <div class="screen-title">Group Soundscape</div>
+    <div class="screen-sub">Friends near Union Bay sharing recordings on a shared map. Tap a pin to listen.</div>
+
+    <div class="map-area">
+      <div style="position:absolute;inset:0;opacity:.12;background:repeating-conic-gradient(var(--green) 0% 25%, transparent 0% 50%) 0 0/22px 22px"></div>
+      <div class="map-pin" style="top:36px;left:54px" data-file="birds/american-robin.mp3" title="Sarah · Robin"><span>S</span></div>
+      <div class="map-pin" style="top:84px;left:182px" data-file="birds/house-finch.mp3" title="Marcus · House Finch"><span>M</span></div>
+      <div class="map-pin" style="top:128px;left:96px" data-file="birds/dark-eyed-junco.mp3" title="You · Junco"><span>Y</span></div>
+      <div class="map-pin" style="top:54px;left:262px" data-file="birds/common-crow.mp3" title="Aliya · Crow"><span>A</span></div>
+      <div class="map-pin" style="top:150px;left:220px" data-file="birds/mallard-duck.mp3" title="Jake · Mallard"><span>J</span></div>
+    </div>
+
+    <div class="section-label">Nearby recordings</div>
+    <div class="card"><div class="card-row">
+      <div style="width:30px;height:30px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:.56rem;color:#fff;font-weight:700">S</div>
+      <div style="flex:1"><div class="card-title">Sarah · American Robin</div><div class="card-meta">Union Bay · 15 min ago</div></div>
+      <div class="play-circle" style="width:30px;height:30px" data-file="birds/american-robin.mp3"></div></div>
+    </div>
+    <div class="card"><div class="card-row">
+      <div style="width:30px;height:30px;border-radius:50%;background:var(--brown);display:flex;align-items:center;justify-content:center;font-size:.56rem;color:#fff;font-weight:700">M</div>
+      <div style="flex:1"><div class="card-title">Marcus · House Finch</div><div class="card-meta">Montlake Fill · 1 hr ago</div></div>
+      <div class="play-circle" style="width:30px;height:30px" data-file="birds/house-finch.mp3"></div></div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-mic"/></svg></span>Diary</div>
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-bird"/></svg></span>My Birds</div>
+      <div class="nav-item active"><span class="nav-icon"><svg class="ico"><use href="#i-pin"/></svg></span>Group</div>
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-user"/></svg></span>Profile</div>
+    </div>
+  </div>
+
+  <!-- ═══ 7. AUDIO ARTIFACT ═══ -->
+  <div class="screen" id="proto-7">
+    <div class="screen-title">Share as Audio</div>
+    <div class="screen-sub">Your share isn't a screenshot — it's a sound. A portable, playable gift.</div>
+
+    <div class="card" style="background:var(--black);border-color:#333;color:#fff;padding:20px">
+      <div style="text-align:center">
+        <div style="font-size:.62rem;color:var(--green);font-weight:600">Audio Artifact</div>
+        <div style="font-size:.92rem;font-weight:700;margin-top:4px">Morning at Union Bay</div>
+        <div style="font-size:.6rem;color:#888;font-family:var(--font-sub);margin-top:2px">By you · May 28, 2026</div>
+      </div>
+      <div class="waveform" id="wf-share" style="margin:18px 0;justify-content:center"></div>
+      <div class="hero-play" style="width:60px;height:60px" data-file="birds/house-finch.mp3" data-wf="wf-share"></div>
+      <div style="display:flex;gap:6px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+        <span style="padding:4px 10px;border-radius:999px;background:rgba(103,173,91,.2);color:var(--green);font-size:.52rem;font-weight:600">House Finch</span>
+        <span style="padding:4px 10px;border-radius:999px;background:rgba(103,173,91,.2);color:var(--green);font-size:.52rem;font-weight:600">Stream sounds</span>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:14px">Send to</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="pill" onclick="selectPill(this,true)">Message</button>
+      <button class="pill" onclick="selectPill(this,true)">Copy link</button>
+      <button class="pill" onclick="selectPill(this,true)">Group</button>
+      <button class="pill" onclick="selectPill(this,true)">AirDrop</button>
+    </div>
+  </div>
+
+  <!-- ═══ 8. BIRD EMOJI = SOUND ═══ -->
+  <div class="screen" id="proto-8" style="padding-bottom:64px">
+    <div class="screen-title">Bird Emoji = Sound</div>
+    <div class="screen-sub">Send a bird and it chirps. The sound is built into the message — accessible by design.</div>
+
+    <div style="margin-top:6px">
+      <div class="chat-bubble">Guess what I heard at the lake</div>
+      <div class="chat-bubble sent">
+        <span style="font-size:1.3rem"><svg class="ico"><use href="#i-bird"/></svg></span>
+        <div class="chat-sound" data-file="birds/house-finch.mp3">
+          <div class="mini-play"></div><span class="cs-label">House Finch · 0:03</span>
+        </div>
+      </div>
+      <div class="chat-bubble">omg I can hear it, so pretty!</div>
+      <div class="chat-bubble sent">
+        <span style="font-size:1.3rem"><svg class="ico"><use href="#i-bird"/></svg></span>
+        <div class="chat-sound" data-file="birds/mallard-duck.mp3">
+          <div class="mini-play"></div><span class="cs-label">Mallard Duck · 0:02</span>
+        </div>
+      </div>
+      <div class="chat-bubble">lol the quacking</div>
+    </div>
+
+    <div style="position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:8px;align-items:center">
+      <div style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:8px 14px;font-size:.68rem;color:var(--gray)">Message…</div>
+      <div style="font-size:1.2rem;cursor:pointer"><svg class="ico"><use href="#i-bird"/></svg></div>
+      <div style="width:30px;height:30px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;font-weight:700"><svg class="ico"><use href="#i-send"/></svg></div>
+    </div>
+  </div>
+
+  <!-- ═══ 9. BADGES & PROFILE ═══ -->
+  <div class="screen" id="proto-9">
+    <div style="text-align:center;margin-top:10px">
+      <div style="width:64px;height:64px;border-radius:50%;background:var(--green-light);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin:0 auto;color:var(--green)"><svg class="ico"><use href="#i-user"/></svg></div>
+      <div class="screen-title" style="margin-top:10px">You</div>
+      <div class="screen-sub" style="margin-bottom:10px">Listening since March 2026 · Union Bay</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+      <div class="card" style="text-align:center;padding:12px;margin:0">
+        <div style="font-size:1.3rem;font-weight:700;color:var(--green)">6</div>
+        <div style="font-size:.5rem;color:var(--gray)">Species ID'd</div>
+      </div>
+      <div class="card" style="text-align:center;padding:12px;margin:0">
+        <div style="font-size:1.3rem;font-weight:700;color:var(--green)">34</div>
+        <div style="font-size:.5rem;color:var(--gray)">Recordings</div>
+      </div>
+      <div class="card" style="text-align:center;padding:12px;margin:0">
+        <div style="font-size:1.3rem;font-weight:700;color:var(--green)">12</div>
+        <div style="font-size:.5rem;color:var(--gray)">Day streak</div>
+      </div>
+    </div>
+
+    <div class="section-label">Pinned bird audio</div>
+    <div class="card"><div class="card-row">
+      <div class="card-icon" style="background:var(--green-light);color:var(--green)"><svg class="ico"><use href="#i-mic"/></svg></div>
+      <div style="flex:1"><div class="card-title">House Finch warble</div><div class="card-meta">Your best recording</div></div>
+      <div class="play-circle" style="width:30px;height:30px" data-file="birds/house-finch.mp3"></div></div>
+    </div>
+
+    <div class="section-label" style="margin-top:14px">Badges earned by listening</div>
+    <div class="p9-badges" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="card" style="text-align:center;padding:14px;margin:0">
+        <div style="font-size:1.5rem"><svg class="ico"><use href="#i-bird"/></svg></div>
+        <div style="font-size:.62rem;font-weight:600;margin-top:4px">Bird Nerd</div>
+        <div style="font-size:.5rem;color:var(--gray)">ID'd 5+ species</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px;margin:0">
+        
+        <div style="font-size:.62rem;font-weight:600;margin-top:4px">Ear Badge</div>
+        <div style="font-size:.5rem;color:var(--gray)">10 IDs by ear</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px;margin:0">
+        
+        <div style="font-size:.62rem;font-weight:600;margin-top:4px">Early Bird</div>
+        <div style="font-size:.5rem;color:var(--gray)">7 dawn recordings</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px;margin:0;opacity:.4;border-style:dashed">
+        
+        <div style="font-size:.62rem;font-weight:600;margin-top:4px">Sharp Ear</div>
+        <div style="font-size:.5rem;color:var(--gray)">14 / 20 IDs</div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-mic"/></svg></span>Diary</div>
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-bird"/></svg></span>My Birds</div>
+      <div class="nav-item"><span class="nav-icon"><svg class="ico"><use href="#i-pin"/></svg></span>Group</div>
+      <div class="nav-item active"><span class="nav-icon"><svg class="ico"><use href="#i-user"/></svg></span>Profile</div>
+    </div>
+  </div>
+
+  <!-- ═══ 10. SEASON WRAPPED ═══ -->
+  <div class="screen" id="proto-10">
+    <div style="text-align:center;margin-top:16px;margin-bottom:20px">
+      <div class="section-label" style="color:var(--green);letter-spacing:.1em">Spring 2026</div>
+      <div style="font-size:1.5rem;font-weight:700;color:var(--black)">Season Wrapped</div>
+      <div style="font-size:.62rem;color:var(--gray);font-family:var(--font-sub)">Your listening journey — just for you</div>
+    </div>
+
+    <div class="wrapped-card">
+      <div class="wrapped-label">Species identified</div>
+      <div class="wrapped-big">6</div>
+      <div class="wrapped-sub">unique birds, all by ear</div>
+    </div>
+    <div class="wrapped-card" style="background:var(--green)">
+      <div class="wrapped-label" style="color:rgba(255,255,255,.7)">Most heard bird</div>
+      <div class="wrapped-big">House Finch</div>
+      <div class="wrapped-sub" style="color:rgba(255,255,255,.65)">12 times this season</div>
+    </div>
+    <div class="wrapped-card" style="background:var(--brown)">
+      <div class="wrapped-label" style="color:rgba(255,255,255,.7)">Listening streak</div>
+      <div class="wrapped-big">12 days</div>
+      <div class="wrapped-sub" style="color:rgba(255,255,255,.65)">Your longest daily run</div>
+    </div>
+
+    <button class="pill filled" style="align-self:center;padding:11px 26px;margin-top:8px">Share your wrapped</button>
+  </div>
+
+  <!-- ═══ 11. BIRD RADIO PLAY ═══ -->
+  <div class="screen" id="proto-11">
+    <div class="screen-title">Bird Radio Play</div>
+    <div class="screen-sub">Narrated chapters about the birds of Union Bay. Listen long-form, like a podcast.</div>
+
+    <div class="card" style="background:var(--black);border-color:#333;color:#fff;padding:18px">
+      <div style="display:flex;gap:14px;align-items:center">
+        <div style="width:64px;height:64px;border-radius:12px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;color:#fff"><svg class="ico"><use href="#i-bird"/></svg></div>
+        <div>
+          <div style="font-size:.56rem;color:var(--green);font-weight:600">Now playing</div>
+          <div style="font-size:.8rem;font-weight:700;margin-top:2px">Ch.1 — The Morning Chorus</div>
+          <div style="font-size:.56rem;color:#888;margin-top:2px">Union Bay Stories · 8 min</div>
+        </div>
+      </div>
+      <div class="waveform" id="wf-radio" style="margin:14px 0;justify-content:center"></div>
+      <div style="display:flex;align-items:center;gap:16px;justify-content:center">
+        <span style="color:#888;cursor:pointer;font-size:1rem"><svg class="ico"><use href="#i-prev"/></svg></span>
+        <div class="hero-play" style="width:54px;height:54px;box-shadow:none" data-file="birds/american-robin.mp3" data-wf="wf-radio"></div>
+        <span style="color:#888;cursor:pointer;font-size:1rem"><svg class="ico"><use href="#i-next"/></svg></span>
+      </div>
+    </div>
+
+    <div class="section-label">Episodes</div>
+    <div class="card"><div class="card-row">
+      <div style="font-size:.7rem;font-weight:700;color:var(--green);width:18px">1</div>
+      <div style="flex:1"><div class="card-title">The Morning Chorus</div><div class="card-meta">Robin, Finch, Junco · 8 min</div></div>
+      <span style="font-size:.5rem;color:var(--green);font-weight:700">PLAYING</span></div>
+    </div>
+    <div class="card"><div class="card-row">
+      <div style="font-size:.7rem;font-weight:700;color:var(--gray);width:18px">2</div>
+      <div style="flex:1"><div class="card-title">Marsh Voices</div><div class="card-meta">Blackbird, Mallard · 6 min</div></div>
+      <div class="play-circle" style="width:26px;height:26px" data-file="birds/red-wing-blackbird.mp3"></div></div>
+    </div>
+    <div class="card"><div class="card-row">
+      <div style="font-size:.7rem;font-weight:700;color:var(--gray);width:18px">3</div>
+      <div style="flex:1"><div class="card-title">The Crow Network</div><div class="card-meta">American Crow · 5 min</div></div>
+      <div class="play-circle" style="width:26px;height:26px" data-file="birds/common-crow.mp3"></div></div>
+    </div>
+  </div>
+
+  <!-- ═══ 12. BIRD TOGGLE GRID ═══ -->
+  <div class="screen" id="proto-12">
+    <div class="screen-title">This Week's Birds</div>
+    <div class="screen-sub">You curate what you hear — no algorithm. Toggle birds, tap to play, or shuffle.</div>
+
+    <div class="bird-grid" id="birdGrid">
+      <div class="bird-toggle on" data-file="birds/house-finch.mp3" data-name="House Finch" onclick="toggleBird(this,event)">
+        <div class="bt-state">ON</div><div class="bt-icon"><svg class="ico"><use href="#i-bird"/></svg></div><div class="bt-name">House Finch</div></div>
+      <div class="bird-toggle on" data-file="birds/dark-eyed-junco.mp3" data-name="Junco" onclick="toggleBird(this,event)">
+        <div class="bt-state">ON</div><div class="bt-icon"><svg class="ico"><use href="#i-bird"/></svg></div><div class="bt-name">Junco</div></div>
+      <div class="bird-toggle" data-file="birds/american-robin.mp3" data-name="Robin" onclick="toggleBird(this,event)">
+        <div class="bt-state">ON</div><div class="bt-icon"><svg class="ico"><use href="#i-bird"/></svg></div><div class="bt-name">Robin</div></div>
+      <div class="bird-toggle on" data-file="birds/common-crow.mp3" data-name="Crow" onclick="toggleBird(this,event)">
+        <div class="bt-state">ON</div><div class="bt-icon"><svg class="ico"><use href="#i-bird"/></svg></div><div class="bt-name">Crow</div></div>
+      <div class="bird-toggle" data-file="birds/mallard-duck.mp3" data-name="Mallard" onclick="toggleBird(this,event)">
+        <div class="bt-state">ON</div><div class="bt-icon"><svg class="ico"><use href="#i-bird"/></svg></div><div class="bt-name">Mallard</div></div>
+      <div class="bird-toggle" data-file="birds/red-wing-blackbird.mp3" data-name="Blackbird" onclick="toggleBird(this,event)">
+        <div class="bt-state">ON</div><div class="bt-icon"><svg class="ico"><use href="#i-bird"/></svg></div><div class="bt-name">Blackbird</div></div>
+    </div>
+
+    <button class="pill filled" style="align-self:center;padding:11px 22px;margin-bottom:16px" onclick="shuffleBird()">Shuffle a bird from this week</button>
+
+    <div class="card" id="shuffleCard" style="background:var(--green-light);border-color:var(--green-mid);text-align:center;padding:20px;display:none">
+      <div style="font-size:1.8rem;margin-bottom:4px" id="shuffleIcon"><svg class="ico"><use href="#i-bird"/></svg></div>
+      <div style="font-size:.82rem;font-weight:700;color:var(--black)" id="shuffleName">House Finch</div>
+      <div style="font-size:.58rem;color:var(--gray);font-family:var(--font-sub);margin-top:2px">Random pick from your week</div>
+      <div class="waveform" id="wf-shuffle" style="justify-content:center;margin:10px 0"></div>
+      <div class="play-circle" style="margin:0 auto" id="shufflePlay" data-file="birds/house-finch.mp3" data-wf="wf-shuffle"></div>
+    </div>
+  </div>
+
+  <!-- ═══ 13. HABITAT SONOGRAPH ═══ -->
+  <div class="screen" id="proto-13">
+    <div class="screen-title">Habitat Sonograph</div>
+    <div class="screen-sub">The waveform becomes the landscape. A bird's sound, re-presented as the place it lives.</div>
+
+    <div class="card" style="padding:16px">
+      <div style="font-size:.72rem;font-weight:600;margin-bottom:2px">House Finch</div>
+      <div style="font-size:.56rem;color:var(--gray);margin-bottom:8px">Suburban edges · open canopy</div>
+      <canvas class="sonograph" id="sono1" width="335" height="120"></canvas>
+      <div class="play-circle" style="width:32px;height:32px;margin:10px auto 0" data-file="birds/house-finch.mp3"></div>
+    </div>
+    <div class="card" style="padding:16px">
+      <div style="font-size:.72rem;font-weight:600;margin-bottom:2px">Red-winged Blackbird</div>
+      <div style="font-size:.56rem;color:var(--gray);margin-bottom:8px">Marsh · cattails · water edge</div>
+      <canvas class="sonograph" id="sono2" width="335" height="120"></canvas>
+      <div class="play-circle" style="width:32px;height:32px;margin:10px auto 0" data-file="birds/red-wing-blackbird.mp3"></div>
+    </div>
+    <div class="card" style="padding:16px">
+      <div style="font-size:.72rem;font-weight:600;margin-bottom:2px">Dark-eyed Junco</div>
+      <div style="font-size:.56rem;color:var(--gray);margin-bottom:8px">Forest floor · dense understory</div>
+      <canvas class="sonograph" id="sono3" width="335" height="120"></canvas>
+      <div class="play-circle" style="width:32px;height:32px;margin:10px auto 0" data-file="birds/dark-eyed-junco.mp3"></div>
+    </div>
+  </div>
+
+  <!-- ═══ 14. BIRD FRIENDS MAP ═══ -->
+  <div class="screen" id="proto-14">
+    <div class="screen-title">Bird Friends</div>
+    <div class="screen-sub">Where your friends last heard something. Tap an avatar to explore their recordings.</div>
+
+    <div class="fmap-wrap" id="fmapWrap">
+      <!-- Simplified Union Bay area SVG map -->
+      <svg class="fmap-svg" viewBox="0 0 375 210" xmlns="http://www.w3.org/2000/svg">
+        <rect width="375" height="210" fill="#f0ede5"/>
+        <!-- Union Bay water (upper right) -->
+        <path d="M248,0 L375,0 L375,148 L318,136 L274,86 L242,42 Z" fill="#b8d9e8"/>
+        <!-- Portage Bay (bottom strip) -->
+        <path d="M0,178 Q95,170 168,174 Q238,178 318,170 L375,172 L375,210 L0,210 Z" fill="#b0d5e5"/>
+        <!-- Montlake Fill / wetlands (central green) -->
+        <path d="M152,98 Q172,80 200,84 Q228,88 234,112 Q237,134 216,146 Q192,156 166,144 Q145,130 147,112 Z" fill="#c2e0a8"/>
+        <!-- UW campus / arboretum (lighter green) -->
+        <path d="M200,84 Q242,72 268,93 Q286,112 272,134 Q260,150 237,150 L234,112 Q228,88 200,84 Z" fill="#d4e8c2"/>
+        <!-- Roads -->
+        <line x1="192" y1="0" x2="148" y2="178" stroke="#e0dbd0" stroke-width="4"/>
+        <line x1="0" y1="128" x2="152" y2="120" stroke="#e4e0d6" stroke-width="2.5"/>
+        <line x1="75" y1="0" x2="72" y2="178" stroke="#e4e0d6" stroke-width="3"/>
+        <line x1="148" y1="165" x2="216" y2="163" stroke="#d8d2c8" stroke-width="4.5"/>
+        <line x1="252" y1="134" x2="375" y2="114" stroke="#d8d2c8" stroke-width="3"/>
+        <!-- Labels -->
+        <text x="304" y="46" font-size="7.5" fill="#7aafc4" font-family="system-ui,sans-serif" font-weight="600" text-anchor="middle">Union Bay</text>
+        <text x="72" y="198" font-size="7" fill="#7aafc4" font-family="system-ui,sans-serif" font-weight="600" text-anchor="middle">Portage Bay</text>
+        <text x="192" y="120" font-size="6.5" fill="#74a85e" font-family="system-ui,sans-serif" font-weight="600" text-anchor="middle">Montlake Fill</text>
+        <text x="248" y="110" font-size="6" fill="#8ab870" font-family="system-ui,sans-serif" text-anchor="middle">UW</text>
+        <text x="38" y="90" font-size="7" fill="#b0aca4" font-family="system-ui,sans-serif" text-anchor="middle">Eastlake</text>
+      </svg>
+
+      <!-- Friend pins (positions tuned to map geography) -->
+      <div class="fpin" data-key="maya" style="left:296px;top:52px" onclick="openFriend('maya')">
+        <div class="fpin-ring" style="background:#ddeeff;border-color:#4a90c8;color:#1a3a60">M</div>
+        <div class="fpin-chip">Red-winged B.</div>
+      </div>
+      <div class="fpin" data-key="kira" style="left:192px;top:113px" onclick="openFriend('kira')">
+        <div class="fpin-ring" style="background:#fff0e6;border-color:#c87840;color:#6b3a10">K</div>
+        <div class="fpin-chip">American Robin</div>
+      </div>
+      <div class="fpin" data-key="james" style="left:252px;top:100px" onclick="openFriend('james')">
+        <div class="fpin-ring" style="background:#eef5e8;border-color:#5a7a30;color:#2a4010">J</div>
+        <div class="fpin-chip">Dark-eyed Junco</div>
+      </div>
+      <div class="fpin" data-key="sam" style="left:58px;top:102px" onclick="openFriend('sam')">
+        <div class="fpin-ring" style="background:#f0eaff;border-color:#7850b0;color:#3a1870">S</div>
+        <div class="fpin-chip">House Finch</div>
+      </div>
+      <div class="fpin you" style="left:158px;top:152px">
+        <div class="fpin-ring" style="font-size:.52rem"><svg class="ico"><use href="#i-pin"/></svg> You</div>
+      </div>
+
+    </div>
+
+    <div class="section-label">Recently active</div>
+    <div class="card"><div class="card-row">
+      <div style="width:30px;height:30px;border-radius:50%;background:#4a90c8;display:flex;align-items:center;justify-content:center;font-size:.56rem;color:#fff;font-weight:700;flex-shrink:0">M</div>
+      <div style="flex:1"><div class="card-title">Maya · Red-winged Blackbird</div><div class="card-meta">Union Bay Wetlands · 12 min ago</div></div>
+      <div class="play-circle" style="width:30px;height:30px" data-file="birds/red-wing-blackbird.mp3"></div>
+    </div></div>
+    <div class="card"><div class="card-row">
+      <div style="width:30px;height:30px;border-radius:50%;background:#c87840;display:flex;align-items:center;justify-content:center;font-size:.56rem;color:#fff;font-weight:700;flex-shrink:0">K</div>
+      <div style="flex:1"><div class="card-title">Kira · American Robin</div><div class="card-meta">Montlake Fill · 28 min ago</div></div>
+      <div class="play-circle" style="width:30px;height:30px" data-file="birds/american-robin.mp3"></div>
+    </div></div>
+    <div class="card"><div class="card-row">
+      <div style="width:30px;height:30px;border-radius:50%;background:#5a7a30;display:flex;align-items:center;justify-content:center;font-size:.56rem;color:#fff;font-weight:700;flex-shrink:0">J</div>
+      <div style="flex:1"><div class="card-title">James · Dark-eyed Junco</div><div class="card-meta">UW Campus · 1 hr ago</div></div>
+      <div class="play-circle" style="width:30px;height:30px" data-file="birds/dark-eyed-junco.mp3"></div>
+    </div></div>
+
+    <!-- Detail panel — positioned relative to .screen, slides up over content -->
+    <div class="fdetail" id="fdetail14">
+      <div class="fdetail-handle"></div>
+      <div class="fdetail-hdr">
+        <div class="fdetail-av" id="fdav14"></div>
+        <span id="fdname14"></span>
+      </div>
+      <div id="fdrecs14"></div>
+      <div class="fdetail-close" onclick="closeFDetail()"><svg class="ico"><use href="#i-down"/></svg> close</div>
+    </div>
+
+    <div class="bottom-nav" id="nav-14"></div>
+  </div>
+
+  <!-- ═══ 15. GROUP CHAT ═══ -->
+  <div class="screen" id="proto-15">
+    <div class="grpchat-hdr">
+      <div class="grpchat-av"><svg class="ico"><use href="#i-bird"/></svg></div>
+      <div>
+        <div class="grpchat-name">Union Bay Birders</div>
+        <div class="grpchat-meta">5 people · 4 recordings this morning</div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <!-- Maya: Red-winged Blackbird -->
+    <div class="chatrow">
+      <div class="chatrow-av" style="background:#4a90c8">M</div>
+      <div class="clipbub">
+        <div class="clip-bname">Red-winged Blackbird</div>
+        <div><span class="clip-loctag"><svg class="ico"><use href="#i-pin"/></svg> Union Bay Wetlands</span></div>
+        <div class="clip-wfrow">
+          <div class="mini-play" style="width:26px;height:26px;flex-shrink:0"></div>
+          <div class="miniwf" id="mwf1"></div>
+          <span class="clip-dur">0:04</span>
+        </div>
+        <div class="clip-foot">Maya · 8:04 AM</div>
+      </div>
+    </div>
+
+    <!-- Kira: American Robin -->
+    <div class="chatrow">
+      <div class="chatrow-av" style="background:#c87840">K</div>
+      <div class="clipbub">
+        <div class="clip-bname">American Robin</div>
+        <div><span class="clip-loctag"><svg class="ico"><use href="#i-pin"/></svg> Montlake Fill</span></div>
+        <div class="clip-wfrow">
+          <div class="mini-play" style="width:26px;height:26px;flex-shrink:0"></div>
+          <div class="miniwf" id="mwf2"></div>
+          <span class="clip-dur">0:03</span>
+        </div>
+        <div class="clip-foot">Kira · 8:22 AM</div>
+      </div>
+    </div>
+
+    <!-- You: Dark-eyed Junco -->
+    <div class="chatrow sent">
+      <div class="clipbub">
+        <div class="clip-bname">Dark-eyed Junco</div>
+        <div><span class="clip-loctag"><svg class="ico"><use href="#i-pin"/></svg> Arboretum</span></div>
+        <div class="clip-wfrow">
+          <div class="mini-play" style="width:26px;height:26px;flex-shrink:0"></div>
+          <div class="miniwf" id="mwf3"></div>
+          <span class="clip-dur">0:05</span>
+        </div>
+        <div class="clip-foot">You · 8:55 AM</div>
+      </div>
+    </div>
+
+    <!-- James: text message -->
+    <div class="chatrow">
+      <div class="chatrow-av" style="background:#5a7a30">J</div>
+      <div class="textbub">konk-la-ree again!! incredible morning </div>
+    </div>
+
+    <!-- Sam: House Finch -->
+    <div class="chatrow">
+      <div class="chatrow-av" style="background:#7850b0">S</div>
+      <div class="clipbub">
+        <div class="clip-bname">House Finch</div>
+        <div><span class="clip-loctag"><svg class="ico"><use href="#i-pin"/></svg> Eastlake Ave</span></div>
+        <div class="clip-wfrow">
+          <div class="mini-play" style="width:26px;height:26px;flex-shrink:0"></div>
+          <div class="miniwf" id="mwf4"></div>
+          <span class="clip-dur">0:03</span>
+        </div>
+        <div class="clip-foot">Sam · 9:14 AM</div>
+      </div>
+    </div>
+
+    <!-- You: Mallard Duck -->
+    <div class="chatrow sent">
+      <div class="clipbub">
+        <div class="clip-bname">Mallard Duck</div>
+        <div><span class="clip-loctag"><svg class="ico"><use href="#i-pin"/></svg> Union Bay</span></div>
+        <div class="clip-wfrow">
+          <div class="mini-play" style="width:26px;height:26px;flex-shrink:0"></div>
+          <div class="miniwf" id="mwf5"></div>
+          <span class="clip-dur">0:02</span>
+        </div>
+        <div class="clip-foot">You · 9:38 AM</div>
+      </div>
+    </div>
+
+    <div class="chat-bottom">
+      <div class="chat-ibox">Send a bird…</div>
+      <div class="chat-ibtn"><svg class="ico"><use href="#i-mic"/></svg></div>
+      <div class="chat-ibtn" style="background:var(--green)"><svg class="ico"><use href="#i-send"/></svg></div>
+    </div>
+
+    <div class="bottom-nav" id="nav-15"></div>
+  </div>
+
+  <div class="home-indicator"></div>
+</div><!-- end phone-frame -->
+</div><!-- end right-col -->
+</div><!-- end main-layout -->
+
+<script>
+// ───────────────────────────────────────────────
+//  Segment control + ethical lens
+// ───────────────────────────────────────────────
+const PROTOS=[
+  {id:1,label:'Diary',full:'Audio Diary'},
+  {id:2,label:'Recap',full:'Weekly Recap'},
+  {id:3,label:'My Birds',full:'Mostly Heard'},
+  {id:4,label:'Learn',full:'Learn by Listening'},
+  {id:5,label:'Alt Text',full:'Alt Text Nudges'},
+  {id:6,label:'Group',full:'Group Soundscape'},
+  {id:7,label:'Share',full:'Audio Artifact'},
+  {id:8,label:'Emoji',full:'Bird Emoji = Sound'},
+  {id:9,label:'Profile',full:'Badges & Profile'},
+  {id:10,label:'Wrapped',full:'Season Wrapped'},
+  {id:11,label:'Radio',full:'Bird Radio Play'},
+  {id:12,label:'Toggle',full:'Bird Toggle Grid'},
+  {id:13,label:'Sonograph',full:'Habitat Sonograph'},
+  {id:14,label:'Friends',full:'Bird Friends Map'},
+  {id:15,label:'Chat',full:'Group Chat'},
+];
+
+const LENS={
+  1:'<strong>Slow, personal media.</strong> You record for memory, not metrics. No likes, no audience, no feed to refresh — just your own listening over time.',
+  2:'<strong>Bounded, not infinite.</strong> The week ends. Instead of a bottomless feed, you get one finite recap and then you\'re done.',
+  3:'<strong>Depth over novelty.</strong> Ranking by what you\'ve heard most rewards returning to "old friends" — the opposite of the engagement-driven chase for the new.',
+  4:'<strong>Active, not passive.</strong> You leave knowing more. The app builds ear literacy instead of holding your attention for its own sake.',
+  5:'<strong>Inclusive by default.</strong> Accessibility is the shared norm, not an afterthought — nudges center blind and low-vision birders so no one is left out.',
+  6:'<strong>Local over global.</strong> A place-based community around Union Bay, not a context-collapsed global feed tuned for strangers\' outrage.',
+  7:'<strong>Intimate, not viral.</strong> A share is a one-to-one gift of sound, not a broadcast optimised for maximum reach.',
+  8:'<strong>Multi-sensory by design.</strong> Sound is built into the message itself, so the content is inherently accessible — not gated behind alt text.',
+  9:'<strong>Rewards listening, not clout.</strong> Badges celebrate learning and time outdoors, never follower counts or virality.',
+  10:'<strong>Reflection, not ranking.</strong> A personal look back at your own season — no leaderboard, no competition with others.',
+  11:'<strong>Long-form depth.</strong> Narrated chapters reward sustained attention instead of fragmenting it into dopamine-tuned clips.',
+  12:'<strong>You hold the controls.</strong> You curate what you hear by hand. No algorithm decides what gets surfaced for you.',
+  13:'<strong>Translation, not exclusion.</strong> Sound is re-presented visually and spatially so the experience crosses senses instead of locking people out.',
+  14:'<strong>Presence over performance.</strong> You see where friends are in the world — not what they\'re broadcasting to a feed. Social connection tethered to place and the physical act of going outside to listen.',
+  15:'<strong>The clip is the message.</strong> Sound is the primary currency, not text or images. Sharing audio asks for actual attention, and naming the bird and place clearly means no one is excluded from the content.',
+};
+
+const segRow=document.getElementById('segRow');
+const segLabel=document.getElementById('segLabel');
+const lensText=document.getElementById('lensText');
+
+PROTOS.forEach(p=>{
+  const btn=document.createElement('button');
+  btn.className='seg-btn'+(p.id===1?' active':'');
+  btn.textContent=p.label;
+  btn.onclick=()=>switchProto(p.id);
+  segRow.appendChild(btn);
+});
+
+// Which element is "the point" of each screen — rendered green in the wireframe.
+const WF_KEY={
+  1:'.waveform',           2:'.hero-play',          3:'.card-meta',
+  4:'.quiz-pill',          5:'.nudge',              6:{sel:'.map-area',illus:true},
+  7:'.hero-play',          8:'.chat-sound',         9:{sel:'.p9-badges',illus:true},
+  10:'.wrapped-big',       11:'.hero-play',         12:'.bird-toggle',
+  13:{sel:'.sonograph',illus:true}, 14:{sel:'.fmap-wrap',illus:true}, 15:'.clipbub',
+};
+function applyWfKey(id){
+  document.querySelectorAll('.wf-key').forEach(el=>el.classList.remove('wf-key','wf-illus'));
+  const k=WF_KEY[id];if(!k)return;
+  const sel=typeof k==='string'?k:k.sel, illus=typeof k==='object'&&k.illus;
+  document.querySelectorAll('#proto-'+id+' '+sel).forEach(el=>{
+    el.classList.add('wf-key');if(illus)el.classList.add('wf-illus');
+  });
+}
+
+function switchProto(id){
+  stopCurrent();
+  if(id!==13)stopSonoAnim();
+  document.querySelectorAll('.vo-sr-focus').forEach(el=>el.classList.remove('vo-sr-focus'));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('proto-'+id).classList.add('active');
+  document.querySelectorAll('.seg-btn').forEach((b,i)=>b.classList.toggle('active',i===id-1));
+  segLabel.textContent=PROTOS.find(p=>p.id===id).full;
+  lensText.innerHTML=LENS[id];
+  applyWfKey(id);
+  if(id===13)startSonoAnim();
+}
+
+// ───────────────────────────────────────────────
+//  Real audio engine (shared AnalyserNode)
+// ───────────────────────────────────────────────
+let audioCtx=null, analyser=null, freqData=null;
+let curAudio=null, curBtn=null, curWave=null, rafId=null;
+const srcMap=new WeakMap();
+
+function ensureCtx(){
+  if(audioCtx)return;
+  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  analyser=audioCtx.createAnalyser();
+  analyser.fftSize=64;
+  analyser.smoothingTimeConstant=0.75;
+  freqData=new Uint8Array(analyser.frequencyBinCount);
+  analyser.connect(audioCtx.destination);
+}
+
+// Build empty waveform bars + remember idle heights
+function buildWaveforms(){
+  const idleHeights=[8,14,22,18,28,24,12,20,16,26,10,18,22,14,8,20,30,16,12,24];
+  document.querySelectorAll('.waveform').forEach(wf=>{
+    if(wf.children.length)return;
+    const n=wf.id==='wf-quiz'||wf.id==='wf-shuffle'?14:20;
+    for(let i=0;i<n;i++){
+      const b=document.createElement('div');
+      b.className='wf-bar';
+      const h=idleHeights[i%idleHeights.length];
+      b.style.height=h+'px';
+      b.dataset.h=h;
+      wf.appendChild(b);
+    }
+  });
+}
+
+function resetWave(wf){
+  if(!wf)return;
+  wf.querySelectorAll('.wf-bar').forEach(b=>{
+    b.style.height=(b.dataset.h||10)+'px';
+    b.classList.remove('lit');
+  });
+}
+
+function stopCurrent(){
+  if(curAudio){try{curAudio.pause();curAudio.currentTime=0;}catch(e){}}
+  if(curBtn){curBtn.classList.remove('playing');}
+  if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+  resetWave(curWave);
+  curAudio=null;curBtn=null;curWave=null;
+}
+
+function animate(){
+  if(!curWave){rafId=requestAnimationFrame(animate);return;}
+  analyser.getByteFrequencyData(freqData);
+  const bars=curWave.querySelectorAll('.wf-bar');
+  bars.forEach((b,i)=>{
+    const v=freqData[(i*2)%freqData.length]/255;
+    b.style.height=(4+v*30)+'px';
+    b.classList.toggle('lit',v>0.25);
+  });
+  rafId=requestAnimationFrame(animate);
+}
+
+function playFile(file,btn,wave){
+  ensureCtx();
+  if(audioCtx.state==='suspended')audioCtx.resume();
+  // toggle off if same button
+  if(curBtn===btn){stopCurrent();return;}
+  stopCurrent();
+  if(!file)return;
+  const audio=new Audio(file);
+  audio.crossOrigin='anonymous';
+  let src;
+  try{ src=audioCtx.createMediaElementSource(audio); src.connect(analyser); }
+  catch(e){ audio.connect&&0; }
+  curAudio=audio;curBtn=btn;curWave=wave;
+  if(btn)btn.classList.add('playing');
+  audio.play().catch(()=>{});
+  audio.onended=()=>{ if(curBtn===btn)stopCurrent(); };
+  if(!rafId)animate();
+}
+
+// Wire every play-circle / hero-play with data-file
+function waveFor(btn){
+  if(btn.dataset.wf)return document.getElementById(btn.dataset.wf);
+  const card=btn.closest('.card');
+  if(card){const wf=card.querySelector('.waveform');if(wf)return wf;}
+  return null;
+}
+document.querySelectorAll('.play-circle[data-file],.hero-play[data-file]').forEach(btn=>{
+  btn.addEventListener('click',()=>playFile(btn.dataset.file,btn,waveFor(btn)));
+});
+
+// Chat sound clips
+document.querySelectorAll('.chat-sound[data-file]').forEach(cs=>{
+  cs.addEventListener('click',()=>{
+    if(curBtn===cs){stopCurrent();return;}
+    playFile(cs.dataset.file,cs,null);
+  });
+});
+
+// Map pins
+document.querySelectorAll('.map-pin[data-file]').forEach(pin=>{
+  pin.addEventListener('click',()=>{
+    if(curBtn===pin){stopCurrent();return;}
+    playFile(pin.dataset.file,pin,null);
+  });
+});
+
+// ───────────────────────────────────────────────
+//  Interactions
+// ───────────────────────────────────────────────
+function selectPill(el,multi){
+  if(multi){el.classList.toggle('active');return;}
+  el.parentElement.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function answerQuiz(el){
+  const fb=document.getElementById('quizFeedback');
+  const pills=el.parentElement.querySelectorAll('.quiz-pill');
+  pills.forEach(p=>{p.classList.remove('correct','wrong');p.style.pointerEvents='none';});
+  if(el.dataset.correct){
+    el.classList.add('correct');
+    fb.textContent='✓ Correct — that\'s the House Finch\'s warble!';
+    fb.className='quiz-feedback ok';
+  }else{
+    el.classList.add('wrong');
+    pills.forEach(p=>{if(p.dataset.correct)p.classList.add('correct');});
+    fb.textContent='Not quite — the highlighted one is right. Listen again!';
+    fb.className='quiz-feedback no';
+  }
+  setTimeout(()=>{
+    pills.forEach(p=>{p.classList.remove('correct','wrong');p.style.pointerEvents='';});
+    fb.textContent='';fb.className='quiz-feedback';
+  },2600);
+}
+
+function addAlt(btn){
+  const n=document.getElementById('nudge1');
+  n.className='nudge success';
+  n.innerHTML='<div class="nudge-icon"><svg class="ico"><use href="#i-check"/></svg></div><div class="nudge-text"><strong>Alt text added.</strong> Your post is now accessible to blind and low-vision birders too.</div>';
+  btn.textContent='✓ Accessible';
+  btn.style.pointerEvents='none';
+}
+
+function toggleBird(el,e){
+  el.classList.toggle('on');
+  if(el.classList.contains('on')){
+    const btnRef={dataset:{}};
+    playFile(el.dataset.file,el,null);
+  }else{
+    if(curBtn===el)stopCurrent();
+  }
+}
+
+const SH_ICON={'House Finch':'<svg class="ico"><use href="#i-bird"/></svg>','Junco':'<svg class="ico"><use href="#i-bird"/></svg>','Robin':'<svg class="ico"><use href="#i-bird"/></svg>','Crow':'<svg class="ico"><use href="#i-bird"/></svg>','Mallard':'<svg class="ico"><use href="#i-bird"/></svg>','Blackbird':'<svg class="ico"><use href="#i-bird"/></svg>'};
+function shuffleBird(){
+  const on=[...document.querySelectorAll('#birdGrid .bird-toggle.on')];
+  if(!on.length){alert('Turn on at least one bird first.');return;}
+  const pick=on[Math.floor(Math.random()*on.length)];
+  const card=document.getElementById('shuffleCard');
+  document.getElementById('shuffleIcon').textContent=SH_ICON[pick.dataset.name]||'<svg class="ico"><use href="#i-bird"/></svg>';
+  document.getElementById('shuffleName').textContent=pick.dataset.name;
+  const play=document.getElementById('shufflePlay');
+  play.dataset.file=pick.dataset.file;
+  card.style.display='block';
+  card.classList.remove('flash');void card.offsetWidth;card.classList.add('flash');
+  playFile(pick.dataset.file,play,document.getElementById('wf-shuffle'));
+}
+// rebind shuffle play (its data-file changes)
+document.getElementById('shufflePlay').addEventListener('click',function(){
+  playFile(this.dataset.file,this,document.getElementById('wf-shuffle'));
+});
+
+// ───────────────────────────────────────────────
+//  Habitat sonograph — animated scrolling spectrogram
+// ───────────────────────────────────────────────
+let sonoBgCache={}, sonoAnimId=null, sonoT=0;
+
+function buildSonoBg(habitat,w,h){
+  const bg=document.createElement('canvas');
+  bg.width=w;bg.height=h;
+  const ctx=bg.getContext('2d');
+  const colors={suburban:['#eef7ed','#d6ecd2','#bfe0b8'],marsh:['#eaf3fb','#cfe5f7','#aed3f0'],forest:['#eef6e6','#d8ecc5','#c2e0a8']};
+  const cols=colors[habitat];
+  const grad=ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0,cols[0]);grad.addColorStop(.5,cols[1]);grad.addColorStop(1,cols[2]);
+  ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+  ctx.beginPath();ctx.moveTo(0,h);
+  if(habitat==='suburban'){
+    for(let x=0;x<=w;x+=2){const y=h*.55+Math.sin(x*.015)*15+Math.sin(x*.04)*8+(x>100&&x<130?-20:0)+(x>200&&x<225?-25:0);ctx.lineTo(x,y);}
+  }else if(habitat==='marsh'){
+    for(let x=0;x<=w;x+=2){const base=h*.7+Math.sin(x*.02)*5;const spike=(x%30<4)?-18-((x*7)%12):0;ctx.lineTo(x,base+spike);}
+  }else{
+    for(let x=0;x<=w;x+=2){const y=h*.4+Math.sin(x*.03)*12+Math.sin(x*.08)*8+Math.sin(x*.15)*5;ctx.lineTo(x,y);}
+  }
+  ctx.lineTo(w,h);ctx.closePath();
+  ctx.fillStyle='rgba(103,173,91,.16)';ctx.fill();
+  ctx.strokeStyle='rgba(103,173,91,.35)';ctx.lineWidth=1;ctx.stroke();
+  return bg;
+}
+
+function drawBirdLayer(ctx,w,h,habitat,t){
+  const c='#67AD5B';
+  if(habitat==='suburban'){
+    // House finch: warbling, undulating multi-trace
+    for(let x=0;x<w;x+=2){
+      const p=x+t;
+      const y=h*.26+Math.sin(p*.09)*14+Math.sin(p*.23)*7;
+      const a=.45+Math.sin(p*.07)*.28;
+      ctx.globalAlpha=a;ctx.fillStyle=c;ctx.fillRect(x,y,2,3);
+      if(Math.sin(p*.15)>.4){ctx.globalAlpha=a*.6;ctx.fillRect(x,y-12,2,2);}
+    }
+  }else if(habitat==='marsh'){
+    // Blackbird konk-la-ree: rising phrases scrolling left
+    const period=80;
+    for(let rep=-1;rep<6;rep++){
+      const sx=((rep*period - t%period + period)%335);
+      for(let i=0;i<55;i++){
+        const x=sx+i;if(x<0||x>=w)continue;
+        const frac=i/55;
+        const y=h*.56-frac*34+Math.sin(frac*16)*4;
+        ctx.globalAlpha=.4+frac*.4;ctx.fillStyle=c;ctx.fillRect(x,y,2,4);
+      }
+    }
+  }else{
+    // Junco: steady alternating trill
+    for(let x=0;x<w;x+=4){
+      const p=x+t;
+      if(Math.floor(p/4)%2===0){
+        const y=h*.35+Math.sin(p*.013)*4;
+        ctx.globalAlpha=.55;ctx.fillStyle=c;
+        ctx.fillRect(x,y,2,3);ctx.fillRect(x,y+7,2,2);
+      }
+    }
+  }
+  ctx.globalAlpha=1;
+}
+
+function sonoTick(){
+  sonoT+=1.4;
+  [['sono1','suburban'],['sono2','marsh'],['sono3','forest']].forEach(([id,habitat])=>{
+    const c=document.getElementById(id);if(!c)return;
+    const ctx=c.getContext('2d');
+    if(!sonoBgCache[habitat])sonoBgCache[habitat]=buildSonoBg(habitat,c.width,c.height);
+    ctx.drawImage(sonoBgCache[habitat],0,0);
+    drawBirdLayer(ctx,c.width,c.height,habitat,sonoT);
+  });
+  sonoAnimId=requestAnimationFrame(sonoTick);
+}
+
+function startSonoAnim(){if(!sonoAnimId)sonoAnimId=requestAnimationFrame(sonoTick);}
+function stopSonoAnim(){if(sonoAnimId){cancelAnimationFrame(sonoAnimId);sonoAnimId=null;}}
+
+// ───────────────────────────────────────────────
+//  Bottom-nav line icons (replace emoji)
+// ───────────────────────────────────────────────
+const NAV_SVG={
+  'Diary':'<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg>',
+  'My Birds':'<svg viewBox="0 0 24 24" width="21" height="21" fill="currentColor"><path d="M22 5.8c-.7.3-1.5.5-2.3.6a4 4 0 0 0 1.8-2.2c-.8.5-1.7.8-2.6 1a4 4 0 0 0-6.9 3.6A11.4 11.4 0 0 1 3.8 4.2a4 4 0 0 0 1.2 5.3c-.6 0-1.2-.2-1.7-.4a4 4 0 0 0 3.2 3.9c-.5.1-1.1.2-1.7.1a4 4 0 0 0 3.7 2.8A8 8 0 0 1 2 17.5 11.3 11.3 0 0 0 8.1 19c7.4 0 11.4-6.1 11.4-11.4v-.5A8 8 0 0 0 22 5.8z"/></svg>',
+  'Group':'<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  'Learn':'<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.3 2.7 3 6 3s6-1.7 6-3v-5"/></svg>',
+  'Profile':'<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+};
+document.querySelectorAll('.nav-item').forEach(it=>{
+  const label=(it.lastChild&&it.lastChild.textContent||'').trim();
+  const ic=it.querySelector('.nav-icon');
+  if(ic&&NAV_SVG[label])ic.innerHTML=NAV_SVG[label];
+});
+
+// ───────────────────────────────────────────────
+//  Proto-14: Bird Friends Map
+// ───────────────────────────────────────────────
+const FRIENDS={
+  maya:{name:'Maya',color:'#4a90c8',recs:[
+    {bird:'Red-winged Blackbird',loc:'Union Bay Wetlands',time:'8:04 AM',file:'birds/red-wing-blackbird.mp3'},
+    {bird:'Mallard Duck',loc:'Union Bay',time:'Yesterday',file:'birds/mallard-duck.mp3'},
+    {bird:'American Robin',loc:'Montlake Fill',time:'2 days ago',file:'birds/american-robin.mp3'},
+  ]},
+  kira:{name:'Kira',color:'#c87840',recs:[
+    {bird:'American Robin',loc:'Montlake Fill',time:'8:22 AM',file:'birds/american-robin.mp3'},
+    {bird:'House Finch',loc:'Eastlake',time:'Yesterday',file:'birds/house-finch.mp3'},
+    {bird:'Dark-eyed Junco',loc:'Arboretum',time:'2 days ago',file:'birds/dark-eyed-junco.mp3'},
+  ]},
+  james:{name:'James',color:'#5a7a30',recs:[
+    {bird:'Dark-eyed Junco',loc:'UW Campus',time:'7:44 AM',file:'birds/dark-eyed-junco.mp3'},
+    {bird:'Common Crow',loc:'University Ave',time:'Yesterday',file:'birds/common-crow.mp3'},
+  ]},
+  sam:{name:'Sam',color:'#7850b0',recs:[
+    {bird:'House Finch',loc:'Eastlake Ave',time:'7:02 AM',file:'birds/house-finch.mp3'},
+    {bird:'American Robin',loc:'I-5 Colonnade',time:'2 days ago',file:'birds/american-robin.mp3'},
+  ]},
+};
+
+function openFriend(key){
+  const f=FRIENDS[key];
+  const panel=document.getElementById('fdetail14');
+  document.getElementById('fdav14').style.background=f.color;
+  document.getElementById('fdav14').textContent=f.name[0];
+  document.getElementById('fdname14').textContent=f.name+'’s recordings';
+  document.getElementById('fdrecs14').innerHTML=f.recs.map(r=>`
+    <div class="frec">
+      <div class="frec-info">
+        <div class="frec-bird">${r.bird}</div>
+        <div class="frec-meta"><svg class="ico"><use href="#i-pin"/></svg> ${r.loc} · ${r.time}</div>
+      </div>
+      <div class="play-circle" style="width:28px;height:28px;flex-shrink:0" data-file="${r.file}"></div>
+    </div>`).join('');
+  document.getElementById('fdrecs14').querySelectorAll('.play-circle[data-file]').forEach(btn=>{
+    btn.onclick=()=>playFile(btn.dataset.file,btn,null);
+  });
+  document.querySelectorAll('.fpin').forEach(p=>p.classList.remove('active'));
+  const pin=document.querySelector(`.fpin[data-key="${key}"]`);
+  if(pin)pin.classList.add('active');
+  panel.classList.add('open');
+}
+function closeFDetail(){
+  document.getElementById('fdetail14').classList.remove('open');
+  document.querySelectorAll('.fpin').forEach(p=>p.classList.remove('active'));
+}
+
+// ───────────────────────────────────────────────
+//  Proto-15: Mini waveform bars
+// ───────────────────────────────────────────────
+// Different bar patterns per bird call character
+const WF_PATTERNS={
+  1:[2,5,8,14,18,22,20,24,18,16,22,20,14,18,22,16,12,8,5,3],   // rwbb: burst then trill
+  2:[3,6,12,16,14,12,16,18,14,10,14,18,16,12,10,8,6,4,3,2],    // robin: clear phrases
+  3:[2,4,8,12,16,14,16,18,16,14,16,18,14,12,10,8,6,4,2,2],     // junco: steady trill
+  4:[2,4,8,14,20,22,20,18,16,18,20,22,18,14,10,8,6,4,2,2],     // house finch: warble
+  5:[3,8,16,22,18,12,6,3,2,8,16,20,14,8,4,2,3,8,14,10],        // mallard: quack bursts
+};
+[1,2,3,4,5].forEach(n=>{
+  const el=document.getElementById('mwf'+n);
+  if(!el)return;
+  const pat=WF_PATTERNS[n];
+  el.innerHTML=pat.map(h=>`<div class="mwfbar" style="height:${h}px"></div>`).join('');
+});
+
+// Wire up mini-play buttons in group chat (reuse existing audio engine)
+document.querySelectorAll('#proto-15 .mini-play').forEach((btn,i)=>{
+  const files=['birds/red-wing-blackbird.mp3','birds/american-robin.mp3','birds/dark-eyed-junco.mp3','birds/house-finch.mp3','birds/mallard-duck.mp3'];
+  btn.style.cursor='pointer';
+  btn.onclick=()=>playFile(files[i]||files[0],btn,null);
+});
+
+// ───────────────────────────────────────────────
+//  Init
+// ───────────────────────────────────────────────
+buildWaveforms();
+lensText.innerHTML=LENS[1];
+
+// ───────────────────────────────────────────────
+//  Embed / deep-link support (for playground.html wrapper)
+// ───────────────────────────────────────────────
+function applyLvScale(scale){
+  document.documentElement.classList.add('embed-mode');
+  document.documentElement.style.setProperty('--lv-font',String(scale));
+}
+
+(function(){
+  const params=new URLSearchParams(location.search);
+  const embed=params.get('embed')==='1';
+  if(embed){
+    document.body.classList.add('embed');
+    applyLvScale(1);
+  }
+  const p=parseInt(params.get('proto'),10);
+  if(p>=1&&p<=PROTOS.length)switchProto(p);
+
+  // Let the parent swap screens without reloading the iframe
+  window.addEventListener('message',e=>{
+    if(e.data&&e.data.type==='goto'&&e.data.proto)switchProto(e.data.proto);
+    if(e.data&&e.data.type==='lvScale'&&e.data.fontScale)applyLvScale(e.data.fontScale);
+    if(e.data&&e.data.type==='voFocus'){
+      document.querySelectorAll('.vo-sr-focus').forEach(el=>el.classList.remove('vo-sr-focus'));
+      if(e.data.sel){
+        const el=document.querySelector(e.data.sel);
+        if(el){
+          el.classList.add('vo-sr-focus');
+          el.scrollIntoView({block:'nearest',behavior:'smooth'});
+        }
+      }
+    }
+    if(e.data&&e.data.type==='voActivate'&&e.data.sel){
+      const el=document.querySelector(e.data.sel);
+      if(el){
+        el.classList.add('vo-sr-press');
+        setTimeout(()=>el.classList.remove('vo-sr-press'),280);
+        el.click();
+      }
+    }
+  });
+
+  // Tap cursor — only in embed mode, confined to the phone
+  if(embed){
+    const phone=document.querySelector('.phone-frame');
+    const dot=document.createElement('div');dot.className='tapdot';
+    document.body.appendChild(dot);
+    phone.addEventListener('mousemove',ev=>{
+      dot.classList.add('show');
+      dot.style.left=ev.clientX+'px';dot.style.top=ev.clientY+'px';
+    });
+    phone.addEventListener('mouseleave',()=>dot.classList.remove('show'));
+    phone.addEventListener('mousedown',ev=>{
+      dot.classList.add('press');
+      const r=document.createElement('div');r.className='tapripple';
+      r.style.left=ev.clientX+'px';r.style.top=ev.clientY+'px';
+      document.body.appendChild(r);setTimeout(()=>r.remove(),520);
+    });
+    window.addEventListener('mouseup',()=>dot.classList.remove('press'));
+  }
+})();
+</script>
+</body>
+</html>

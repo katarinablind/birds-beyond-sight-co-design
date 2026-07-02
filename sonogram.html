@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Sonogram — Birds Beyond Sight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Radio+Canada+Big:wght@400;600;700&family=Source+Serif+4:opsz,ital,wght@8..60,1,400;8..60,0,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  background:#0a0a0a;
+  min-height:100vh;
+  font-family:'Radio Canada Big',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;padding:28px 20px 36px;
+}
+
+/* ── Page header ── */
+.page-top{text-align:center;margin-bottom:20px;width:100%}
+.page-top a{color:#555;font-size:.7rem;text-decoration:none;letter-spacing:.04em}
+.page-top a:hover{color:#888}
+
+/* ── Story grid ── */
+.stories{display:flex;gap:18px;align-items:flex-start}
+
+/* ── Story container ── */
+.story{
+  width:375px;height:667px;
+  position:relative;overflow:hidden;
+  border-radius:14px;
+  flex-shrink:0;
+  box-shadow:0 0 0 1px rgba(255,255,255,.06),0 32px 80px -16px rgba(0,0,0,.8);
+}
+.story canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* ── Progress bars ── */
+.s-progress{
+  position:absolute;top:10px;left:10px;right:10px;
+  display:flex;gap:3px;z-index:10;pointer-events:none;
+}
+.s-bar{flex:1;height:2px;background:rgba(255,255,255,.28);border-radius:1px;overflow:hidden}
+.s-fill{height:100%;background:#fff;border-radius:1px;transform-origin:left}
+
+/* ── Top chrome ── */
+.s-top{
+  position:absolute;top:20px;left:0;right:0;
+  display:flex;align-items:center;gap:8px;padding:0 12px;z-index:10;pointer-events:none;
+}
+.s-avatar{
+  width:30px;height:30px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:#fff;font-weight:700;
+  flex-shrink:0;
+}
+.s-user{display:flex;align-items:baseline;gap:5px}
+.s-name{font-size:.74rem;font-weight:600;color:#fff;
+  text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.s-time{font-size:.6rem;color:rgba(255,255,255,.55)}
+.s-close{margin-left:auto;color:rgba(255,255,255,.75);font-size:1rem;line-height:1}
+
+/* ── Bird label (middle of story) ── */
+.s-bird{
+  position:absolute;z-index:10;pointer-events:none;
+  top:50%;transform:translateY(-80%);
+  left:20px;
+}
+.s-bird-name{
+  font-family:'Radio Canada Big',sans-serif;
+  font-size:1.7rem;font-weight:700;color:#fff;
+  letter-spacing:-.03em;line-height:1.05;
+  text-shadow:0 2px 20px rgba(0,0,0,.6);
+}
+.s-bird-sci{
+  font-family:'Source Serif 4',Georgia,serif;
+  font-style:italic;font-size:.76rem;
+  color:rgba(255,255,255,.65);margin-top:4px;
+  text-shadow:0 1px 8px rgba(0,0,0,.5);
+}
+.s-bird-loc{
+  font-size:.62rem;color:rgba(255,255,255,.5);margin-top:6px;
+  letter-spacing:.01em;
+}
+
+/* ── LIVE chip ── */
+.s-live{
+  position:absolute;z-index:10;pointer-events:none;
+  top:22px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:5px;
+  background:rgba(0,0,0,.38);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.12);border-radius:999px;
+  padding:4px 10px 4px 8px;
+}
+.s-live-dot{width:6px;height:6px;border-radius:50%;background:#ff3b30;
+  animation:livePulse 1.4s ease-in-out infinite;flex-shrink:0}
+.s-live-text{font-size:.54rem;font-weight:700;color:#fff;letter-spacing:.06em}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(0.85)}}
+
+/* ── Sono label ── */
+.s-sono-label{
+  position:absolute;z-index:10;pointer-events:none;
+  font-size:.5rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.35);
+}
+
+/* ── Bottom actions ── */
+.s-actions{
+  position:absolute;bottom:0;left:0;right:0;z-index:10;
+  padding:16px 16px 22px;
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(to top,rgba(0,0,0,.5) 0%,transparent 100%);
+  pointer-events:auto;
+}
+.s-reply{
+  flex:1;height:36px;
+  border:1.5px solid rgba(255,255,255,.32);border-radius:18px;
+  display:flex;align-items:center;padding:0 14px;
+  font-size:.72rem;color:rgba(255,255,255,.45);
+  font-family:'Radio Canada Big',sans-serif;
+}
+.s-icon{font-size:1.15rem;color:rgba(255,255,255,.8);cursor:pointer;line-height:1;user-select:none}
+
+@media(max-width:820px){
+  .stories{flex-direction:column}
+  body{padding:0;justify-content:flex-start}
+  .story{width:100vw;height:100svh;border-radius:0}
+  .page-top{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="page-top">
+  <a href="prototypes.html">← back to prototypes</a>
+</div>
+
+<div class="stories">
+
+  <!-- ── Story 1: Western Gull ── -->
+  <div class="story" id="story-gull">
+    <canvas id="c-gull"></canvas>
+
+    <div class="s-progress">
+      <div class="s-bar"><div class="s-fill" style="width:100%"></div></div>
+      <div class="s-bar"><div class="s-fill" id="pfill-gull" style="width:0%"></div></div>
+      <div class="s-bar"><div class="s-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="s-top">
+      <div class="s-avatar" style="background:rgba(42,88,140,.8)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M2 8c2.3-2 4.4-2 7 0s4.7 2 7 0 4.4-2 6 0"/><path d="M2 14c2.3-2 4.4-2 7 0s4.7 2 7 0 4.4-2 6 0"/></svg></div>
+      <div class="s-user">
+        <span class="s-name">jiu_jiu_birds</span>
+        <span class="s-time">now</span>
+      </div>
+      <div class="s-close">✕</div>
+    </div>
+
+    <div class="s-bird">
+      <div class="s-bird-name">Western Gull</div>
+      <div class="s-bird-sci">Larus occidentalis</div>
+      <div class="s-bird-loc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Elliott Bay, Seattle</div>
+    </div>
+
+    <div class="s-sono-label" id="slabel-gull"></div>
+
+    <div class="s-actions">
+      <div class="s-reply">Send message…</div>
+      <div class="s-icon">♡</div>
+      <div class="s-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+    </div>
+  </div>
+
+  <!-- ── Story 2: Red-winged Blackbird ── -->
+  <div class="story" id="story-blackbird">
+    <canvas id="c-blackbird"></canvas>
+
+    <div class="s-progress">
+      <div class="s-bar"><div class="s-fill" style="width:100%"></div></div>
+      <div class="s-bar"><div class="s-fill" style="width:100%"></div></div>
+      <div class="s-bar"><div class="s-fill" id="pfill-bb" style="width:0%"></div></div>
+    </div>
+
+    <div class="s-top">
+      <div class="s-avatar" style="background:rgba(30,60,10,.85)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M12 22V9"/><path d="M12 22c-1-5-4-7-5-10"/><path d="M12 22c1-5 4-7 5-10"/></svg></div>
+      <div class="s-user">
+        <span class="s-name">jiu_jiu_birds</span>
+        <span class="s-time">now</span>
+      </div>
+      <div class="s-close">✕</div>
+    </div>
+
+    <div class="s-bird">
+      <div class="s-bird-name">Red-winged<br>Blackbird</div>
+      <div class="s-bird-sci">Agelaius phoeniceus</div>
+      <div class="s-bird-loc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Union Bay, Seattle</div>
+    </div>
+
+    <div class="s-sono-label" id="slabel-bb"></div>
+
+    <div class="s-actions">
+      <div class="s-reply">Send message…</div>
+      <div class="s-icon">♡</div>
+      <div class="s-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── Noise utilities ──────────────────────────────────────────────────
+function h21(x,y){const n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n);}
+function snoise(x,y){
+  const fx=Math.floor(x),fy=Math.floor(y),tx=x-fx,ty=y-fy;
+  const ux=tx*tx*(3-2*tx),uy=ty*ty*(3-2*ty);
+  const a=h21(fx,fy),b=h21(fx+1,fy),c=h21(fx,fy+1),d=h21(fx+1,fy+1);
+  return a+(b-a)*ux+(c-a)*uy+(d-b-c+a)*ux*uy;
+}
+
+// ─── Bird call synthesisers ───────────────────────────────────────────
+// Returns [0,1] amplitude for frequency band `f` (0=low,1=high) at time `t`
+
+function gullAmp(t,f){
+  // Mewing call: 2s on, 1.5s silence. Fundamental descends 0.65→0.28, 2 harmonics.
+  const cycle=3.5,callDur=2.0;
+  const ph=t%cycle;
+  const noise=h21(t*73.1,f*51.3)*0.06;
+  if(ph>callDur)return noise;
+  const ct=ph/callDur;
+  const fund=0.65-ct*0.37;
+  const env=Math.pow(Math.sin(ct*Math.PI),0.65)*(0.6+ct*0.4);
+  const d0=Math.abs(f-fund),d1=Math.abs(f-fund*1.9),d2=Math.abs(f-fund*0.52);
+  const spec=Math.exp(-d0*d0*55)*0.9+Math.exp(-d1*d1*80)*0.38+Math.exp(-d2*d2*110)*0.18;
+  return Math.min(1,spec*env+noise);
+}
+
+function bbAmp(t,f){
+  // Konk-la-ree: sharp burst (0.13s) then ascending whistle (0.7s), silence 1s.
+  const cycle=1.83,konk=0.13,trill=0.83;
+  const ph=t%cycle;
+  const noise=h21(t*83.7,f*61.1)*0.04;
+  if(ph<konk){
+    const kt=ph/konk,env=Math.sin(kt*Math.PI)*1.15;
+    const s=Math.exp(-Math.pow(f-0.3,2)*28)*0.85+Math.exp(-Math.pow(f-0.52,2)*55)*0.35;
+    return Math.min(1,s*env+noise*1.5);
+  }
+  if(ph<trill){
+    const tr=(ph-konk)/(trill-konk);
+    const fund=0.33+tr*0.44;
+    const env=Math.sin(tr*Math.PI)*0.95+0.05;
+    const d=Math.abs(f-fund);
+    return Math.min(1,Math.exp(-d*d*95)*env+noise);
+  }
+  return noise;
+}
+
+// ─── Canvas setup helper ──────────────────────────────────────────────
+const DPR=Math.min(devicePixelRatio||1,2);
+function setupCanvas(canvas){
+  const w=canvas.parentElement.clientWidth;
+  const h=canvas.parentElement.clientHeight;
+  canvas.width=w*DPR;canvas.height=h*DPR;
+  const ctx=canvas.getContext('2d');
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  return {ctx,w,h};
+}
+
+// ─── Halftone spectrogram ─────────────────────────────────────────────
+// cols × rows grid of circles; dot radius ∝ amplitude at that freq/time
+const SONO_COLS=30, SONO_ROWS=12, SONO_HISTORY=4; // 4 seconds of history
+
+function drawHalftone(ctx,W,H,t,ampFn,dotColor,glowColor){
+  // Position: lower third of canvas, full width with padding
+  const padX=12,padY=0;
+  const sonoW=W-padX*2, sonoH=140;
+  const sonoX=padX, sonoY=H*0.64;
+
+  // Frosted backing
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(sonoX-6,sonoY-12,sonoW+12,sonoH+28,12);
+  ctx.fillStyle='rgba(0,0,0,.32)';
+  ctx.fill();
+  ctx.restore();
+
+  // Dot grid
+  const cellW=sonoW/SONO_COLS, cellH=sonoH/SONO_ROWS;
+  const maxR=Math.min(cellW,cellH)*0.44;
+
+  for(let ci=0;ci<SONO_COLS;ci++){
+    for(let ri=0;ri<SONO_ROWS;ri++){
+      const lookBack=(SONO_COLS-1-ci)/SONO_COLS*SONO_HISTORY;
+      const freqNorm=1-(ri/(SONO_ROWS-1)); // top=high, bottom=low
+      const amp=ampFn(t-lookBack, freqNorm);
+      const jitter=snoise(ci*0.4+t*0.08,ri*0.6)*0.12; // subtle animation in silence
+      const a=Math.max(0,amp+jitter);
+
+      const x=sonoX+ci*cellW+cellW/2;
+      const y=sonoY+ri*cellH+cellH/2;
+      const r=Math.max(0.5, maxR*(0.08+a*0.92));
+      const alpha=0.15+a*0.82;
+
+      // Soft glow
+      if(a>0.2){
+        ctx.beginPath();ctx.arc(x,y,r*2.2,0,Math.PI*2);
+        ctx.fillStyle=glowColor;ctx.globalAlpha=a*0.14;ctx.fill();
+      }
+      // Dot
+      ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fillStyle=dotColor;ctx.globalAlpha=alpha;ctx.fill();
+    }
+  }
+  ctx.globalAlpha=1;
+}
+
+// ─── Water / coastal habitat ──────────────────────────────────────────
+function drawWater(ctx,W,H,t){
+  // Sky: night / dusk blue-black
+  const sky=ctx.createLinearGradient(0,0,0,H*0.44);
+  sky.addColorStop(0,'#050d1a');sky.addColorStop(0.5,'#0a1830');
+  sky.addColorStop(1,'#122644');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H*0.44);
+
+  // Subtle stars (halftone dots scattered)
+  const starSeed=42;
+  for(let i=0;i<55;i++){
+    const sx=h21(i,starSeed)*W;
+    const sy=h21(i,starSeed+7)*H*0.45;
+    const twinkle=0.3+Math.sin(t*0.7+i*1.3)*0.2;
+    const sr=h21(i,starSeed+11)*1.2+0.2;
+    ctx.beginPath();ctx.arc(sx,sy,sr,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,245,${twinkle})`;ctx.fill();
+  }
+
+  // Moon
+  const moonX=W*0.74,moonY=H*0.10;
+  const moonGlow=ctx.createRadialGradient(moonX,moonY,0,moonX,moonY,55);
+  moonGlow.addColorStop(0,'rgba(230,240,200,.14)');moonGlow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=moonGlow;ctx.fillRect(0,0,W,H*0.4);
+  ctx.beginPath();ctx.arc(moonX,moonY,10,0,Math.PI*2);
+  ctx.fillStyle='rgba(245,248,220,.9)';ctx.fill();
+
+  // Gull silhouettes (tiny M-shapes)
+  const gulls=[[W*0.22,H*0.18],[W*0.38,H*0.14],[W*0.55,H*0.2]];
+  gulls.forEach(([gx,gy],i)=>{
+    const flap=Math.sin(t*1.4+i*2.2)*3;
+    ctx.save();ctx.strokeStyle='rgba(200,215,240,.5)';ctx.lineWidth=1;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(gx-7,gy+flap);ctx.quadraticCurveTo(gx,gy-2+flap*0.5,gx+7,gy+flap);
+    ctx.stroke();ctx.restore();
+  });
+
+  // Water wave layers (dark to reflective)
+  const waves=[
+    {y:0.40,amp:26,spd:0.38,f:0.010,c:'#050f20'},
+    {y:0.46,amp:22,spd:0.60,f:0.014,c:'#0b1e3c'},
+    {y:0.53,amp:18,spd:0.85,f:0.019,c:'#112d55'},
+    {y:0.61,amp:14,spd:1.15,f:0.026,c:'#183d6e'},
+    {y:0.70,amp:10,spd:1.55,f:0.035,c:'#235080'},
+    {y:0.79,amp: 7,spd:2.05,f:0.047,c:'#346694'},
+    {y:0.88,amp: 5,spd:2.7, f:0.062,c:'#4a7eaa'},
+  ];
+  waves.forEach(l=>{
+    ctx.beginPath();ctx.moveTo(-2,H);ctx.lineTo(-2,l.y*H);
+    for(let x=0;x<=W+2;x+=3){
+      const y=l.y*H+Math.sin(x*l.f+t*l.spd)*l.amp+Math.sin(x*l.f*2.4-t*l.spd*1.5)*l.amp*0.28;
+      ctx.lineTo(x,y);
+    }
+    ctx.lineTo(W+2,H);ctx.closePath();ctx.fillStyle=l.c;ctx.fill();
+  });
+
+  // Moon reflection in water
+  for(let y=H*0.55;y<H*0.90;y+=5){
+    const f1=Math.max(0,1-(y-H*0.55)/(H*0.08));const f2=Math.max(0,1-(y-H*0.66)/(H*0.14));
+    const a=(1-f1)*f2*0.11;if(a<0.005)continue;
+    const xOff=Math.sin(t*0.35+y*0.05)*7;const ww=5+Math.sin(y*0.09+t*0.4)*3;
+    ctx.beginPath();ctx.arc(moonX+xOff,y,ww*0.5,0,Math.PI*2);
+    ctx.fillStyle=`rgba(245,248,220,${a})`;ctx.fill();
+  }
+
+  // Halftone foam dots on crests of topmost wave
+  const tw=waves[waves.length-2];
+  for(let x=6;x<W-6;x+=13){
+    const wy=tw.y*H+Math.sin(x*tw.f+t*tw.spd)*tw.amp;
+    const crest=(Math.sin(x*tw.f+t*tw.spd)+1)/2;
+    if(crest>0.52){
+      const fr=crest-0.52;
+      ctx.beginPath();ctx.arc(x,wy,1+fr*3.5,0,Math.PI*2);
+      ctx.fillStyle=`rgba(200,230,255,${0.06+fr*0.28})`;ctx.fill();
+    }
+  }
+
+  // Vignette
+  const vig=ctx.createRadialGradient(W/2,H/2,H*0.25,W/2,H/2,H*0.8);
+  vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,0,.45)');
+  ctx.fillStyle=vig;ctx.fillRect(0,0,W,H);
+}
+
+// ─── Grass / marsh habitat ────────────────────────────────────────────
+function drawGrass(ctx,W,H,t){
+  // Sky: deep pre-dawn marsh
+  const sky=ctx.createLinearGradient(0,0,0,H*0.62);
+  sky.addColorStop(0,'#030702');sky.addColorStop(0.3,'#080f03');
+  sky.addColorStop(0.65,'#111e05');sky.addColorStop(1,'#1c2d07');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H*0.62);
+
+  // Horizon warm glow
+  const horiz=ctx.createLinearGradient(0,H*0.48,0,H*0.68);
+  horiz.addColorStop(0,'rgba(0,0,0,0)');
+  horiz.addColorStop(0.5,'rgba(90,110,20,.1)');
+  horiz.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=horiz;ctx.fillRect(0,0,W,H*0.72);
+
+  // Stars
+  for(let i=0;i<35;i++){
+    const sx=h21(i+100,7)*W,sy=h21(i+100,13)*H*0.4;
+    const tw=0.25+Math.sin(t*0.9+i*1.7)*0.15;
+    ctx.beginPath();ctx.arc(sx,sy,h21(i+100,19)*0.9+0.2,0,Math.PI*2);
+    ctx.fillStyle=`rgba(220,230,190,${tw})`;ctx.fill();
+  }
+
+  // Ground / marsh floor
+  const ground=ctx.createLinearGradient(0,H*0.60,0,H);
+  ground.addColorStop(0,'#0c1503');ground.addColorStop(0.4,'#080e02');ground.addColorStop(1,'#050901');
+  ctx.fillStyle=ground;ctx.fillRect(0,H*0.56,W,H*0.44);
+
+  // Marsh water shimmer at horizon
+  for(let x=0;x<W;x+=3){
+    const wsh=H*0.61+Math.sin(x*0.04+t*0.5)*3;
+    const a=0.04+Math.sin(x*0.06+t*0.4)*0.02;
+    ctx.beginPath();ctx.arc(x,wsh,1,0,Math.PI*2);
+    ctx.fillStyle=`rgba(80,120,160,${a})`;ctx.fill();
+  }
+
+  // Back layer grass (shorter, lighter, no sway details)
+  for(let i=0;i<44;i++){
+    const seed=i*91.3+500;
+    const xb=W*h21(seed,0);
+    const bh=H*(0.07+h21(seed,1)*0.16);
+    const yb=H*(0.61+h21(seed,2)*0.05);
+    const sw=Math.sin(t*0.65+i*0.61)*10*(bh/(H*0.15));
+    const hue=75+h21(seed,3)*30,sat=35+h21(seed,4)*18,lum=12+h21(seed,5)*14;
+    ctx.beginPath();
+    ctx.moveTo(xb,yb);
+    ctx.bezierCurveTo(xb+sw*0.3,yb-bh*0.35,xb+sw*0.65,yb-bh*0.72,xb+sw,yb-bh);
+    ctx.lineWidth=0.7+h21(seed,6)*1.1;
+    ctx.strokeStyle=`hsl(${hue},${sat}%,${lum}%)`;
+    ctx.globalAlpha=0.45+h21(seed,7)*0.3;ctx.stroke();
+  }
+
+  // Front layer grass (taller, defined, seed heads)
+  for(let i=0;i<58;i++){
+    const seed=i*137.7;
+    const xb=W*(i/58)+h21(seed,0)*6-3;
+    const bh=H*(0.16+h21(seed,1)*0.32);
+    const yb=H*(0.63+h21(seed,2)*0.08);
+    const sw=Math.sin(t*0.58+i*0.46)*24*(bh/(H*0.28));
+    const hue=68+h21(seed,3)*40,sat=40+h21(seed,4)*32,lum=16+h21(seed,5)*24;
+
+    // Blade
+    ctx.beginPath();
+    ctx.moveTo(xb,yb);
+    ctx.bezierCurveTo(xb+sw*0.22,yb-bh*0.3,xb+sw*0.62,yb-bh*0.70,xb+sw,yb-bh);
+    ctx.lineWidth=1.1+h21(seed,6)*2.4;
+    ctx.strokeStyle=`hsl(${hue},${sat}%,${lum}%)`;
+    ctx.globalAlpha=0.55+h21(seed,7)*0.42;ctx.stroke();
+
+    // Seed head (halftone dot cluster on tip)
+    if(h21(seed,8)>0.42){
+      const tx=xb+sw,ty=yb-bh;
+      const seedH=3+h21(seed,9)*7;
+      // Tiny halftone dots as seed cluster
+      for(let s=0;s<4;s++){
+        const sx=tx+h21(seed+s,10)*5-2.5;
+        const sy=ty-s*(seedH/4)+h21(seed+s,11)*2-1;
+        const sr=0.8+h21(seed+s,12)*1.2;
+        ctx.beginPath();ctx.arc(sx,sy,sr,0,Math.PI*2);
+        ctx.fillStyle=`hsl(${hue+8},${sat-8}%,${lum+12}%)`;
+        ctx.globalAlpha=0.5+h21(seed+s,13)*0.35;ctx.fill();
+      }
+    }
+  }
+  ctx.globalAlpha=1;
+
+  // Vignette
+  const vig=ctx.createRadialGradient(W/2,H/2,H*0.22,W/2,H/2,H*0.82);
+  vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,0,.5)');
+  ctx.fillStyle=vig;ctx.fillRect(0,0,W,H);
+}
+
+// ─── Film grain ───────────────────────────────────────────────────────
+// putImageData ignores globalAlpha/compositeOperation, so we use an
+// offscreen canvas and drawImage which respects both.
+const grainOC=document.createElement('canvas');
+const grainOCCtx=grainOC.getContext('2d');
+let grainFrame=0;
+
+function updateGrain(W,H){
+  const pw=Math.ceil(W*DPR),ph=Math.ceil(H*DPR);
+  if(grainOC.width!==pw||grainOC.height!==ph){grainOC.width=pw;grainOC.height=ph;}
+  const img=grainOCCtx.createImageData(pw,ph);
+  const d=img.data;
+  for(let i=0;i<d.length;i+=4){const v=Math.random()*255|0;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;}
+  grainOCCtx.putImageData(img,0,0);
+}
+
+function drawGrain(ctx,W,H){
+  ctx.save();
+  ctx.globalAlpha=0.045;ctx.globalCompositeOperation='overlay';
+  ctx.drawImage(grainOC,0,0,W,H); // drawImage respects transform + blending
+  ctx.restore();
+}
+
+// ─── Sono label positioning ───────────────────────────────────────────
+function positionSonoLabel(el,story,W,H){
+  // Position label just above the sonogram panel
+  const top=H*0.68-22;const left=24;
+  el.style.position='absolute';el.style.left=left+'px';el.style.top=top+'px';
+  el.style.zIndex='10';
+  el.textContent='Sonogram';
+}
+
+// ─── Progress bar animation ───────────────────────────────────────────
+let startTs=null;
+const STORY_DURATION=12; // seconds per story slot
+
+// ─── Main animation loop ──────────────────────────────────────────────
+const cGull=document.getElementById('c-gull');
+const cBB=document.getElementById('c-blackbird');
+let gullCtx,gullW,gullH,bbCtx,bbW,bbH;
+
+function resize(){
+  ({ctx:gullCtx,w:gullW,h:gullH}=setupCanvas(cGull));
+  ({ctx:bbCtx,w:bbW,h:bbH}=setupCanvas(cBB));
+  // Position sono labels
+  positionSonoLabel(document.getElementById('slabel-gull'),document.getElementById('story-gull'),gullW,gullH);
+  positionSonoLabel(document.getElementById('slabel-bb'),document.getElementById('story-blackbird'),bbW,bbH);
+}
+
+function tick(ts){
+  if(!startTs)startTs=ts;
+  const elapsed=(ts-startTs)/1000;
+  const t=elapsed;
+
+  // Progress fill (loops)
+  const pct=((t%STORY_DURATION)/STORY_DURATION)*100;
+  document.getElementById('pfill-gull').style.width=pct+'%';
+  document.getElementById('pfill-bb').style.width=pct+'%';
+
+  grainFrame++;
+  // Refresh grain every 2 frames (~30fps texture churn, smooth enough to not strobe)
+  if(grainFrame%2===0) updateGrain(gullW,gullH);
+
+  // ── Gull story ──
+  gullCtx.clearRect(0,0,gullW,gullH);
+  drawWater(gullCtx,gullW,gullH,t);
+  drawHalftone(gullCtx,gullW,gullH,t,gullAmp,
+    'rgba(180,225,255,1)','rgba(100,180,255,1)');
+  drawGrain(gullCtx,gullW,gullH);
+
+  // ── Blackbird story ──
+  bbCtx.clearRect(0,0,bbW,bbH);
+  drawGrass(bbCtx,bbW,bbH,t);
+  drawHalftone(bbCtx,bbW,bbH,t,bbAmp,
+    'rgba(200,235,80,1)','rgba(160,210,50,1)');
+  drawGrain(bbCtx,bbW,bbH);
+
+  requestAnimationFrame(tick);
+}
+
+window.addEventListener('resize',()=>{resize();});
+resize();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
