@@ -1,0 +1,9 @@
+# Local API keys — never commit real keys
+config.local.js
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
