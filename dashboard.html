@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jiu Jiu · Ideation Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#2f7d22;--green-light:#2f7d2214;--green-mid:#2f7d2238;
+  --black:#1a1a1a;--gray:#6c6c6c;--bg:#f6f7f8;--surface:#fff;--border:#e6e8ea;--text:#1a1a1a;
+  --font:'Radio Canada Big',sans-serif;--font-sub:'Source Serif 4',Georgia,serif;
+}
+html{font-size:16px}
+body{background:#eef0f1;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;
+  padding:22px 26px 60px}
+
+/* header */
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:16px}
+.h-title{font-size:1.05rem;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+.h-title .dot{width:9px;height:9px;border-radius:50%;background:var(--green)}
+.h-sub{font-family:var(--font-sub);font-size:.7rem;color:var(--gray);margin-top:3px}
+.h-sub b{color:var(--text);font-family:var(--font);font-weight:600}
+.h-count{font-family:var(--font-sub);font-size:.66rem;color:var(--gray);text-align:right}
+.h-count b{color:var(--green);font-family:var(--font);font-weight:700;font-size:1.1rem}
+
+/* legend / multi-select filter */
+.filter{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:13px 15px;margin-bottom:18px}
+.filter-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.filter-lbl{font-size:.62rem;font-weight:700;color:var(--text)}
+.filter-hint{font-family:var(--font-sub);font-size:.62rem;color:var(--gray)}
+.clearbtn{border:1px solid var(--border);background:var(--bg);border-radius:8px;font-family:var(--font);
+  font-size:.6rem;font-weight:600;color:var(--gray);cursor:pointer;padding:5px 11px;transition:all .12s}
+.clearbtn:hover{border-color:var(--green);color:var(--green)}
+.clearbtn:disabled{opacity:.4;cursor:default}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:5px 11px 5px 9px;border-radius:999px;
+  border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-size:.64rem;font-weight:600;
+  color:var(--text);transition:all .12s;user-select:none}
+.chip .sw{width:11px;height:11px;border-radius:3px;flex:none}
+.chip .n{font-size:.56rem;color:var(--gray);font-weight:600}
+.chip:hover{border-color:#c9ccd0}
+.chip.on{border-color:currentColor;box-shadow:0 0 0 1px currentColor inset}
+.chip.dim{opacity:.4}
+.mchip.on{border-color:var(--green);color:var(--green);box-shadow:0 0 0 1px var(--green) inset;background:var(--green-light)}
+
+/* charts grid */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:15px 16px 17px}
+.card.span4{grid-column:span 4}.card.span6{grid-column:span 6}.card.span8{grid-column:span 8}.card.span12{grid-column:span 12}
+.card-h{font-size:.7rem;font-weight:700;margin-bottom:2px}
+.card-sub{font-family:var(--font-sub);font-size:.58rem;color:var(--gray);margin-bottom:13px}
+@media(max-width:1080px){.card.span4,.card.span6,.card.span8{grid-column:span 12}}
+
+/* horizontal bar rows */
+.row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.row:last-child{margin-bottom:0}
+.row-lbl{flex:0 0 92px;font-size:.62rem;color:var(--text);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row-lbl.wide{flex-basis:120px}
+.track{flex:1;height:20px;display:flex;align-items:stretch;background:var(--bg);border-radius:5px;overflow:hidden;min-width:0}
+.seg{height:100%;transition:flex-grow .3s ease,background .2s;min-width:0}
+.seg:hover{filter:brightness(1.08)}
+.row-val{flex:0 0 26px;font-size:.58rem;color:var(--gray);font-weight:600;text-align:left}
+.empty-note{font-family:var(--font-sub);font-size:.62rem;color:var(--gray);padding:8px 0}
+
+/* single-color category bars */
+.cbar{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.cbar-lbl{flex:0 0 128px;font-size:.62rem;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.cbar-lbl:hover{color:var(--green)}
+.cbar-track{flex:1;height:16px;background:var(--bg);border-radius:4px;overflow:hidden}
+.cbar-fill{height:100%;border-radius:4px;transition:width .3s ease}
+.cbar-val{flex:0 0 24px;font-size:.58rem;color:var(--gray);font-weight:700}
+
+/* scatter */
+.scatter-wrap{position:relative}
+svg.scatter{width:100%;height:auto;display:block;overflow:hidden}
+.axis-pick{display:flex;align-items:center;gap:6px;font-size:.56rem;color:var(--gray);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.axis-pick select{font-family:var(--font);font-size:.64rem;font-weight:600;color:var(--text);
+  border:1px solid var(--border);border-radius:7px;padding:5px 8px;background:var(--surface);cursor:pointer;text-transform:none;letter-spacing:0}
+.axis-pick select:focus{outline:none;border-color:var(--green)}
+.axis-lbl{font-size:8px;fill:var(--gray);font-family:var(--font)}
+.grid-line{stroke:var(--border);stroke-width:1}
+.dot{cursor:pointer;transition:r .1s}
+.dot:hover{stroke:#1a1a1a;stroke-width:1.5}
+
+/* tooltip */
+#tip{position:fixed;pointer-events:none;background:#1a1a1a;color:#fff;font-size:.6rem;font-family:var(--font);
+  padding:6px 9px;border-radius:7px;opacity:0;transition:opacity .1s;z-index:50;max-width:220px;line-height:1.4}
+#tip.on{opacity:1}
+#tip .t-cat{font-weight:700;margin-bottom:2px}
+#tip .t-meta{font-family:var(--font-sub);color:#cfcfcf}
+</style>
+</head>
+<body>
+
+<div class="head">
+  <div>
+    <div class="h-title"><span class="dot"></span>Jiu Jiu · Ideation Analytics</div>
+    <div class="h-sub">Every concept from the evaluation matrix, read by its <b>categories of interaction</b>.</div>
+  </div>
+  <div class="h-count"><b id="kpiCount">0</b> ideas · <span id="kpiCats">0</span> categories shown</div>
+</div>
+
+<div class="filter">
+  <div class="filter-top">
+    <span class="filter-lbl">Categories of interaction</span>
+    <span class="filter-hint">Click to isolate · click more to compare · click again to remove</span>
+    <button class="clearbtn" id="clearBtn" onclick="clearSel()" disabled>Show all</button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="filter-top" style="margin-top:15px;padding-top:13px;border-top:1px solid var(--border)">
+    <span class="filter-lbl">Motivation</span>
+    <span class="filter-hint">Keep only ideas driven by these motivations (verbs from the matrix)</span>
+    <button class="clearbtn" id="clearMotBtn" onclick="clearMot()" disabled>All motivations</button>
+  </div>
+  <div class="chips" id="motChips"></div>
+</div>
+
+<div class="grid">
+  <div class="card span12">
+    <div class="card-h" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+      <span><span id="yName">Mindfulness</span> × <span id="xName">Audio focus</span></span>
+      <div class="axis-pick">
+        <span>Y</span><select id="ySel" onchange="setAxis('y',this.value)"></select>
+        <span>X</span><select id="xSel" onchange="setAxis('x',this.value)"></select>
+      </div>
+    </div>
+    <div class="card-sub">Each dot is one idea, coloured by category. Pick the two axes to compare any dimensions.</div>
+    <div class="scatter-wrap"><svg class="scatter" id="scatter" viewBox="0 0 1200 520" preserveAspectRatio="xMidYMid meet"></svg></div></div>
+
+  <div class="card span4"><div class="card-h">Ideas per category</div>
+    <div class="card-sub">How many concepts fall under each category of interaction.</div>
+    <div id="catBar"></div></div>
+
+  <div class="card span8"><div class="card-h">Motivation</div>
+    <div class="card-sub">Verbs from the matrix (an idea can have several), stacked by category.</div>
+    <div id="verbBar"></div></div>
+
+  <div class="card span6"><div class="card-h">Sharing</div>
+    <div class="card-sub">Private · Between · Public, stacked by category.</div>
+    <div id="sharingBar"></div></div>
+
+  <div class="card span6"><div class="card-h">Learning</div>
+    <div class="card-sub">Passive → Active.</div>
+    <div id="learnBar"></div></div>
+
+  <div class="card span6"><div class="card-h">Audio focus (1–5)</div>
+    <div class="card-sub">1 = background · 5 = audio-focused.</div>
+    <div id="audioBar"></div></div>
+
+  <div class="card span6"><div class="card-h">Mindfulness (1–5)</div>
+    <div class="card-sub">1 = low · 5 = high.</div>
+    <div id="mindBar"></div></div>
+
+  <div class="card span12"><div class="card-h">Timeline (1–5)</div>
+    <div class="card-sub">1 = after birding · 5 = all the time / pre-birding.</div>
+    <div id="timeBar"></div></div>
+</div>
+
+<div id="tip"></div>
+
+<script>
+const DATA=[{"s":"Public","v":["Explore","Grow"],"a":3,"l":"Active","t":5,"w":"","m":1,"c":"Bird Feature"},{"s":"Public","v":["Connect","Remember"],"a":4,"l":"Active","t":1,"w":"","m":3,"c":"Bird Feature"},{"s":"Public","v":["Explore","Remember"],"a":5,"l":"Active","t":5,"w":"all time","m":2,"c":"Bird Feature"},{"s":"Public","v":["Explore","Connect"],"a":1,"l":"Between","t":5,"w":"all time","m":1,"c":"Map"},{"s":"Public","v":["Explore"],"a":1,"l":"Active","t":5,"w":"prebirding","m":2,"c":"Bird Feature"},{"s":"Public","v":["Remember","Relive"],"a":4,"l":"Between","t":5,"w":"","m":4,"c":"Bird Feature"},{"s":"Private","v":["Explore","Connect"],"a":null,"l":"Active","t":5,"w":"prebirding all time","m":5,"c":"Encourage outdoors"},{"s":"Public","v":["Rethink","Grow"],"a":5,"l":"Passive","t":5,"w":"","m":4,"c":"Bird Feature"},{"s":"Public","v":["Meet","Explore","Show"],"a":null,"l":"Active","t":5,"w":"","m":1,"c":"Map"},{"s":"Public","v":["Explore","Grow"],"a":1,"l":"Active","t":5,"w":"","m":1,"c":"Encourage outdoors"},{"s":"Between","v":["Show","Remember","Relive"],"a":1,"l":"Passive","t":1,"w":"","m":2,"c":"Contextualize"},{"s":"Between","v":["Connect","Express","Befriend"],"a":4,"l":"Active","t":1,"w":"","m":1,"c":"Language"},{"s":"Public","v":["Express","Rethink","Show","Connect"],"a":4,"l":"Passive","t":5,"w":"","m":2,"c":"In nature together"},{"s":"Between","v":["Relive","Connect","Rethink"],"a":1,"l":"Passive","t":1,"w":"","m":1,"c":"Spatial"},{"s":"Private","v":["Connect"],"a":3,"l":"Passive","t":5,"w":"during","m":4,"c":"Bird Mode"},{"s":"Public","v":["Rescue","Meet","Express"],"a":2,"l":"Between","t":5,"w":"all time","m":3,"c":"Sharable Knowledge"},{"s":"Between","v":["Show","Remember","Build","Grow"],"a":3,"l":"Passive","t":5,"w":"all time","m":1,"c":"Collectible"},{"s":"Public","v":["Show","Grow","Meet"],"a":1,"l":"Active","t":5,"w":"all time","m":1,"c":"Collectible"},{"s":"Public","v":["Grow","Meet","Show"],"a":1,"l":"Active","t":5,"w":"all time","m":1,"c":"Collectible"},{"s":"Public","v":["Relive","Show","Build"],"a":2,"l":"Passive","t":1,"w":"","m":2,"c":"Curation"},{"s":"Private","v":["Connect"],"a":5,"l":"Passive","t":5,"w":"all time","m":3,"c":"Audio Exposure"},{"s":"Public","v":["Connect","Meet","Express","Relive"],"a":5,"l":"Passive","t":1,"w":"","m":2,"c":"Audio Exposure"},{"s":"Public","v":["Show","Connect","Relive","Explore","Remember"],"a":1,"l":"Passive","t":1,"w":"","m":1,"c":"Game"},{"s":"Private","v":["Grow"],"a":5,"l":"Active","t":1,"w":"","m":3,"c":"Game"},{"s":"Private","v":["Grow","Connect","Build"],"a":1,"l":"Passive","t":1,"w":"","m":1,"c":"Game"},{"s":"Private","v":["Grow"],"a":5,"l":"Active","t":1,"w":"","m":1,"c":"Game"},{"s":"Between","v":["Build","Relive","Remember","Express"],"a":5,"l":"Passive","t":1,"w":"","m":1,"c":"Audio Creation"},{"s":"Between","v":["Relive","Remember"],"a":1,"l":"Passive","t":1,"w":"","m":2,"c":"Profile"},{"s":"Private","v":["Meet","Connect"],"a":1,"l":"Passive","t":5,"w":"all time","m":1,"c":"Community"},{"s":"Private","v":["Connect","Meet"],"a":3,"l":"Passive","t":4,"w":"","m":5,"c":"Meditation"},{"s":"Private","v":["Connect","Grow"],"a":4,"l":"Passive","t":5,"w":"all time","m":4,"c":"Habit"},{"s":"Public","v":["Connect","Prove","Build"],"a":4,"l":"Active","t":5,"w":"all time","m":2,"c":"Habit"},{"s":"Private","v":["Relive","Remember"],"a":3,"l":"Passive","t":5,"w":"all time","m":4,"c":"Spatial"},{"s":"Public","v":["Connect","Befriend","Grow"],"a":1,"l":"Passive","t":5,"w":"prebirding all time","m":1,"c":"Spatial"},{"s":"Public","v":["Prove"],"a":1,"l":"Between","t":5,"w":"all time","m":1,"c":"Collectible"},{"s":"Private","v":["Connect","Befriend","Grow"],"a":1,"l":"Passive","t":5,"w":"all time","m":2,"c":"Collectible"},{"s":"Public","v":["Prove","Meet"],"a":1,"l":"Passive","t":1,"w":"1 day","m":4,"c":"Interests/Personality"},{"s":"Private","v":["Remember","Relive"],"a":5,"l":"Active","t":1,"w":"1 week","m":5,"c":"Audio Exposure"},{"s":"Public","v":["Love","Build","Connect"],"a":5,"l":"Passive","t":5,"w":"all time","m":3,"c":"Audio Exposure"},{"s":"Public","v":["Relive","Connect","Remember","Show"],"a":5,"l":"Passive","t":3,"w":"1 month","m":5,"c":"Audio Exposure"},{"s":"Public","v":["Explore","Show"],"a":5,"l":"Active","t":5,"w":"all time","m":3,"c":"Audio Aware"},{"s":"Public","v":["Explore","Rethink"],"a":5,"l":"Active","t":5,"w":"all time","m":3,"c":"Audio Aware"},{"s":"Private","v":["Remember","Rethink"],"a":5,"l":"Active","t":1,"w":"1 month","m":4,"c":"Audio Breakdown"},{"s":"Public","v":["Meet","Build","Remember"],"a":5,"l":"Passive","t":1,"w":"1 day","m":4,"c":"Chat"},{"s":"Public","v":["Rescue","Explore","Rethink"],"a":3,"l":"Passive","t":5,"w":"all time","m":2,"c":"Game"},{"s":"Public","v":["Explore","Express"],"a":3,"l":"Active","t":5,"w":"all time","m":1,"c":"Game"},{"s":"Public","v":["Connect","Build"],"a":1,"l":"Passive","t":5,"w":"all time","m":1,"c":"Game"},{"s":"Between","v":["Connect","Befriend"],"a":1,"l":"Passive","t":5,"w":"all time","m":1,"c":"Direct communication"},{"s":"Between","v":["Connect","Befriend"],"a":1,"l":"Passive","t":5,"w":"all time","m":1,"c":"Direct communication"},{"s":"Private","v":["Connect","Befriend"],"a":3,"l":"Passive","t":5,"w":"all time","m":3,"c":"Profile"},{"s":"Public","v":["Explore","Meet","Grow"],"a":1,"l":"Active","t":1,"w":"1 day","m":3,"c":"Community"},{"s":"Public","v":["Connect","Meet","Grow"],"a":1,"l":"Active","t":1,"w":"1 day","m":3,"c":"Community"},{"s":"Private","v":["Connect"],"a":5,"l":"Passive","t":5,"w":"Prebirding","m":5,"c":"Meditation"},{"s":"Private","v":["Grow","Show"],"a":3,"l":"Between","t":1,"w":"all time","m":2,"c":"Habit"},{"s":"Private","v":["Connect","Befriend","Explore"],"a":1,"l":"Between","t":5,"w":"all time","m":4,"c":"Map"},{"s":"Private","v":["Explore","Connect"],"a":1,"l":"Passive","t":5,"w":"all time","m":4,"c":"Encourage outdoors"},{"s":"Public","v":["Explore","Rethink"],"a":5,"l":"Passive","t":5,"w":"Prebirding all time","m":4,"c":"Encourage outdoors"},{"s":"Private","v":["Rethink","Befriend","Remember"],"a":5,"l":"Passive","t":5,"w":"all time","m":5,"c":"Encourage outdoors"},{"s":"Public","v":["Connect"],"a":4,"l":"Between","t":1,"w":"30sec","m":1,"c":"Contextualize"},{"s":"Private","v":["Build","Rethink"],"a":5,"l":"Active","t":3,"w":"1 month","m":3,"c":"Language"},{"s":"Private","v":["Rethink","Befriend"],"a":3,"l":"Passive","t":4,"w":"1 year","m":5,"c":"Language"},{"s":"Public","v":["Grow"],"a":5,"l":"Active","t":2,"w":"1 week","m":1,"c":"Language"},{"s":"Private","v":["Connect"],"a":3,"l":"Passive","t":5,"w":"during","m":5,"c":"Bird Mode"},{"s":"Public","v":["Befriend","Prove"],"a":1,"l":"Between","t":5,"w":"all time","m":3,"c":"Collectible"},{"s":"Public","v":["Prove","Explore"],"a":3,"l":"Between","t":5,"w":"all time","m":1,"c":"Collectible"},{"s":"Public","v":["Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Collectible"},{"s":"Public","v":["Prove"],"a":1,"l":"Between","t":5,"w":"all time","m":1,"c":"Collectible"},{"s":"Public","v":["Prove"],"a":4,"l":"Active","t":5,"w":"all time","m":1,"c":"Collectible"},{"s":"Public","v":["Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Collectible"},{"s":"Public","v":["Connect"],"a":5,"l":"Between","t":5,"w":"pre","m":1,"c":"Live"},{"s":"Public","v":["Connect"],"a":5,"l":"Passive","t":5,"w":"during","m":1,"c":"Live"},{"s":"Public","v":["Connect","Explore"],"a":5,"l":"Passive","t":5,"w":"during","m":1,"c":"Live"},{"s":"Between","v":["Befriend"],"a":3,"l":"Between","t":5,"w":"pre","m":1,"c":"Live"},{"s":"Private","v":["Befriend"],"a":3,"l":"Passive","t":5,"w":"pre","m":3,"c":"Live"},{"s":"Between","v":["Relive"],"a":1,"l":"Passive","t":3,"w":"1 week","m":2,"c":"Curation"},{"s":"Between","v":["Connect","Love"],"a":1,"l":"Between","t":3,"w":"1 week","m":1,"c":"Curation"},{"s":"Public","v":["Rethink"],"a":3,"l":"Passive","t":4,"w":"1 year","m":3,"c":"Interests/Personality"},{"s":"Public","v":["Express"],"a":5,"l":"Passive","t":5,"w":"all time","m":2,"c":"Interests/Personality"},{"s":"Private","v":["Remember"],"a":5,"l":"Passive","t":5,"w":"all time","m":4,"c":"Interests/Personality"},{"s":"Between","v":["Connect"],"a":5,"l":"Passive","t":4,"w":"1 month","m":1,"c":"Interests/Personality"},{"s":"Private","v":["Grow"],"a":3,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"s":"Private","v":["Grow"],"a":5,"l":"Passive","t":5,"w":"pre","m":1,"c":"Audio Exposure"},{"s":"Between","v":["Befriend","Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"s":"Between","v":["Befriend","Rethink"],"a":4,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"s":"Private","v":["Love"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"s":"Private","v":["Befriend","Remember"],"a":5,"l":"Passive","t":4,"w":"1 month","m":2,"c":"Audio Exposure"},{"s":"Private","v":["Rethink"],"a":5,"l":"Active","t":5,"w":"pre","m":1,"c":"Audio Aware"},{"s":"Public","v":["Grow"],"a":5,"l":"Active","t":3,"w":"1 week","m":1,"c":"Audio Breakdown"},{"s":"Private","v":["Befriend"],"a":1,"l":"Between","t":5,"w":"1 year","m":3,"c":"Audio Aware"},{"s":"Between","v":["Connect","Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Chat"},{"s":"Between","v":["Befriend"],"a":1,"l":"Between","t":5,"w":"all time","m":3,"c":"Direct communication"},{"s":"Between","v":["Befriend","Rethink"],"a":1,"l":"Between","t":5,"w":"all time","m":3,"c":"Profile"},{"s":"Private","v":["Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":5,"c":"Meditation"},{"s":"Public","v":["Relive"],"a":5,"l":"Passive","t":2,"w":"1 day","m":5,"c":"Meditation"},{"s":"Public","v":["Show","Prove"],"a":1,"l":"Between","t":1,"w":"5min","m":1,"c":"Habit"},{"s":"Between","v":["Prove"],"a":3,"l":"Passive","t":2,"w":"1 day","m":1,"c":"Habit"},{"s":"Private","v":["Remember"],"a":5,"l":"Passive","t":5,"w":"pre","m":2,"c":"Habit"}];
+const CAT_ORDER=["Collectible", "Audio Exposure", "Game", "Bird Feature", "Habit", "Encourage outdoors", "Interests/Personality", "Live", "Language", "Meditation", "Audio Aware", "Map", "Spatial", "Curation", "Profile", "Community", "Direct communication", "Contextualize", "Bird Mode", "Audio Breakdown", "Chat", "In nature together", "Sharable Knowledge", "Audio Creation"];
+const VERB_ORDER=["Connect", "Grow", "Rethink", "Explore", "Befriend", "Remember", "Relive", "Show", "Meet", "Build", "Prove", "Express", "Love", "Rescue"];
+
+// distinct colour per category (golden-angle hue rotation)
+const CAT_COLOR={};
+CAT_ORDER.forEach((c,i)=>{CAT_COLOR[c]=`hsl(${Math.round((i*137.508)%360)} 55% 54%)`;});
+
+// ── selection state (empty set = show all) ──
+const sel=new Set();          // categories
+const selMot=new Set();       // motivation verbs
+function isOn(c){return sel.size===0||sel.has(c);}
+function motOn(vs){return selMot.size===0||vs.some(v=>selMot.has(v));}
+function activeCats(){return sel.size?CAT_ORDER.filter(c=>sel.has(c)):CAT_ORDER;}
+// data passing BOTH filters
+function rows(){return DATA.filter(d=>isOn(d.c)&&motOn(d.v));}
+
+function toggle(c){
+  if(sel.has(c))sel.delete(c);else sel.add(c);
+  document.getElementById('clearBtn').disabled=sel.size===0;
+  renderAll();
+}
+function clearSel(){sel.clear();document.getElementById('clearBtn').disabled=true;renderAll();}
+function toggleMot(v){
+  if(selMot.has(v))selMot.delete(v);else selMot.add(v);
+  document.getElementById('clearMotBtn').disabled=selMot.size===0;
+  renderAll();
+}
+function clearMot(){selMot.clear();document.getElementById('clearMotBtn').disabled=true;renderAll();}
+
+// ── tooltip ──
+const tip=document.getElementById('tip');
+function showTip(html,e){tip.innerHTML=html;tip.classList.add('on');moveTip(e);}
+function moveTip(e){tip.style.left=Math.min(e.clientX+14,innerWidth-230)+'px';tip.style.top=(e.clientY+14)+'px';}
+function hideTip(){tip.classList.remove('on');}
+
+// ── legend / chips ──
+function renderChips(){
+  const counts={};DATA.forEach(d=>counts[d.c]=(counts[d.c]||0)+1);
+  document.getElementById('chips').innerHTML=CAT_ORDER.map(c=>{
+    const on=sel.has(c),dim=sel.size&&!sel.has(c);
+    return `<span class="chip${on?' on':''}${dim?' dim':''}" style="${on?'color:'+CAT_COLOR[c]:''}" onclick="toggle('${c.replace(/'/g,"\\'")}')">
+      <span class="sw" style="background:${CAT_COLOR[c]}"></span>${c} <span class="n">${counts[c]}</span></span>`;
+  }).join('');
+}
+function renderMotChips(){
+  const counts={};DATA.forEach(d=>d.v.forEach(v=>counts[v]=(counts[v]||0)+1));
+  document.getElementById('motChips').innerHTML=VERB_ORDER.map(v=>{
+    const on=selMot.has(v),dim=selMot.size&&!selMot.has(v);
+    return `<span class="chip mchip${on?' on':''}${dim?' dim':''}" onclick="toggleMot('${v}')">${v} <span class="n">${counts[v]||0}</span></span>`;
+  }).join('');
+}
+
+// ── stacked horizontal bar chart (segments coloured by category) ──
+// buckets: [{key,label}], valOf(d)->key or array of keys ; multi = record contributes to each key
+function stacked(elId,buckets,valOf,opts={}){
+  const data=rows(),cats=activeCats();
+  const per={};buckets.forEach(b=>per[b.key]={});
+  data.forEach(d=>{
+    let keys=valOf(d);if(keys==null)return;if(!Array.isArray(keys))keys=[keys];
+    keys.forEach(k=>{if(per[k]===undefined)return;per[k][d.c]=(per[k][d.c]||0)+1;});
+  });
+  const totals=buckets.map(b=>Object.values(per[b.key]).reduce((a,x)=>a+x,0));
+  const max=Math.max(1,...totals);
+  let html='';
+  buckets.forEach((b,i)=>{
+    const total=totals[i];
+    const segs=cats.filter(c=>per[b.key][c]).map(c=>{
+      const n=per[b.key][c];
+      return `<div class="seg" style="flex-grow:${n};background:${CAT_COLOR[c]}"
+        onmousemove="showTip('<div class=t-cat>${c}</div><div class=t-meta>${n} in ${b.label}</div>',event)"
+        onmouseleave="hideTip()"></div>`;
+    }).join('');
+    html+=`<div class="row"><div class="row-lbl${opts.wide?' wide':''}">${b.label}</div>
+      <div class="track" style="max-width:${total/max*100}%">${segs||''}</div>
+      <div class="row-val">${total}</div></div>`;
+  });
+  document.getElementById(elId).innerHTML=html||'<div class="empty-note">No data for this selection.</div>';
+}
+
+// ── single-colour category bar ──
+function renderCatBar(){
+  const data=rows(),counts={};data.forEach(d=>counts[d.c]=(counts[d.c]||0)+1);
+  const cats=activeCats().filter(c=>counts[c]).sort((a,b)=>counts[b]-counts[a]);
+  const max=Math.max(1,...cats.map(c=>counts[c]));
+  document.getElementById('catBar').innerHTML=cats.map(c=>
+    `<div class="cbar"><div class="cbar-lbl" title="${c}" onclick="toggle('${c.replace(/'/g,"\\'")}')">${c}</div>
+      <div class="cbar-track"><div class="cbar-fill" style="width:${counts[c]/max*100}%;background:${CAT_COLOR[c]}"></div></div>
+      <div class="cbar-val">${counts[c]}</div></div>`
+  ).join('')||'<div class="empty-note">No data.</div>';
+}
+
+// ── configurable scatter ──
+// each axis maps a record to an index 0..(ticks.length-1)
+const AXES={
+  audio:{label:'Audio focus',ticks:['1','2','3','4','5'],idx:d=>d.a==null?null:d.a-1,fmt:d=>'audio '+d.a},
+  mind: {label:'Mindfulness',ticks:['1','2','3','4','5'],idx:d=>d.m==null?null:d.m-1,fmt:d=>'mind '+d.m},
+  time: {label:'Timeline',ticks:['1','2','3','4','5'],idx:d=>d.t==null?null:d.t-1,fmt:d=>'timeline '+d.t+(d.w?' ('+d.w+')':'')},
+  learn:{label:'Learning',ticks:['Passive','Between','Active'],idx:d=>['Passive','Between','Active'].indexOf(d.l),fmt:d=>d.l},
+  share:{label:'Sharing',ticks:['Private','Between','Public'],idx:d=>['Private','Between','Public'].indexOf(d.s),fmt:d=>d.s},
+};
+let axisX='audio', axisY='mind';
+function setAxis(which,val){if(which==='x')axisX=val;else axisY=val;renderScatter();}
+function initAxisSelects(){
+  const opts=Object.entries(AXES).map(([k,a])=>`<option value="${k}">${a.label}</option>`).join('');
+  const xs=document.getElementById('xSel'),ys=document.getElementById('ySel');
+  xs.innerHTML=opts;ys.innerHTML=opts;xs.value=axisX;ys.value=axisY;
+}
+function renderScatter(){
+  const ax=AXES[axisX],ay=AXES[axisY];
+  document.getElementById('xName').textContent=ax.label;
+  document.getElementById('yName').textContent=ay.label;
+  const W=1200,H=520,pad={l:64,r:26,t:20,b:52};
+  const iw=W-pad.l-pad.r,ih=H-pad.t-pad.b;
+  const nx=ax.ticks.length,ny=ay.ticks.length;
+  const X=i=>pad.l+(nx===1?iw/2:i/(nx-1)*iw);
+  const Y=i=>pad.t+ih-(ny===1?ih/2:i/(ny-1)*ih);
+  const jitAmp=Math.min(iw/(nx-1||1),ih/(ny-1||1))*0.32;
+  const R=6.5;
+  let g='';
+  for(let i=0;i<nx;i++){
+    g+=`<line class="grid-line" x1="${X(i)}" y1="${pad.t}" x2="${X(i)}" y2="${pad.t+ih}" opacity=".5"/>`;
+    g+=`<text class="axis-lbl" x="${X(i)}" y="${pad.t+ih+18}" text-anchor="middle">${ax.ticks[i]}</text>`;
+  }
+  for(let i=0;i<ny;i++){
+    g+=`<line class="grid-line" x1="${pad.l}" y1="${Y(i)}" x2="${pad.l+iw}" y2="${Y(i)}" opacity=".5"/>`;
+    g+=`<text class="axis-lbl" x="${pad.l-10}" y="${Y(i)+4}" text-anchor="end">${ay.ticks[i]}</text>`;
+  }
+  g+=`<text class="axis-lbl" x="${pad.l+iw/2}" y="${H-6}" text-anchor="middle" font-weight="700">${ax.label} →</text>`;
+  g+=`<text class="axis-lbl" transform="translate(16,${pad.t+ih/2}) rotate(-90)" text-anchor="middle" font-weight="700">${ay.label} →</text>`;
+  const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+  const data=rows();
+  data.forEach((d,i)=>{
+    const xi=ax.idx(d), yi=ay.idx(d);
+    if(xi==null||xi<0||yi==null||yi<0)return;
+    const jx=((i*47)%15-7)/7*jitAmp, jy=((i*29)%15-7)/7*jitAmp;
+    const cx=clamp(X(xi)+jx,pad.l+R,pad.l+iw-R);
+    const cy=clamp(Y(yi)+jy,pad.t+R,pad.t+ih-R);
+    g+=`<circle class="dot" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${R}" fill="${CAT_COLOR[d.c]}" fill-opacity=".8"
+      onmousemove="showTip('<div class=t-cat>${d.c}</div><div class=t-meta>${d.v.join(', ')} · ${d.s} · ${ax.fmt(d)}, ${ay.fmt(d)}</div>',event)"
+      onmouseleave="hideTip()"></circle>`;
+  });
+  document.getElementById('scatter').innerHTML=g;
+}
+
+// ── render everything ──
+function renderAll(){
+  renderChips();
+  renderMotChips();
+  renderCatBar();
+  renderScatter();
+  stacked('verbBar',VERB_ORDER.map(v=>({key:v,label:v})),d=>d.v,{wide:false});
+  stacked('sharingBar',[{key:'Private',label:'Private'},{key:'Between',label:'Between'},{key:'Public',label:'Public'}],d=>d.s);
+  stacked('learnBar',[{key:'Passive',label:'Passive'},{key:'Between',label:'Between'},{key:'Active',label:'Active'}],d=>d.l);
+  stacked('audioBar',[1,2,3,4,5].map(n=>({key:n,label:String(n)})),d=>d.a);
+  stacked('mindBar',[1,2,3,4,5].map(n=>({key:n,label:String(n)})),d=>d.m);
+  stacked('timeBar',[1,2,3,4,5].map(n=>({key:n,label:String(n)})),d=>d.t);
+  const data=rows();
+  document.getElementById('kpiCount').textContent=data.length;
+  document.getElementById('kpiCats').textContent=activeCats().filter(c=>data.some(d=>d.c===c)).length;
+}
+window.addEventListener('scroll',hideTip,true);
+initAxisSelects();
+renderAll();
+</script>
+</body>
+</html>
