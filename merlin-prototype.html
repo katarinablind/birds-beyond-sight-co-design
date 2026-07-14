@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jiu Jiu · Merlin Companion — lo-fi wireframe</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a1a1a;
+  --line:#222;
+  --paper:#ffffff;
+  --card:#ffffff;
+  --mint:#eeeeee;
+  --mint-deep:#d8d8d8;
+  --green:#1a1a1a;
+  --green-soft:#f1f1f1;
+  --olive:#8a8a8a;
+  --muted:#8a8a8a;
+  --ph:#e6e6e6;
+  --border:#cfcfcf;
+  --sk:#d5d5d5;
+  --font:Arial,Helvetica,sans-serif;
+  --font-sub:Arial,Helvetica,sans-serif;
+}
+html{font-size:16px}
+body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-smoothing:antialiased;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 14px 50px}
+.page-head{text-align:center;margin-bottom:14px;max-width:520px}
+.page-title{font-size:1.05rem;font-weight:700;letter-spacing:-.01em}
+.page-sub{font-family:var(--font-sub);font-size:.7rem;color:#8a887f;margin-top:3px}
+
+/* facilitator screen jump menu */
+.facil{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;max-width:760px;margin-bottom:16px}
+.facil button{font-family:var(--font);font-size:.56rem;font-weight:600;border:1px solid var(--border);
+  background:#fff;color:var(--muted);border-radius:7px;padding:4px 8px;cursor:pointer;transition:all .12s}
+.facil button:hover{border-color:var(--green);color:var(--green)}
+.facil button.on{background:var(--green);color:#fff;border-color:var(--green)}
+.facil .grp{width:100%;height:0}
+
+/* icons */
+.ico{width:1em;height:1em;display:inline-block;vertical-align:-.14em;fill:none;stroke:currentColor;
+  stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ── phone ── */
+.phone{width:362px;height:740px;background:var(--paper);border-radius:44px;position:relative;overflow:hidden;
+  box-shadow:0 0 0 10px #16160f,0 0 0 11.5px #2c2c22,0 26px 54px -16px rgba(0,0,0,.55);
+  display:flex;flex-direction:column}
+.statusbar{height:42px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+  padding:8px 26px 0;font-size:.72rem;font-weight:600;position:relative;z-index:6}
+.notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:80px;height:24px;background:#000;border-radius:999px}
+.statusbar .icons{display:flex;gap:5px;align-items:center}
+
+/* screens */
+.screen{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;flex-direction:column;padding:6px 16px 78px;scrollbar-width:thin}
+.screen.on{display:flex}
+.scr-top{display:flex;align-items:center;gap:10px;padding:6px 0 12px}
+.scr-top .back{font-size:1.1rem;cursor:pointer;color:var(--ink);width:26px}
+.scr-title{font-size:1.15rem;font-weight:700;letter-spacing:-.01em;flex:1}
+.scr-actions{display:flex;gap:12px;align-items:center;font-size:1rem;color:var(--muted)}
+.scr-actions .ico{cursor:pointer}
+.h-serif{font-family:var(--font-sub)}
+.eyebrow{font-size:.6rem;font-weight:700;color:var(--muted);margin:14px 0 7px;text-transform:none}
+
+/* cards / lists */
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:15px;padding:13px 14px;margin-bottom:11px}
+.card.soft{border-color:var(--border)}
+.card.mint{background:var(--mint);border-color:var(--mint-deep)}
+.card-h{font-size:.82rem;font-weight:700}
+.card-sub{font-family:var(--font-sub);font-size:.64rem;color:var(--muted);margin-top:2px;line-height:1.4}
+.row{display:flex;align-items:center;gap:11px}
+.thumb{width:44px;height:44px;border-radius:0;background:var(--ph);flex:none;display:flex;align-items:center;justify-content:center;color:#b4b4ab}
+.thumb.sm{width:34px;height:34px;border-radius:0}
+.avatar{width:40px;height:40px;border-radius:0;background:var(--ph);flex:none;display:flex;align-items:center;justify-content:center;color:#a9a9a0;border:1.5px solid var(--line)}
+.grow{flex:1;min-width:0}
+.nm{font-size:.8rem;font-weight:700}
+.meta{font-family:var(--font-sub);font-size:.62rem;color:var(--muted);margin-top:1px}
+.divider{height:1px;background:var(--border);margin:11px 0}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:none;border-radius:12px;
+  font-family:var(--font);font-size:.78rem;font-weight:700;padding:12px 16px;cursor:pointer;transition:transform .1s,background .15s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--green);color:#fff;width:100%}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn.mint{background:var(--mint-deep);color:#26400f}
+.btn.block{width:100%;margin-bottom:9px}
+.btn.sm{font-size:.66rem;padding:8px 12px;border-radius:9px}
+
+/* play button */
+.play{width:38px;height:38px;border-radius:50%;background:var(--green);flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s}
+.play:active{transform:scale(.92)}
+.play::after{content:'';border-left:12px solid #fff;border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:3px}
+.play.playing::after{border:none;width:11px;height:11px;margin-left:0;background:linear-gradient(90deg,#fff 0 34%,transparent 34% 66%,#fff 66% 100%)}
+.play.sm{width:30px;height:30px}.play.sm::after{border-left-width:9px;border-top-width:5px;border-bottom-width:5px}
+.play.mint{background:var(--mint-deep)}.play.mint::after{border-left-color:#2f7d22}
+
+/* waveform (static-ish, animated when playing) */
+.wave{display:flex;align-items:center;gap:2px;height:30px;flex:1}
+.wave i{flex:1;background:var(--olive);border-radius:2px;opacity:.55;transition:transform .1s}
+.wave.playing i{opacity:.9}
+
+/* chips (optional reflect tips) */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1.5px solid var(--border);background:#fff;border-radius:999px;padding:7px 11px;font-size:.62rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .12s}
+.chip:hover,.chip.on{background:var(--mint);border-color:var(--mint-deep);color:var(--ink)}
+
+/* review (post-stop) — same sono look as live, paused */
+.review-sono{position:relative;height:140px;border-radius:0;background:#e4e2da;overflow:hidden;margin:0 -16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center}
+.review-sono canvas{width:100%;height:100%;display:block;position:absolute;inset:0}
+.review-sono .play{position:relative;z-index:1;width:46px;height:46px;background:#1f1f1c}
+.review-meta{font-size:.62rem;color:var(--muted);margin-bottom:12px}
+.mic-btn{width:68px;height:68px;border-radius:50%;background:var(--green);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(47,125,34,.35);transition:transform .1s;color:#fff}
+.mic-btn:active{transform:scale(.94)}
+.mic-btn .ico{width:28px;height:28px}
+.mic-label{font-size:.6rem;font-weight:600;color:var(--muted);margin-top:6px}
+.friend-row{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;padding:4px 2px 8px;margin-bottom:10px}
+.friend-pick{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;flex:none;width:72px}
+.friend-pick .pic{position:relative;width:64px;height:64px;border-radius:0;overflow:hidden;border:1.5px solid var(--line);background:var(--ph)}
+.friend-pick .pic img{width:100%;height:100%;object-fit:cover;display:block}
+.friend-pick .pic .ovr{position:absolute;inset:0;background:rgba(47,125,34,.42);opacity:0;transition:opacity .15s;pointer-events:none}
+.friend-pick.on .pic .ovr{opacity:1}
+.friend-pick .pic .ovr::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem;font-weight:800}
+.friend-pick .add{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;color:var(--ink);border:1.5px dashed var(--line)}
+.friend-pick .add .ico{width:22px;height:22px}
+.friend-pick .fn{font-size:.62rem;font-weight:700;text-align:center;line-height:1.2}
+.friend-pick .fid{font-size:.5rem;font-weight:600;color:var(--muted);text-align:center}
+.toggle{width:42px;height:26px;border-radius:999px;background:var(--ph);border:1.5px solid var(--border);position:relative;flex:none;cursor:pointer;transition:background .15s}
+.toggle.on{background:var(--green);border-color:var(--green)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .15s}
+.toggle.on::after{transform:translateX(16px)}
+.set-row{display:flex;align-items:center;gap:10px}
+.set-row .chev{color:var(--muted);font-size:.9rem}
+.avatar-stack{display:flex;align-items:center;flex-direction:row-reverse;padding-left:10px}
+.avatar-stack img,.avatar-stack .xmedia{width:28px;height:28px;border-radius:0;object-fit:cover;border:2px solid var(--paper);margin-left:-10px;background:var(--ph);display:block;overflow:hidden}
+
+/* live sound-id */
+.sono{height:168px;border-radius:0;background:#e4e2da;overflow:hidden;position:relative;margin:0 -16px 10px;border-bottom:1px solid var(--border)}
+.sono canvas{width:100%;height:100%;display:block}
+.listening{display:flex;align-items:center;justify-content:space-between;font-size:.68rem;font-weight:600;color:var(--muted);margin-bottom:8px;padding-top:2px}
+.listening .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;vertical-align:middle;animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.85)}50%{opacity:1;transform:scale(1.2)}}
+.detect{opacity:0;transform:translateY(6px);transition:all .35s;border-radius:0;border:none;border-bottom:1px solid var(--border);background:transparent;padding:12px 2px;margin:0}
+.detect.show{opacity:1;transform:none}
+.detect.known{background:rgba(216,236,194,.35)}
+.maybe-chip{display:flex;align-items:center;gap:6px;flex:none;cursor:pointer;margin-left:8px}
+.maybe-chip img{width:26px;height:26px;border-radius:7px;object-fit:cover;display:block;background:var(--ph);border:1.5px solid var(--line)}
+.maybe-chip span{font-size:.6rem;font-weight:700;color:var(--green);white-space:nowrap}
+.badge{font-size:.52rem;font-weight:700;color:var(--green);background:var(--green-soft);border:1px solid #cfe6bf;border-radius:999px;padding:2px 7px}
+.stop-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:auto;padding:18px 0 6px}
+.stop-btn{width:62px;height:62px;border-radius:50%;background:#1a1a1a;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:none;transition:transform .1s}
+.stop-btn:active{transform:scale(.94)}
+.stop-btn .sq{width:18px;height:18px;border-radius:3px;background:#fff}
+.stop-timer{font-size:.62rem;font-weight:700;color:var(--muted);background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:4px 8px}
+
+/* streak calendar — github-compact */
+.streak-wrap{display:flex;align-items:center;gap:10px;margin-top:8px}
+.streak{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;flex:1}
+.streak .d{aspect-ratio:1;border-radius:2px;background:#ebedf0}
+.streak .d.l1{background:#d8ecc2}
+.streak .d.l2{background:#bfe19a}
+.streak .d.l3{background:#7ba428}
+.streak .d.today{outline:1.5px solid var(--green);outline-offset:1px}
+.streak-lab{font-size:.52rem;font-weight:700;color:var(--muted);writing-mode:horizontal-tb;flex:none}
+
+/* memory mosaic 2×2 */
+.mem-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.mem{border-radius:0;overflow:hidden;position:relative;border:1.5px solid var(--line);min-height:128px;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;padding:11px 12px;color:#fff}
+.mem .bg{position:absolute;inset:0;background-size:cover;background-position:center}
+.mem .shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 20%,rgba(20,22,14,.72) 100%)}
+.mem .mt{position:relative;z-index:1;font-size:.72rem;font-weight:700;letter-spacing:-.01em;line-height:1.25}
+.mem .ms{position:relative;z-index:1;font-family:var(--font-sub);font-size:.56rem;opacity:.85;margin-top:3px;line-height:1.3}
+.mem.mint-vis{border-color:var(--mint-deep)}
+.mem.mint-vis .bg{background:linear-gradient(145deg,#d8ecc2,#7ba428 70%)}
+.mem.warm-vis .bg{background:linear-gradient(145deg,#e8dcc8,#c45c38)}
+.mem.soft-vis .bg{background:linear-gradient(145deg,#dde8ef,#5a7a8c)}
+.mem.photo-vis .bg{background-image:url('bird.jpg')}
+.mem.photo-vis .shade{background:linear-gradient(180deg,transparent 30%,rgba(20,22,14,.78) 100%)}
+.mem .play.sm{position:absolute;top:10px;right:10px;z-index:2;width:28px;height:28px}
+
+/* album / feature heroes */
+.album{position:relative;margin:0 -16px 14px;height:220px;overflow:hidden;border-bottom:1.5px solid var(--border)}
+.album .cover{position:absolute;inset:0;background-size:cover;background-position:center;background-image:url('bird.jpg')}
+.album .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,28,12,.15) 0%,rgba(20,28,12,.55) 45%,rgba(20,28,12,.92) 100%)}
+.album .veil.warm{background:linear-gradient(180deg,rgba(60,30,12,.2) 0%,rgba(40,20,10,.75) 100%)}
+.album .veil.cool{background:linear-gradient(180deg,rgba(20,35,50,.25) 0%,rgba(15,25,40,.88) 100%)}
+.album .body{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:18px 16px 16px;color:#fff}
+.album .kicker{font-size:.58rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.8;margin-bottom:6px}
+.album .title{font-size:1.45rem;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.album .sub{font-family:var(--font-sub);font-size:.68rem;opacity:.85;margin-top:5px}
+.album .actions{display:flex;align-items:center;gap:10px;margin-top:12px}
+.album .play{width:44px;height:44px;background:#fff}
+.album .play::after{border-left-color:var(--green)}
+.astro-chart{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.astro-pill{border:1.5px solid var(--line);border-radius:14px;padding:14px 12px;background:#fff;text-align:center}
+.astro-pill .lab{font-size:.52rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.astro-pill .val{font-family:var(--font-sub);font-size:.9rem;font-weight:600;margin-top:4px}
+.honor-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.honor-row:last-child{border-bottom:none}
+.honor-rank{width:22px;font-size:.7rem;font-weight:800;color:var(--muted);flex:none}
+.honor-row img{width:48px;height:48px;border-radius:12px;object-fit:cover;flex:none;border:1.5px solid var(--line)}
+
+/* search */
+.search{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;margin-bottom:12px}
+.search .ico{color:var(--muted);width:16px;height:16px;flex:none}
+.search input{border:none;outline:none;flex:1;font-family:var(--font);font-size:.78rem;background:transparent;color:var(--ink)}
+.search input::placeholder{color:#b3b3aa}
+
+/* share audio grid */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stile{border:1.5px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;position:relative;transition:all .12s;background:#fff}
+.stile.on{background:var(--mint);border-color:var(--mint-deep)}
+.stile .chk{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;border:2px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#fff}
+.stile.on .chk{background:var(--green);border-color:var(--green)}
+.stile.on .chk::after{content:'✓'}
+.stile .snm{font-size:.66rem;font-weight:700;margin-top:8px}
+
+/* artifact sonogram */
+.artifact{background:#fff;border:1.5px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:14px}
+.artifact .top{display:flex;align-items:center;gap:9px;padding:12px 13px}
+.artcanvas{width:100%;height:150px;display:block;background:#f3f7ec}
+.artifact .bot{display:flex;align-items:center;gap:16px;padding:11px 14px;font-size:1.05rem;color:var(--muted)}
+
+/* toggle (call/song) */
+.seg2{display:inline-flex;background:var(--ph);border-radius:999px;padding:3px;gap:2px}
+.seg2 button{border:none;background:transparent;border-radius:999px;padding:6px 14px;font-family:var(--font);font-size:.66rem;font-weight:700;color:var(--muted);cursor:pointer}
+.seg2 button.on{background:#fff;color:var(--green);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+
+/* comment bubble */
+.bubble{background:var(--mint);border:1.5px solid var(--mint-deep);border-radius:14px;padding:10px 12px;font-size:.76rem;line-height:1.4;margin-bottom:6px}
+.bubble .who{font-size:.58rem;font-weight:700;color:#4a6b26;margin-bottom:3px}
+
+/* mini map */
+.map{height:96px;border-radius:12px;background:
+  radial-gradient(circle at 60% 45%,rgba(47,125,34,.16),transparent 60%),
+  repeating-linear-gradient(0deg,#eef1ea 0 16px,#e8ece2 16px 17px),
+  repeating-linear-gradient(90deg,#eef1ea 0 16px,#e8ece2 16px 17px);
+  border:1.5px solid var(--border);position:relative;margin-top:6px}
+.map .pin{position:absolute;top:40%;left:56%;width:16px;height:16px;border-radius:50% 50% 50% 2px;transform:rotate(45deg);background:var(--green);border:2px solid #fff}
+.map .halo{position:absolute;top:32%;left:47%;width:70px;height:60px;border-radius:50%;background:rgba(47,125,34,.12);border:1.5px dashed rgba(47,125,34,.5)}
+
+/* photo strip */
+.photos{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.photos .p{width:76px;height:76px;border-radius:0;background:var(--ph);flex:none;display:flex;align-items:center;justify-content:center;color:#b4b4ab}
+
+/* banner */
+.banner{display:flex;align-items:center;gap:10px;background:var(--green-soft);border:1.5px solid #cfe6bf;border-radius:13px;padding:11px 13px;margin-bottom:11px}
+.banner .dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex:none}
+
+/* input-ish */
+.input{border:1.5px solid var(--line);border-radius:12px;padding:11px 13px;font-family:var(--font-sub);font-size:.78rem;color:var(--ink);min-height:44px;background:#fff}
+.input.lines{background:repeating-linear-gradient(#fff 0 27px,var(--border) 27px 28px);min-height:110px}
+.input.lines.tall{min-height:168px}
+.kbrow{display:flex;gap:9px;margin-top:10px}
+.kbtn{flex:1;border:1.5px solid var(--line);border-radius:11px;padding:11px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.58rem;font-weight:600;color:var(--muted);cursor:pointer;background:#fff}
+.kbtn .ico{font-size:1.1rem;color:var(--ink)}
+
+/* bottom nav */
+.nav{position:absolute;bottom:0;left:0;right:0;height:72px;background:rgba(251,251,248,.94);
+  backdrop-filter:blur(12px);border-top:1.5px solid var(--border);display:flex;justify-content:space-around;
+  align-items:flex-start;padding:11px 14px 0;z-index:10}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.52rem;font-weight:600;color:#adad9f;cursor:pointer}
+.nav-item .ico{font-size:1.25rem}
+.nav-item.on{color:var(--green)}
+.home-ind{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:118px;height:5px;border-radius:3px;background:#1a1a1a;opacity:.2;z-index:20;pointer-events:none}
+.hint{font-family:var(--font-sub);font-size:.62rem;color:var(--muted);line-height:1.45;margin:2px 0 12px}
+.tap{cursor:pointer}
+
+/* ═══ LO-FI WIREFRAME LAYER ═══ */
+.sk{display:block;height:9px;border-radius:5px;background:var(--sk);margin:5px 0}
+.sk.s{height:7px}
+.sk.lg{height:12px}
+.sk.w95{width:95%}.sk.w80{width:80%}.sk.w65{width:65%}.sk.w50{width:50%}.sk.w35{width:35%}.sk.w25{width:25%}
+.sk-stack{display:flex;flex-direction:column;gap:6px;padding:2px 0 6px}
+.phone img{opacity:1!important;object-fit:cover;box-shadow:none;border-color:transparent;filter:grayscale(1)}
+.xmedia{position:relative;background:#e6e6e6!important;overflow:hidden}
+.thumb,.avatar,.friend-pick .pic,.honor-row img,.photos .p,.album .cover,.mem .bg,.avatar-stack img{position:relative;overflow:hidden;border-radius:0!important}
+.honor-row img{border:1.5px solid var(--line)}
+.avatar-stack img{border-color:#fff;background:#e6e6e6}
+.thumb,.avatar,.friend-pick .pic,.photos .p{border-radius:0!important}
+.sono,.review-sono,.artcanvas{background:#e8e8e8!important;filter:grayscale(1)}
+.play,.play.mint,.btn.primary,.btn.mint,.mic-btn,.stop-btn,.badge,.toggle.on,.nav-item.on,.listening .pulse,.seg2 button.on{filter:none}
+.play,.mic-btn,.stop-btn{background:#1a1a1a!important;box-shadow:none!important;color:#fff}
+.play::after,.play.mint::after{border-left-color:#fff!important}
+.play.mint{background:#1a1a1a!important}
+.btn.primary{background:#1a1a1a;color:#fff}
+.btn.mint{background:#ddd;color:#1a1a1a}
+.btn.ghost{border-color:#222}
+.badge{color:#1a1a1a;background:#eee;border-color:#ccc}
+.toggle.on{background:#1a1a1a;border-color:#1a1a1a}
+.nav-item.on{color:#1a1a1a}
+.nav{background:rgba(255,255,255,.96);border-top-color:#ccc}
+.card.mint,.detect.known,.bubble{background:#f0f0f0;border-color:#ccc}
+.bubble .who{color:#555}
+.maybe-chip span{color:#1a1a1a}
+.friend-pick .pic .ovr{background:rgba(0,0,0,.4)}
+.streak .d{background:#ebebeb}
+.streak .d.l1{background:#d8d8d8}
+.streak .d.l2{background:#b0b0b0}
+.streak .d.l3{background:#777}
+.streak .d.today{outline-color:#1a1a1a}
+.mem.mint-vis .bg,.mem.warm-vis .bg,.mem.soft-vis .bg{background:#e6e6e6!important;background-image:none!important}
+.mem.photo-vis .bg{background:#e6e6e6 url('bird.jpg') center/cover no-repeat!important;filter:grayscale(1)}
+.album .cover{filter:grayscale(1)}
+.mem .shade{background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.55) 100%)}
+.album .veil,.album .veil.warm,.album .veil.cool{background:linear-gradient(180deg,rgba(0,0,0,.05) 0%,rgba(0,0,0,.72) 100%)}
+.map{background:#eee;border-color:#bbb}
+.map .pin{background:#1a1a1a;border-color:#fff}
+.map .halo{background:rgba(0,0,0,.06);border-color:rgba(0,0,0,.35)}
+.facil button.on{background:#1a1a1a;border-color:#1a1a1a}
+.facil button:hover{border-color:#1a1a1a;color:#1a1a1a}
+.h-serif{font-family:var(--font)!important;font-style:normal!important}
+.meta.h-serif{font-style:normal!important}
+.page-sub{color:#666;font-family:var(--font)}
+
+/* friends grid (circular) */
+.fg-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px 14px;padding:10px 8px 6px}
+.fg-tile{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;text-align:center}
+.fg-tile .av{width:92px;height:92px;border-radius:0;border:1.5px solid var(--line);background:#e6e6e6;position:relative;overflow:hidden;padding:0}
+.fg-tile .av img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1)}
+.fg-tile .fn{font-size:.72rem;font-weight:700}
+.fg-tile .sk{margin:0 auto}
+
+/* bird profile hero */
+.bp-hero{width:100%;aspect-ratio:1;border-radius:0;border:1.5px solid var(--line);background:#e6e6e6 url('bird.jpg') center/cover no-repeat;position:relative;overflow:hidden;margin-bottom:14px;filter:grayscale(1)}
+.bp-meta{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.bp-meta .species{font-size:.78rem;color:var(--muted);font-weight:600}
+.rec-chip{display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;margin-bottom:12px}
+.rec-chip .wave{height:26px}
+
+/* share sheet popup */
+.sheet{position:absolute;inset:0;z-index:40;display:none;align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.35)}
+.sheet-panel{position:relative;z-index:1;width:100%;background:#fff;border-radius:22px 22px 0 0;border-top:1.5px solid var(--line);padding:10px 18px 28px;box-shadow:0 -8px 30px rgba(0,0,0,.12)}
+.sheet-handle{width:40px;height:4px;border-radius:3px;background:#ccc;margin:4px auto 14px}
+.share-opts{display:flex;justify-content:space-around;gap:8px;padding:8px 4px 4px}
+.share-opt{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;flex:1}
+.share-opt .blob{width:52px;height:52px;border-radius:50%;border:1.5px solid var(--line);background:#eee;display:flex;align-items:center;justify-content:center}
+.share-opt .blob .ico{width:20px;height:20px}
+.share-opt span{font-size:.58rem;font-weight:700;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="page-title">Merlin Companion — lo-fi wireframe</div>
+  <div class="page-sub">Grayscale layout · tap through flow · menu jumps screens</div>
+</div>
+<div class="facil" id="facil"></div>
+
+<!-- icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 10v4M8 6v12M12 3v18M16 7v10M20 10v4"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.5a3 3 0 0 1 0 5.6M21 20a6 6 0 0 0-4-5.6"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-bird" viewBox="0 0 24 24"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+  <symbol id="i-photo" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5L4 20"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21.4l8.8-8.7a5 5 0 0 0 0-7.1z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4M12 2v13"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.6 5.6L20 9.3l-4 4 1 5.7L12 16l-5 3 1-5.7-4-4 5.4-.7z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+</defs></svg>
+
+<div class="phone">
+  <div class="statusbar"><div class="notch"></div><span>9:41</span>
+    <span class="icons"><svg class="ico" style="width:17px" viewBox="0 0 24 24"><path d="M2 17h2M6 14h2M10 10h2M14 6h2M18 3h2" stroke-width="3"/></svg>
+      <svg class="ico" style="width:16px" viewBox="0 0 24 24"><path d="M2 8a13 13 0 0 1 20 0M5 12a8 8 0 0 1 14 0M8.5 15.5a3.5 3.5 0 0 1 7 0"/></svg>
+      <svg class="ico" style="width:22px" viewBox="0 0 26 14"><rect x="1" y="2" width="20" height="10" rx="3"/><rect x="3" y="4" width="15" height="6" rx="1.5" fill="currentColor" stroke="none"/><rect x="23" y="5" width="2" height="4" rx="1" fill="currentColor" stroke="none"/></svg>
+    </span>
+  </div>
+
+  <!-- ═══════════ 1. DURING BIRDING (Sound ID, Merlin-look) ═══════════ -->
+  <div class="screen on" id="s-birding">
+    <div class="scr-top"><div class="scr-title">Sound ID</div>
+      <div class="scr-actions"><svg class="ico" style="width:18px"><use href="#i-pin"/></svg></div></div>
+    <div class="sono"><canvas id="liveSono" width="330" height="168"></canvas></div>
+    <div class="listening"><span><span class="pulse"></span>Who's singing</span><span>Union Bay</span></div>
+    <div id="detectList"></div>
+    <div class="stop-wrap">
+      <button class="stop-btn" data-go="s-log-review" aria-label="Stop"><span class="sq"></span></button>
+      <span class="stop-timer" id="liveTimer">00:00</span>
+    </div>
+  </div>
+
+  <!-- ═══════════ 2. LOGGING FLOW (simple: review → optional reflect → share) ═══════════ -->
+  <!-- 2a review: birds you ID'd — save or keep recording -->
+  <div class="screen" id="s-log-review">
+    <div class="scr-top">
+      <span class="back tap" data-back><svg class="ico"><use href="#i-x"/></svg></span>
+      <div class="grow"><div class="scr-title" style="font-size:.95rem">July 14 · Union Bay</div>
+        <div class="meta" style="margin-top:1px">7:51 AM · 4 birds</div></div>
+      <button class="btn ghost sm" data-go="s-log-reflect" style="flex:none">Save</button>
+    </div>
+
+    <div class="review-sono">
+      <canvas id="reviewSono" width="330" height="140"></canvas>
+      <div class="play" data-audio="birds/red-wing-blackbird.mp3"></div>
+    </div>
+    <div class="review-meta">0:42 · tap play to listen back</div>
+
+    <div class="eyebrow" style="margin-top:2px">Who was singing</div>
+    <div id="reviewList"></div>
+
+    <div class="stop-wrap">
+      <button class="mic-btn" data-go="s-birding" aria-label="Record something else"><svg class="ico"><use href="#i-mic"/></svg></button>
+      <div class="mic-label">Record something else</div>
+      <button class="btn ghost sm" style="margin-top:6px" onclick="skipCurrentReview()">Don't log this</button>
+    </div>
+  </div>
+
+  <!-- 2b reflect — optional, after save -->
+  <div class="screen" id="s-log-reflect">
+    <div class="scr-top"><span class="back tap" data-go="s-log-review"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Reflect</div></div>
+    <div class="hint sk-stack"><span class="sk w80"></span><span class="sk s w50"></span></div>
+    <div class="eyebrow" style="margin-top:2px">Recording title</div>
+    <div class="input" contenteditable="true" id="recTitle" style="font-weight:700" data-ph="Title…">Union Bay · July 14</div>
+    <div class="card mint" style="margin-top:12px">
+      <div class="card-h h-serif" id="reflectQ" style="font-size:.92rem;line-height:1.35">—</div>
+      <div class="tap" style="font-size:.62rem;color:var(--green);font-weight:700;margin-top:10px" onclick="shuffleQ()">↻ Shuffle prompt</div>
+    </div>
+    <div class="eyebrow">Field notes</div>
+    <div class="input lines tall" id="fieldNotes" contenteditable="true" data-ph="Write down your field notes…"></div>
+    <div class="kbrow">
+      <div class="kbtn tap" onclick="toast('Audio clip attached')"><svg class="ico"><use href="#i-mic"/></svg>Audio</div>
+      <div class="kbtn tap" onclick="toast('Photo attached')"><svg class="ico"><use href="#i-photo"/></svg>Photo</div>
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn primary block" data-go="s-log-done" onclick="syncRecTitle();syncFieldNotesUI()">Save note</button>
+      <button class="btn ghost block" data-go="s-log-done" onclick="syncRecTitle();syncFieldNotesUI()">Skip</button>
+    </div>
+  </div>
+
+  <!-- 2c done + share with friends (no extra step) -->
+  <div class="screen" id="s-log-done">
+    <div class="scr-top"><div class="scr-title">Saved ✓</div></div>
+    <div class="card mint"><div class="card-h" id="doneTitle">Union Bay · July 14</div><div class="card-sub">4 birds · 0:42</div></div>
+
+    <div id="includeNotesBlock" style="display:none">
+      <div class="eyebrow">Include field notes?</div>
+      <div class="card mint"><div id="includeNotesPreview" class="sk-stack"><span class="sk w90"></span><span class="sk s w60"></span></div>
+        <div class="seg2" style="margin-top:10px"><button class="on" data-inc="yes" onclick="setIncludeNotes(true,this)">Yes</button><button data-inc="no" onclick="setIncludeNotes(false,this)">No</button></div>
+      </div>
+    </div>
+
+    <div class="hint sk-stack"><span class="sk w80"></span><span class="sk s w50"></span></div>
+    <div class="friend-row" id="shareFriends">
+      <div class="friend-pick" data-friend="Phoebe"><div class="pic"><img src="person.jpg" alt=""><span class="ovr"></span></div><span class="fn">Phoebe</span><span class="fid">@phoebe.w</span></div>
+      <div class="friend-pick" data-friend="Sara"><div class="pic"><img src="person.jpg" alt=""><span class="ovr"></span></div><span class="fn">Sara</span><span class="fid">@sara.listens</span></div>
+      <div class="friend-pick" data-friend="Maya"><div class="pic"><img src="person.jpg" alt=""><span class="ovr"></span></div><span class="fn">Maya</span><span class="fid">@maya.b</span></div>
+      <div class="friend-pick" onclick="toast('Search friends')"><div class="add"><svg class="ico"><use href="#i-plus"/></svg></div><span class="fn">Add</span></div>
+    </div>
+    <button class="btn ghost block" data-go="s-outing" id="shareGoBtn" onclick="prepOuting()">Share</button>
+    <button class="btn primary block" style="margin-top:6px" data-go="s-activity">Done</button>
+  </div>
+
+  <!-- ═══════════ 3. ACTIVITY ═══════════ -->
+  <div class="screen" id="s-activity">
+    <div class="scr-top"><div class="scr-title">Activity</div>
+      <div class="scr-actions"><svg class="ico" style="width:18px" data-go="s-profile"><use href="#i-gear"/></svg></div></div>
+
+    <div class="card soft" style="padding:11px 13px">
+      <div class="row"><div class="grow"><div class="nm" style="font-size:.74rem">Logging streak</div><div class="meta">5 days · keep it going</div></div><div class="badge">5 days</div></div>
+      <div class="streak-wrap"><div class="streak" id="streakCal"></div></div>
+    </div>
+
+    <div class="card tap" data-go="s-unlogged"><div class="row">
+      <div class="thumb"><svg class="ico" style="width:22px"><use href="#i-sound"/></svg></div>
+      <div class="grow"><div class="card-h">3 un-logged recordings</div><div class="card-sub">From 3 outings · pick one to review</div></div>
+      <svg class="ico" style="width:18px;color:var(--muted)"><use href="#i-plus"/></svg></div></div>
+
+    <div class="card"><div class="row">
+      <div class="avatar" style="overflow:hidden;padding:0"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="grow"><div class="card-h">Remember Steve?</div><div class="card-sub">Red-winged Blackbird · last heard Jan 10</div></div>
+      <div class="play sm" data-audio="birds/red-wing-blackbird.mp3"></div></div></div>
+
+    <div class="eyebrow">For you</div>
+    <div class="mem-grid">
+      <div class="mem mint-vis tap" data-go="s-mix">
+        <div class="bg"></div><div class="shade"></div>
+        <div class="play sm mint" data-audio="birds/red-wing-blackbird.mp3" onclick="event.stopPropagation()"></div>
+        <div class="mt">May mix</div>
+        <div class="ms">12 tracks · birds of the month</div>
+      </div>
+      <div class="mem photo-vis tap" data-go="s-honor">
+        <div class="bg"></div><div class="shade"></div>
+        <div class="mt">Honor your birds</div>
+        <div class="ms">The 6 you've spent the most time with</div>
+      </div>
+      <div class="mem warm-vis tap" data-go="s-last-year">
+        <div class="bg"></div><div class="shade"></div>
+        <div class="mt">This time last year</div>
+        <div class="ms">Arboretum · May 2025</div>
+      </div>
+      <div class="mem soft-vis tap" data-go="s-astro">
+        <div class="bg"></div><div class="shade"></div>
+        <div class="mt">Bird astrology</div>
+        <div class="ms">Sun in House Finch</div>
+      </div>
+    </div>
+
+    <button class="btn ghost block" style="margin-top:8px" data-go="s-outings">All past outings</button>
+  </div>
+
+  <!-- unlogged outings picker (when >1) -->
+  <div class="screen" id="s-unlogged">
+    <div class="scr-top"><span class="back tap" data-go="s-activity"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Unlogged</div></div>
+    <div class="hint sk-stack"><span class="sk w80"></span><span class="sk s w50"></span></div>
+    <div id="unloggedList"></div>
+    <button class="btn ghost block" style="margin-top:8px" onclick="skipAllUnlogged()">Don't log any</button>
+  </div>
+
+  <!-- all past outings -->
+  <div class="screen" id="s-outings">
+    <div class="scr-top"><span class="back tap" data-go="s-activity"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Past outings</div></div>
+    <div class="search"><svg class="ico"><use href="#i-search"/></svg><input id="outingSearch" type="search" placeholder="Search place, bird, date…" autocomplete="off"></div>
+    <div id="pastList"></div>
+  </div>
+
+  <!-- mix detail — album -->
+  <div class="screen" id="s-mix">
+    <div class="scr-top"><span class="back tap" data-go="s-activity"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">May mix</div>
+      <div class="scr-actions"><svg class="ico" style="width:18px" data-go="s-share-audio"><use href="#i-share"/></svg></div></div>
+    <div class="album">
+      <div class="cover"></div><div class="veil"></div>
+      <div class="body">
+        <div class="sk s w25" style="margin-bottom:8px;opacity:.7"></div>
+        <div class="title">Birds of May</div>
+        <div class="sk-stack" style="margin-top:8px"><span class="sk s w65"></span></div>
+        <div class="actions"><div class="play" data-audio="birds/red-wing-blackbird.mp3"></div>
+          <div class="meta" style="color:rgba(255,255,255,.85)">Play mix</div></div>
+      </div>
+    </div>
+    <div id="mixList"></div>
+  </div>
+
+  <!-- honor your birds -->
+  <div class="screen" id="s-honor">
+    <div class="scr-top"><span class="back tap" data-go="s-activity"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Honor your birds</div></div>
+    <div class="album" style="height:160px">
+      <div class="cover"></div><div class="veil"></div>
+      <div class="body">
+        <div class="sk s w25" style="margin-bottom:8px;opacity:.7"></div>
+        <div class="title">Your closest six</div>
+        <div class="sk-stack" style="margin-top:8px"><span class="sk s w65"></span></div>
+      </div>
+    </div>
+    <div id="honorList"></div>
+  </div>
+
+  <!-- this time last year -->
+  <div class="screen" id="s-last-year">
+    <div class="scr-top"><span class="back tap" data-go="s-activity"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Last year</div>
+      <div class="scr-actions"><svg class="ico" style="width:18px" data-go="s-share-audio"><use href="#i-share"/></svg></div></div>
+    <div class="album">
+      <div class="cover" style="filter:saturate(.85) brightness(.95)"></div><div class="veil warm"></div>
+      <div class="body">
+        <div class="sk s w25" style="margin-bottom:8px;opacity:.7"></div>
+        <div class="title">This time last year</div>
+        <div class="sk-stack" style="margin-top:8px"><span class="sk s w65"></span></div>
+        <div class="actions"><div class="play" data-audio="birds/american-robin.mp3"></div>
+          <div class="meta" style="color:rgba(255,255,255,.85)">Listen back</div></div>
+      </div>
+    </div>
+    <div class="card mint"><div class="card-h h-serif" style="font-size:.88rem">Then vs now</div>
+      <div class="sk-stack"><span class="sk w95"></span><span class="sk w80"></span><span class="sk s w55"></span></div></div>
+    <div class="eyebrow">Birds that day</div>
+    <div id="lastYearList"></div>
+  </div>
+
+  <!-- bird astrology -->
+  <div class="screen" id="s-astro">
+    <div class="scr-top"><span class="back tap" data-go="s-activity"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Bird astrology</div>
+      <div class="scr-actions"><svg class="ico" style="width:18px" onclick="toast('Shared chart')"><use href="#i-share"/></svg></div></div>
+    <div class="album" style="height:180px">
+      <div class="cover"></div><div class="veil cool"></div>
+      <div class="body">
+        <div class="sk s w25" style="margin-bottom:8px;opacity:.7"></div>
+        <div class="title">Sun in House Finch</div>
+        <div class="sk-stack" style="margin-top:8px"><span class="sk s w65"></span></div>
+      </div>
+    </div>
+    <div class="astro-chart">
+      <div class="astro-pill"><div class="lab">Sun</div><div class="val">House Finch</div></div>
+      <div class="astro-pill"><div class="lab">Moon</div><div class="val">Dark-eyed Junco</div></div>
+      <div class="astro-pill"><div class="lab">Rising</div><div class="val">Red-winged Blackbird</div></div>
+      <div class="astro-pill"><div class="lab">Season</div><div class="val">Marsh dawn</div></div>
+    </div>
+    <div class="card soft"><div class="card-h">Reading</div>
+      <div class="sk-stack"><span class="sk w95"></span><span class="sk w90"></span><span class="sk w70"></span><span class="sk s w45"></span></div></div>
+    <button class="btn ghost block" onclick="toast('Saved to activity')">Save this chart</button>
+  </div>
+
+  <!-- ═══════════ 4. FRIENDS ═══════════ -->
+  <div class="screen" id="s-friends">
+    <div class="scr-top"><div class="scr-title">Friends</div>
+      <div class="scr-actions"><svg class="ico" style="width:18px"><use href="#i-plus"/></svg></div></div>
+    <div class="hint sk-stack"><span class="sk w80"></span><span class="sk s w50"></span></div>
+    <div class="fg-grid" id="friendsGrid"></div>
+  </div>
+
+  <!-- ═══════════ SETTINGS (was Profile) ═══════════ -->
+  <div class="screen" id="s-profile">
+    <div class="scr-top"><div class="scr-title">Settings</div></div>
+
+    <div class="card soft"><div class="row">
+      <div class="avatar" style="width:52px;height:52px;overflow:hidden;padding:0;flex:none"><img src="person.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="grow"><div class="nm" style="font-size:.88rem">itskatarinaaa</div><div class="meta">@itskatarinaaa</div></div>
+    </div></div>
+
+    <div class="card soft tap"><div class="set-row"><div class="grow"><div class="nm" style="font-size:.76rem">My offline birds</div><div class="meta">US: West Coast</div></div><span class="chev">›</span></div></div>
+
+    <div class="eyebrow">Common name language</div>
+    <div class="card soft tap"><div class="set-row"><div class="grow"><div class="nm" style="font-size:.76rem">English (United States)</div></div><span class="chev">›</span></div></div>
+
+    <div class="card soft"><div class="set-row"><div class="grow"><div class="nm" style="font-size:.76rem">Show scientific names</div></div>
+      <div class="toggle on" onclick="this.classList.toggle('on')"></div></div></div>
+
+    <div class="eyebrow">Bird of the day</div>
+    <div class="card soft"><div class="set-row"><div class="grow"><div class="nm" style="font-size:.76rem">Send me a daily reminder</div></div>
+      <div class="toggle" onclick="this.classList.toggle('on')"></div></div></div>
+
+    <div class="eyebrow">Sound</div>
+    <div class="card soft"><div class="set-row"><div class="grow"><div class="nm" style="font-size:.76rem">Move repeated live matches to top</div></div>
+      <div class="toggle on" onclick="this.classList.toggle('on')"></div></div></div>
+    <div class="card soft tap"><div class="set-row"><div class="grow"><div class="nm" style="font-size:.76rem">Supported birds</div><div class="meta">2300 birds</div></div><span class="chev">›</span></div></div>
+  </div>
+
+  <!-- ═══════════ BIRD PROFILE (view) — breakdown ═══════════ -->
+  <div class="screen" id="s-bird-profile">
+    <div class="scr-top"><span class="back tap" data-back><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title" style="font-size:1rem" id="bpName">Steve</div>
+      <div class="scr-actions">
+        <svg class="ico tap" style="width:18px" onclick="openShareSheet()"><use href="#i-share"/></svg>
+        <svg class="ico tap" style="width:18px" data-go="s-bird-edit"><use href="#i-edit"/></svg>
+      </div></div>
+    <div class="bp-hero"></div>
+    <div class="bp-meta">
+      <div class="nm" style="font-size:1.05rem" id="bpNick">Steve</div>
+      <div class="species" id="bpSpecies">Red-winged Blackbird</div>
+      <div class="sk s w55" style="margin-top:6px"></div>
+      <div class="meta" style="margin-top:4px">Last seen · Union Bay · 14× spotted</div>
+    </div>
+    <div class="rec-chip">
+      <div class="play sm" data-audio="birds/red-wing-blackbird.mp3"></div>
+      <div class="grow"><div class="nm" style="font-size:.7rem">Call</div><div class="meta">Jul 6 · Seattle, WA</div></div>
+      <div class="wave" style="width:72px;flex:none">___WAVE___</div>
+    </div>
+    <div class="eyebrow">Habits / behaviors</div>
+    <div class="card soft"><div class="sk-stack"><span class="sk w90"></span><span class="sk w75"></span><span class="sk s w50"></span></div></div>
+  </div>
+
+  <!-- BIRD PROFILE (edit) -->
+  <div class="screen" id="s-bird-edit">
+    <div class="scr-top"><span class="back tap" data-go="s-bird-profile"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Edit profile</div></div>
+    <div class="bp-hero" style="aspect-ratio:1.2"><div style="position:absolute;right:10px;bottom:10px;z-index:3;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center"><svg class="ico" style="width:16px"><use href="#i-plus"/></svg></div></div>
+    <div class="eyebrow">Name</div><div class="input" contenteditable="true">Steve</div>
+    <div class="eyebrow">Habits / behaviors</div><div class="input lines" contenteditable="true" data-ph=""></div>
+    <div class="sk-stack" style="margin-top:8px"><span class="sk s w55"></span></div>
+    <button class="btn primary block" style="margin-top:16px" data-go="s-bird-profile" onclick="toast('Profile saved')">Done</button>
+  </div>
+
+  <!-- ═══════════ SHARING — the OUTING (in-app: having the outing for the people) ═══════════ -->
+  <div class="screen" id="s-outing">
+    <div class="scr-top"><span class="back tap" data-back><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title" style="font-size:.95rem">Shared outing</div>
+      <div class="scr-actions">
+        <div class="avatar-stack" id="outingStack"></div>
+        <svg class="ico tap" style="width:18px" data-go="s-share-audio"><use href="#i-share"/></svg>
+      </div></div>
+    <div><div class="nm" style="font-size:1rem" id="outingTitle">Union Bay · July 14</div><div class="meta" id="outingMeta">10:00 – 11:32am</div></div>
+
+    <div id="outingNotes" style="margin:12px 0 4px;display:none"></div>
+
+    <div class="eyebrow">Birds on this outing</div>
+    <div class="card"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="grow"><div class="nm" style="font-size:.74rem">Mallard</div><div class="meta">32× · 1:52 min</div></div>
+      <div class="play sm" data-audio="birds/mallard-duck.mp3"></div></div></div>
+    <div class="card"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="grow"><div class="nm" style="font-size:.74rem">Red-winged Blackbird</div><div class="meta">14× · 0:32</div></div>
+      <div class="play sm" data-audio="birds/red-wing-blackbird.mp3"></div></div></div>
+    <div class="card"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="grow"><div class="nm" style="font-size:.74rem">House Finch</div><div class="meta">6× · 0:18</div></div>
+      <div class="play sm" data-audio="birds/house-finch.mp3"></div></div></div>
+
+    <button class="btn primary block" style="margin-top:14px" data-go="s-activity">Done</button>
+  </div>
+
+  <!-- share audio (select) -->
+  <div class="screen" id="s-share-audio">
+    <div class="scr-top"><span class="back tap" data-go="s-outing"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Share audio</div></div>
+    <div class="hint sk-stack"><span class="sk w80"></span><span class="sk s w50"></span></div>
+    <div class="sgrid" id="shareGrid"></div>
+    <button class="btn primary block" id="createBtn" data-go="s-artifact">Create artifact (0)</button>
+  </div>
+
+  <!-- artifact -->
+  <div class="screen" id="s-artifact">
+    <div class="scr-top"><span class="back tap" data-go="s-share-audio"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Your artifact</div></div>
+    <div class="artifact">
+      <div class="top"><div class="avatar" style="width:30px;height:30px"></div>
+        <div class="grow"><div class="nm" style="font-size:.72rem">Red-winged Blackbird</div><div class="sk s w45"></div></div>
+        <svg class="ico tap" style="width:17px;color:var(--muted)"><use href="#i-x"/></svg></div>
+      <canvas class="artcanvas" id="artSono" width="330" height="150"></canvas>
+      <div class="bot"><svg class="ico tap" style="width:19px"><use href="#i-heart"/></svg><div class="play sm" data-audio="birds/red-wing-blackbird.mp3"></div><span class="grow"></span><svg class="ico tap" style="width:18px" onclick="openShareSheet()"><use href="#i-share"/></svg></div>
+    </div>
+    <button class="btn primary block" data-go="s-outing" onclick="toast('Shared in Merlin')">Share in Merlin</button>
+    <button class="btn ghost block" onclick="openShareSheet()">Share outside Merlin</button>
+  </div>
+
+  <div class="nav" id="nav">
+    <div class="nav-item on" data-tab="s-birding"><svg class="ico"><use href="#i-sound"/></svg>Identify</div>
+    <div class="nav-item" data-tab="s-activity"><svg class="ico"><use href="#i-grid"/></svg>Activity</div>
+    <div class="nav-item" data-tab="s-friends"><svg class="ico"><use href="#i-people"/></svg>Friends</div>
+    <div class="nav-item" data-tab="s-profile"><svg class="ico"><use href="#i-gear"/></svg>Settings</div>
+  </div>
+  <div class="home-ind"></div>
+
+  <!-- share-outside popup (not a screen) -->
+  <div class="sheet" id="shareSheet">
+    <div class="sheet-bg" onclick="closeShareSheet()"></div>
+    <div class="sheet-panel">
+      <div class="sheet-handle"></div>
+      <div class="nm" style="text-align:center;margin-bottom:4px">Share outside</div>
+      <div class="sk s w50" style="margin:0 auto 14px"></div>
+      <div class="share-opts">
+        <div class="share-opt" onclick="closeShareSheet();toast('Messages')"><div class="blob"><svg class="ico"><use href="#i-share"/></svg></div><span>Messages</span></div>
+        <div class="share-opt" onclick="closeShareSheet();toast('Story')"><div class="blob"><svg class="ico"><use href="#i-photo"/></svg></div><span>Story</span></div>
+        <div class="share-opt" onclick="closeShareSheet();toast('Link copied')"><div class="blob"><svg class="ico"><use href="#i-plus"/></svg></div><span>Copy link</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" style="position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f1f1c;color:#fff;font-family:var(--font);font-size:.72rem;font-weight:600;padding:10px 16px;border-radius:10px;opacity:0;transition:all .25s;pointer-events:none;z-index:99"></div>
+
+<script>
+// ── which nav tab owns each screen ──
+const TAB_OF={ 's-birding':'s-birding',
+  's-log-review':'s-birding','s-log-reflect':'s-birding','s-log-done':'s-birding',
+  's-activity':'s-activity','s-mix':'s-activity','s-honor':'s-activity','s-last-year':'s-activity','s-astro':'s-activity','s-unlogged':'s-activity','s-outings':'s-activity',
+  's-friends':'s-friends','s-bird-profile':'s-friends','s-bird-edit':'s-friends',
+  's-profile':'s-profile',
+  's-outing':'s-activity','s-share-audio':'s-activity','s-artifact':'s-activity' };
+const SCREENS=[...document.querySelectorAll('.screen')].map(s=>s.id);
+let navStack=['s-birding'];
+
+function showScreen(id,push=true){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
+  const tab=TAB_OF[id]||id;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('on',n.dataset.tab===tab));
+  document.querySelector('.screen.on').scrollTop=0;
+  stopAudio();
+  if(id==='s-birding')startLive(); else stopLive();
+  if(id==='s-log-review')drawReviewSono();
+  if(id==='s-log-done')syncFieldNotesUI();
+  if(id==='s-outing')prepOuting();
+  if(id==='s-artifact')drawArtifact();
+  closeShareSheet();
+  if(push && navStack[navStack.length-1]!==id)navStack.push(id);
+}
+document.addEventListener('click',e=>{
+  const go=e.target.closest('[data-go]'); if(go){showScreen(go.dataset.go);return;}
+  const back=e.target.closest('[data-back]'); if(back){navStack.pop();showScreen(navStack[navStack.length-1]||'s-activity',false);return;}
+  const tab=e.target.closest('.nav-item'); if(tab){navStack=[tab.dataset.tab];showScreen(tab.dataset.tab,false);return;}
+});
+
+// ── facilitator jump menu ──
+const NICE={'s-birding':'1 · Identify (live)','s-log-review':'2a · Review (save)','s-log-reflect':'2b · Reflect','s-log-done':'2c · Saved / share','s-activity':'3 · Activity','s-unlogged':'3 · Unlogged outings','s-outings':'3 · Past outings','s-mix':'3 · May mix','s-honor':'3 · Honor birds','s-last-year':'3 · Last year','s-astro':'3 · Bird astrology','s-friends':'4 · Friends','s-profile':'· Settings','s-bird-profile':'· Bird profile','s-bird-edit':'· Bird profile edit','s-outing':'5a · Shared outing','s-share-audio':'5b · Share audio','s-artifact':'5c · Artifact'};
+document.getElementById('facil').innerHTML=SCREENS.map(id=>`<button data-jump="${id}">${NICE[id]||id}</button>`).join('');
+document.getElementById('facil').addEventListener('click',e=>{const b=e.target.closest('[data-jump]');if(!b)return;
+  navStack=[TAB_OF[b.dataset.jump]||b.dataset.jump]; showScreen(b.dataset.jump,false);
+  document.querySelectorAll('#facil button').forEach(x=>x.classList.toggle('on',x===b));});
+
+// ── contenteditable placeholders ──
+document.querySelectorAll('[contenteditable][data-ph]').forEach(el=>{
+  const ph=el.dataset.ph;
+  const set=()=>{if(!el.textContent.trim()){el.dataset.empty='1';}else{el.dataset.empty='';}};
+  el.style.position='relative';set();
+  el.addEventListener('input',set);
+});
+const st=document.createElement('style');
+st.textContent='[contenteditable][data-empty="1"]:before{content:attr(data-ph);color:#b3b3aa}';
+document.head.appendChild(st);
+
+// ── waveforms ──
+function fillWaves(){
+  document.querySelectorAll('.wave').forEach(w=>{
+    if(w.dataset.done)return;w.dataset.done='1';
+    const src=(w.textContent.includes('WAVE')?'':w.textContent);w.textContent='';
+    for(let i=0;i<26;i++){const b=document.createElement('i');b.style.height=(20+Math.abs(Math.sin(i*0.9))*70)+'%';w.appendChild(b);}
+  });
+}
+// replace the ___WAVE___ placeholders
+document.querySelectorAll('.wave').forEach(w=>{if(w.textContent.includes('WAVE'))w.textContent='';});
+fillWaves();
+
+// ── audio ──
+let curAudio=null,curBtn=null;
+function stopAudio(){if(curAudio){curAudio.pause();curAudio=null;}if(curBtn){curBtn.classList.remove('playing');curBtn=null;}}
+document.addEventListener('click',e=>{
+  const p=e.target.closest('[data-audio]');if(!p)return;
+  if(curBtn===p){stopAudio();return;}
+  stopAudio();const a=new Audio(p.dataset.audio);a.play().catch(()=>{});curAudio=a;curBtn=p;p.classList.add('playing');
+  const w=p.parentNode.querySelector('.wave');if(w)w.classList.add('playing');
+  a.onended=()=>{stopAudio();if(w)w.classList.remove('playing');};
+});
+
+// ── reflective prompts (shuffle) ──
+const QS=[
+  "What's one thing you want to remember?",
+  "Who were you with — anything notice?",
+  "Which bird surprised you?",
+  "What did the quietest moment sound like?",
+  "If today's birds had a mood, what was it?",
+  "What made you stop and listen?",
+];
+let qi=0;
+function shuffleQ(){qi=(qi+1)%QS.length;document.getElementById('reflectQ').innerHTML='<div class="sk-stack"><span class="sk lg w90"></span><span class="sk w60"></span></div>';}
+document.getElementById('reflectQ').innerHTML='<div class="sk-stack"><span class="sk lg w90"></span><span class="sk w60"></span></div>';
+let includeNotes=true;
+function getFieldNotes(){return (document.getElementById('fieldNotes').textContent||'').trim();}
+function syncRecTitle(){
+  const t=(document.getElementById('recTitle').textContent||'').trim()||'Union Bay · July 14';
+  const done=document.getElementById('doneTitle');if(done)done.textContent=t;
+  const outingTitle=document.getElementById('outingTitle');if(outingTitle)outingTitle.textContent=t;
+}
+function syncFieldNotesUI(){
+  const notes=getFieldNotes();
+  const block=document.getElementById('includeNotesBlock');
+  const preview=document.getElementById('includeNotesPreview');
+  if(!block)return;
+  if(notes){
+    block.style.display='';
+    preview.innerHTML='<span class="sk w90"></span><span class="sk s w60"></span>';
+  }else{
+    block.style.display='none';
+    includeNotes=false;
+  }
+}
+function setIncludeNotes(on,btn){
+  includeNotes=!!on;
+  if(btn)segPick(btn);
+}
+function prepOuting(){
+  syncRecTitle();
+  const notes=getFieldNotes();
+  const wrap=document.getElementById('outingNotes');
+  const names=[...document.querySelectorAll('#shareFriends .friend-pick.on')].map(x=>x.dataset.friend);
+  const friendNotes={Phoebe:1,Sara:1,Maya:1};
+  let html='';
+  if(includeNotes && notes){
+    html+=`<div class="bubble"><div class="who">You</div><div class="sk-stack"><span class="sk w90"></span><span class="sk s w55"></span></div></div>`;
+  }
+  names.forEach(n=>{
+    if(friendNotes[n])html+=`<div class="bubble" style="background:#f0f0f0;border-color:var(--border)"><div class="who" style="color:var(--muted)">${n}</div><div class="sk-stack"><span class="sk w80"></span><span class="sk s w45"></span></div></div>`;
+  });
+  if(html){wrap.style.display='';wrap.innerHTML=html;}else{wrap.style.display='none';wrap.innerHTML='';}
+  const stack=document.getElementById('outingStack');
+  if(stack)stack.innerHTML=names.map(()=>`<img src="person.jpg" alt="" style="width:28px;height:28px;border-radius:0;object-fit:cover;border:2px solid #fff;margin-left:-10px;filter:grayscale(1)">`).join('');
+  const meta=document.getElementById('outingMeta');
+  if(meta)meta.textContent=names.length?`10:00 – 11:32am · with ${names.join(', ')}`:'10:00 – 11:32am';
+}
+
+// ── share-with friend picker (multiselect) ──
+document.getElementById('shareFriends').addEventListener('click',e=>{
+  const p=e.target.closest('[data-friend]');if(!p)return;
+  p.classList.toggle('on');
+});
+
+// ── review list (birds from this listening) ──
+const REVIEW_BIRDS=[
+  ['House Finch','Haemorhous mexicanus','Joe'],
+  ['Dark-eyed Junco','Junco hyemalis',null],
+  ['Red-winged Blackbird','Agelaius phoeniceus','Steve'],
+  ['American Robin','Turdus migratorius',null],
+];
+document.getElementById('reviewList').innerHTML=REVIEW_BIRDS.map(([n,lat,nick])=>{
+  const maybe=nick?`<div class="maybe-chip"><img src="bird.jpg" alt=""><span>${nick.toLowerCase()}?</span></div>`:'';
+  return `<div class="card soft" style="padding:10px 12px"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+    <div class="grow"><div class="nm" style="font-size:.76rem">${n}</div><div class="sk s w55"></div></div>${maybe}</div></div>`;
+}).join('');
+
+// ── streak calendar (github-compact, ~2 weeks) ──
+const hits=[0,1,2,0,3,1,2, 0,1,3,2,3,2,3];
+document.getElementById('streakCal').innerHTML=hits.map((h,i)=>`<div class="d ${h?('l'+h):''} ${i===13?'today':''}"></div>`).join('');
+
+// ── unlogged outings ──
+let UNLOGGED=[
+  {id:'u1',place:'Union Bay',when:'Sat · Jul 12',birds:4,dur:'0:42'},
+  {id:'u2',place:'Arboretum',when:'Thu · Jul 10',birds:6,dur:'1:08'},
+  {id:'u3',place:'Golden Gardens',when:'Mon · Jul 7',birds:3,dur:'0:25'},
+];
+function renderUnlogged(){
+  const el=document.getElementById('unloggedList');
+  if(!UNLOGGED.length){
+    el.innerHTML=`<div class="hint sk-stack"><span class="sk w80"></span><span class="sk s w50"></span></div>`;
+    return;
+  }
+  el.innerHTML=UNLOGGED.map(o=>`<div class="card soft" data-uid="${o.id}"><div class="row">
+    <div class="thumb sm"><svg class="ico" style="width:18px"><use href="#i-sound"/></svg></div>
+    <div class="grow tap" data-go="s-log-review"><div class="nm" style="font-size:.76rem">${o.place}</div><div class="meta">${o.when} · ${o.birds} birds · ${o.dur}</div></div>
+    <button class="btn ghost sm" onclick="event.stopPropagation();skipUnlogged('${o.id}')">Skip</button>
+  </div></div>`).join('');
+  const card=document.querySelector('#s-activity [data-go="s-unlogged"] .card-h');
+  const sub=document.querySelector('#s-activity [data-go="s-unlogged"] .card-sub');
+  const wrap=document.querySelector('#s-activity [data-go="s-unlogged"]');
+  if(wrap){
+    if(!UNLOGGED.length){wrap.style.display='none';}
+    else{
+      wrap.style.display='';
+      wrap.dataset.go=UNLOGGED.length>1?'s-unlogged':'s-log-review';
+      if(card)card.textContent=`${UNLOGGED.length} un-logged recording${UNLOGGED.length>1?'s':''}`;
+      if(sub)sub.textContent=UNLOGGED.length>1?`From ${UNLOGGED.length} outings · pick one to review`:`${UNLOGGED[0].place} · tap to review`;
+    }
+  }
+}
+function skipUnlogged(id){
+  UNLOGGED=UNLOGGED.filter(o=>o.id!==id);
+  renderUnlogged();
+  toast('Skipped — not logged');
+  if(!UNLOGGED.length)showScreen('s-activity',false);
+}
+function skipAllUnlogged(){
+  UNLOGGED=[];
+  renderUnlogged();
+  toast('All skipped');
+  showScreen('s-activity',false);
+}
+function skipCurrentReview(){
+  if(UNLOGGED.length){UNLOGGED.shift();renderUnlogged();}
+  toast('Skipped — not logged');
+  showScreen(UNLOGGED.length>1?'s-unlogged':(UNLOGGED.length?'s-log-review':'s-activity'),false);
+}
+renderUnlogged();
+
+// ── past outings + search ──
+const PAST=[
+  {place:'Union Bay',when:'Jul 14, 2026',birds:'Mallard, Red-winged Blackbird, House Finch',n:4},
+  {place:'Arboretum',when:'May 18, 2025',birds:'American Robin, Dark-eyed Junco',n:6},
+  {place:'Golden Gardens',when:'May 2, 2025',birds:'House Finch, Common Crow',n:5},
+  {place:'Union Bay',when:'Apr 22, 2025',birds:'Red-winged Blackbird',n:3},
+  {place:'Discovery Park',when:'Apr 9, 2025',birds:'American Robin, Mallard',n:7},
+];
+function renderPast(q=''){
+  const qq=q.trim().toLowerCase();
+  const rows=PAST.filter(o=>!qq || (o.place+' '+o.when+' '+o.birds).toLowerCase().includes(qq));
+  document.getElementById('pastList').innerHTML=rows.length?rows.map(o=>`<div class="card soft tap" data-go="s-outing"><div class="row">
+    <div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+    <div class="grow"><div class="nm" style="font-size:.76rem">${o.place}</div><div class="meta">${o.when} · ${o.n} birds</div></div>
+  </div></div>`).join(''):`<div class="hint sk-stack"><span class="sk w80"></span><span class="sk s w50"></span></div>`;
+}
+renderPast();
+document.getElementById('outingSearch').addEventListener('input',e=>renderPast(e.target.value));
+
+// ── mix list ──
+const MIX=[['Red-winged Blackbird','birds/red-wing-blackbird.mp3'],['House Finch','birds/house-finch.mp3'],['American Robin','birds/american-robin.mp3'],['Dark-eyed Junco','birds/dark-eyed-junco.mp3'],['Mallard','birds/mallard-duck.mp3'],['Common Crow','birds/common-crow.mp3']];
+document.getElementById('mixList').innerHTML=MIX.map(([n,f])=>`<div class="card soft"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div><div class="grow"><div class="nm" style="font-size:.74rem">${n}</div><div class="sk s w45"></div></div><div class="play sm" data-audio="${f}"></div></div></div>`).join('');
+
+const HONOR=[['Steve','Red-winged Blackbird','birds/red-wing-blackbird.mp3','42 min'],['Joe','House Finch','birds/house-finch.mp3','28 min'],['Wanda','Dark-eyed Junco','birds/dark-eyed-junco.mp3','21 min'],['Rusty','American Robin','birds/american-robin.mp3','18 min'],['Duck','Mallard','birds/mallard-duck.mp3','14 min'],['Karl','Common Crow','birds/common-crow.mp3','11 min']];
+document.getElementById('honorList').innerHTML=HONOR.map(([nick,sp,f,t],i)=>`<div class="honor-row tap" data-go="s-bird-profile"><span class="honor-rank">${i+1}</span><div class="thumb" style="width:48px;height:48px;border-radius:12px"><img src="bird.jpg" alt=""></div><div class="grow"><div class="nm" style="font-size:.78rem">${nick}</div><div class="sk s w55"></div></div><div class="play sm" data-audio="${f}" onclick="event.stopPropagation()"></div></div>`).join('');
+
+document.getElementById('lastYearList').innerHTML=[['American Robin','birds/american-robin.mp3'],['Dark-eyed Junco','birds/dark-eyed-junco.mp3'],['House Finch','birds/house-finch.mp3']].map(([n,f])=>`<div class="card soft"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div><div class="grow"><div class="nm" style="font-size:.74rem">${n}</div><div class="sk s w50"></div></div><div class="play sm" data-audio="${f}"></div></div></div>`).join('');
+
+// ── friends grid (birds + humans, circular) ──
+const FRIENDS=[
+  {kind:'bird',name:'Joe',go:'s-bird-profile'},
+  {kind:'bird',name:'Steve',go:'s-bird-profile'},
+  {kind:'bird',name:'Wanda',go:'s-bird-profile'},
+  {kind:'human',name:'Phoebe',go:null},
+  {kind:'human',name:'Sara',go:null},
+  {kind:'human',name:'Maya',go:null},
+];
+document.getElementById('friendsGrid').innerHTML=FRIENDS.map(f=>{
+  const src=f.kind==='human'?'person.jpg':'bird.jpg';
+  return `<div class="fg-tile tap"${f.go?` data-go="${f.go}"`:''} onclick="${f.go?'':`toast('${f.name}')`}"><div class="av ${f.kind}"><img src="${src}" alt=""></div><div class="fn">${f.name}</div><div class="sk s w35"></div></div>`;
+}).join('');
+
+function openShareSheet(){document.getElementById('shareSheet').classList.add('on');}
+function closeShareSheet(){document.getElementById('shareSheet').classList.remove('on');}
+
+// ── share-audio grid ──
+const SG=[['Red-winged Blackbird','birds/red-wing-blackbird.mp3'],['Mallard','birds/mallard-duck.mp3'],['House Finch','birds/house-finch.mp3'],['American Robin','birds/american-robin.mp3']];
+document.getElementById('shareGrid').innerHTML=SG.map((s,i)=>`<div class="stile${i===0?' on':''}" data-tile><span class="chk"></span><div class="thumb sm"><svg class="ico" style="width:18px"><use href="#i-bird"/></svg></div><div class="snm">${s[0]}</div><div class="meta">0:${20+i*4}</div></div>`).join('');
+function syncCreate(){const n=document.querySelectorAll('#shareGrid .stile.on').length;document.getElementById('createBtn').textContent=`Create artifact (${n})`;}
+document.getElementById('shareGrid').addEventListener('click',e=>{const t=e.target.closest('[data-tile]');if(t){t.classList.toggle('on');syncCreate();}});
+syncCreate();
+
+// ── segmented toggle helper ──
+function segPick(b){[...b.parentNode.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+
+// ── toast ──
+let tt;const toastEl=document.getElementById('toast');
+function toast(m){toastEl.textContent=m;toastEl.style.opacity='1';toastEl.style.transform='translateX(-50%) translateY(0)';clearTimeout(tt);tt=setTimeout(()=>{toastEl.style.opacity='0';toastEl.style.transform='translateX(-50%) translateY(20px)';},1600);}
+
+// ── live Sound-ID (fake, Merlin-look) ──
+const BIRD_PHOTO='bird.jpg';
+const liveDetections=[
+  {n:'House Finch',latin:'Haemorhous mexicanus',known:true,nick:'Joe'},
+  {n:'Dark-eyed Junco',latin:'Junco hyemalis',known:false},
+  {n:'Red-winged Blackbird',latin:'Agelaius phoeniceus',known:true,nick:'Steve'},
+  {n:'American Robin',latin:'Turdus migratorius',known:false},
+];
+let liveRAF=null,liveT=0,liveTimers=[],liveSec=0,liveClock=null;
+const lc=document.getElementById('liveSono'),lctx=lc.getContext('2d');
+function drawSonoFrame(ctx,w,h,t){
+  // Lo-fi grayscale bars
+  ctx.fillStyle='#e8e8e8';ctx.fillRect(0,0,w,h);
+  for(let x=0;x<w;x+=3){
+    const seed=(x*0.6 + t);
+    const amp=(Math.sin(seed*0.15)+Math.sin(seed*0.4+1)+Math.sin(seed*0.07))/3;
+    const bh=Math.max(2,(amp*0.5+0.5)*h*0.78*(0.5+0.5*Math.sin(x*0.02+t*0.02)));
+    const g=Math.floor(140+amp*70);
+    ctx.fillStyle=`rgb(${g},${g},${g})`;
+    ctx.globalAlpha=.85;ctx.fillRect(x,(h-bh)/2,2,bh);
+  }
+  ctx.globalAlpha=1;
+}
+function drawReviewSono(){
+  const c=document.getElementById('reviewSono');if(!c)return;
+  drawSonoFrame(c.getContext('2d'),c.width,c.height,42); // frozen frame, like pause mid-listen
+}
+function fmtLive(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function startLive(){
+  stopLive();
+  document.getElementById('detectList').innerHTML='';
+  liveSec=0;const timerEl=document.getElementById('liveTimer');if(timerEl)timerEl.textContent='00:00';
+  liveClock=setInterval(()=>{liveSec++;if(timerEl)timerEl.textContent=fmtLive(liveSec);},1000);
+  const loop=()=>{liveT+=0.55;drawSonoFrame(lctx,lc.width,lc.height,liveT);liveRAF=requestAnimationFrame(loop);};loop();
+  liveDetections.forEach((d,i)=>{
+    liveTimers.push(setTimeout(()=>addDetection(d),800+i*1600));
+  });
+}
+function stopLive(){
+  if(liveRAF)cancelAnimationFrame(liveRAF);liveRAF=null;
+  liveTimers.forEach(clearTimeout);liveTimers=[];
+  if(liveClock){clearInterval(liveClock);liveClock=null;}
+}
+function addDetection(d){
+  const el=document.createElement('div');el.className='card detect'+(d.known?' known':'');
+  const maybe=d.known?`<div class="maybe-chip" onclick="event.stopPropagation();toast('Marked as maybe ${d.nick}')"><img src="${BIRD_PHOTO}" alt=""><span>${d.nick.toLowerCase()}?</span></div>`:'';
+  el.innerHTML=`<div class="row"><div class="thumb" style="overflow:hidden"><img src="${BIRD_PHOTO}" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+    <div class="grow"><div class="nm" style="font-size:.82rem">${d.n}</div><div class="sk s w50"></div></div>${maybe}</div>`;
+  const list=document.getElementById('detectList');list.appendChild(el);requestAnimationFrame(()=>el.classList.add('show'));
+}
+
+// ── artifact sonogram (static green) ──
+function drawArtifact(){
+  const c=document.getElementById('artSono'),x=c.getContext('2d');
+  x.fillStyle='#e8e8e8';x.fillRect(0,0,c.width,c.height);
+  x.strokeStyle='#888';x.lineWidth=2;x.beginPath();
+  for(let i=0;i<c.width;i+=2){const a=(Math.sin(i*0.05)+Math.sin(i*0.13+1)+Math.sin(i*0.31))/3;const y=c.height/2 - a*c.height*0.36;i?x.lineTo(i,y):x.moveTo(i,y);}x.stroke();
+  x.fillStyle='rgba(100,100,100,.45)';
+  for(let i=0;i<c.width;i+=4){const a=Math.abs(Math.sin(i*0.08)+Math.sin(i*0.21));const bh=a*c.height*0.32;x.fillRect(i,c.height-10-bh,2,bh);}
+}
+
+// init
+startLive();
+</script>
+</body>
+</html>
