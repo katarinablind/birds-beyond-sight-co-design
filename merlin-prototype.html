@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Jiu Jiu · Merlin Companion — lo-fi wireframe</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -266,6 +268,19 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 .hint{font-family:var(--font-sub);font-size:.62rem;color:var(--muted);line-height:1.45;margin:2px 0 12px}
 .tap{cursor:pointer}
 
+/* real phone: drop device chrome, full viewport app */
+@media (max-width:640px),(hover:none) and (pointer:coarse){
+  html,body{height:100%;}
+  body{padding:0;margin:0;background:var(--paper);min-height:100dvh;align-items:stretch}
+  .page-head,.facil{display:none!important}
+  .phone{width:100%;max-width:none;height:100dvh;min-height:100dvh;border-radius:0;box-shadow:none}
+  .notch,.home-ind{display:none!important}
+  .statusbar{height:auto;min-height:28px;padding:max(10px,env(safe-area-inset-top)) 18px 0;font-size:.65rem}
+  .nav{height:auto;min-height:72px;padding:11px 14px max(10px,env(safe-area-inset-bottom));}
+  .screen{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  .sheet-panel{padding-bottom:max(28px,env(safe-area-inset-bottom))}
+}
+
 /* ═══ LO-FI WIREFRAME LAYER ═══ */
 .sk{display:block;height:9px;border-radius:5px;background:var(--sk);margin:5px 0}
 .sk.s{height:7px}
@@ -320,6 +335,14 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 .fg-tile .av img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1)}
 .fg-tile .fn{font-size:.72rem;font-weight:700}
 .fg-tile .sk{margin:0 auto}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px}
+.sec-head .eyebrow{margin:0}
+.sec-add{width:28px;height:28px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sec-add .ico{width:16px;height:16px}
+.sp-list{display:flex;flex-direction:column;gap:0;border:1.5px solid var(--line);border-radius:0;background:#fff;margin-bottom:12px;max-height:180px;overflow-y:auto}
+.sp-list .sp{padding:11px 12px;border-bottom:1px solid var(--border);font-size:.76rem;font-weight:600;cursor:pointer}
+.sp-list .sp:last-child{border-bottom:none}
+.sp-list .sp.on{background:#eee}
 
 /* bird profile hero */
 .bp-hero{width:100%;aspect-ratio:1;border-radius:0;border:1.5px solid var(--line);background:#e6e6e6 url('bird.jpg') center/cover no-repeat;position:relative;overflow:hidden;margin-bottom:14px;filter:grayscale(1)}
@@ -602,10 +625,47 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- ═══════════ 4. FRIENDS ═══════════ -->
   <div class="screen" id="s-friends">
-    <div class="scr-top"><div class="scr-title">Friends</div>
-      <div class="scr-actions"><svg class="ico" style="width:18px"><use href="#i-plus"/></svg></div></div>
+    <div class="scr-top"><div class="scr-title">Friends</div></div>
     <div class="hint sk-stack"><span class="sk w80"></span><span class="sk s w50"></span></div>
-    <div class="fg-grid" id="friendsGrid"></div>
+
+    <div class="sec-head">
+      <div class="eyebrow">Bird friends</div>
+      <div class="sec-add tap" data-go="s-bird-new" aria-label="Add bird friend"><svg class="ico"><use href="#i-plus"/></svg></div>
+    </div>
+    <div class="fg-grid" id="birdFriendsGrid"></div>
+
+    <div class="sec-head">
+      <div class="eyebrow">Human friends</div>
+      <div class="sec-add tap" data-go="s-human-add" aria-label="Add human friend"><svg class="ico"><use href="#i-plus"/></svg></div>
+    </div>
+    <div class="fg-grid" id="humanFriendsGrid"></div>
+  </div>
+
+  <!-- create bird friend -->
+  <div class="screen" id="s-bird-new">
+    <div class="scr-top"><span class="back tap" data-go="s-friends"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">New bird friend</div></div>
+    <div class="bp-hero" style="aspect-ratio:1.35;margin-bottom:12px"><div style="position:absolute;right:10px;bottom:10px;z-index:3;width:32px;height:32px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;filter:none"><svg class="ico" style="width:16px"><use href="#i-plus"/></svg></div></div>
+    <div class="eyebrow">Nickname</div>
+    <div class="input" id="newBirdNick" contenteditable="true" data-ph="e.g. Joe"></div>
+    <div class="eyebrow">Species</div>
+    <div class="search" style="margin-bottom:8px"><svg class="ico"><use href="#i-search"/></svg><input id="speciesSearch" type="search" placeholder="Search species…" autocomplete="off"></div>
+    <div class="sp-list" id="speciesList"></div>
+    <div class="eyebrow">Usual location</div>
+    <div class="input" id="newBirdLoc" contenteditable="true" data-ph="e.g. Union Bay"></div>
+    <div class="map" style="margin-top:8px"><div class="halo"></div><div class="pin"></div></div>
+    <div class="sk s w55" style="margin:8px 0 0"></div>
+    <div class="eyebrow">Habits / notes</div>
+    <div class="input lines" contenteditable="true" data-ph=""></div>
+    <button class="btn primary block" style="margin-top:14px" onclick="saveNewBird()">Create</button>
+  </div>
+
+  <!-- add human by username -->
+  <div class="screen" id="s-human-add">
+    <div class="scr-top"><span class="back tap" data-go="s-friends"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Add friend</div></div>
+    <div class="hint sk-stack"><span class="sk w70"></span></div>
+    <div class="eyebrow">Username</div>
+    <div class="input" id="newHumanUser" contenteditable="true" data-ph="@username"></div>
+    <button class="btn primary block" style="margin-top:14px" onclick="saveNewHuman()">Add</button>
   </div>
 
   <!-- ═══════════ SETTINGS (was Profile) ═══════════ -->
@@ -746,7 +806,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 const TAB_OF={ 's-birding':'s-birding',
   's-log-review':'s-birding','s-log-reflect':'s-birding','s-log-done':'s-birding',
   's-activity':'s-activity','s-mix':'s-activity','s-honor':'s-activity','s-last-year':'s-activity','s-astro':'s-activity','s-unlogged':'s-activity','s-outings':'s-activity',
-  's-friends':'s-friends','s-bird-profile':'s-friends','s-bird-edit':'s-friends',
+  's-friends':'s-friends','s-bird-profile':'s-friends','s-bird-edit':'s-friends','s-bird-new':'s-friends','s-human-add':'s-friends',
   's-profile':'s-profile',
   's-outing':'s-activity','s-share-audio':'s-activity','s-artifact':'s-activity' };
 const SCREENS=[...document.querySelectorAll('.screen')].map(s=>s.id);
@@ -773,7 +833,7 @@ document.addEventListener('click',e=>{
 });
 
 // ── facilitator jump menu ──
-const NICE={'s-birding':'1 · Identify (live)','s-log-review':'2a · Review (save)','s-log-reflect':'2b · Reflect','s-log-done':'2c · Saved / share','s-activity':'3 · Activity','s-unlogged':'3 · Unlogged outings','s-outings':'3 · Past outings','s-mix':'3 · May mix','s-honor':'3 · Honor birds','s-last-year':'3 · Last year','s-astro':'3 · Bird astrology','s-friends':'4 · Friends','s-profile':'· Settings','s-bird-profile':'· Bird profile','s-bird-edit':'· Bird profile edit','s-outing':'5a · Shared outing','s-share-audio':'5b · Share audio','s-artifact':'5c · Artifact'};
+const NICE={'s-birding':'1 · Identify (live)','s-log-review':'2a · Review (save)','s-log-reflect':'2b · Reflect','s-log-done':'2c · Saved / share','s-activity':'3 · Activity','s-unlogged':'3 · Unlogged outings','s-outings':'3 · Past outings','s-mix':'3 · May mix','s-honor':'3 · Honor birds','s-last-year':'3 · Last year','s-astro':'3 · Bird astrology','s-friends':'4 · Friends','s-bird-new':'4 · New bird friend','s-human-add':'4 · Add human','s-profile':'· Settings','s-bird-profile':'· Bird profile','s-bird-edit':'· Bird profile edit','s-outing':'5a · Shared outing','s-share-audio':'5b · Share audio','s-artifact':'5c · Artifact'};
 document.getElementById('facil').innerHTML=SCREENS.map(id=>`<button data-jump="${id}">${NICE[id]||id}</button>`).join('');
 document.getElementById('facil').addEventListener('click',e=>{const b=e.target.closest('[data-jump]');if(!b)return;
   navStack=[TAB_OF[b.dataset.jump]||b.dataset.jump]; showScreen(b.dataset.jump,false);
@@ -969,19 +1029,52 @@ document.getElementById('honorList').innerHTML=HONOR.map(([nick,sp,f,t],i)=>`<di
 
 document.getElementById('lastYearList').innerHTML=[['American Robin','birds/american-robin.mp3'],['Dark-eyed Junco','birds/dark-eyed-junco.mp3'],['House Finch','birds/house-finch.mp3']].map(([n,f])=>`<div class="card soft"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div><div class="grow"><div class="nm" style="font-size:.74rem">${n}</div><div class="sk s w50"></div></div><div class="play sm" data-audio="${f}"></div></div></div>`).join('');
 
-// ── friends grid (birds + humans, circular) ──
-const FRIENDS=[
-  {kind:'bird',name:'Joe',go:'s-bird-profile'},
-  {kind:'bird',name:'Steve',go:'s-bird-profile'},
-  {kind:'bird',name:'Wanda',go:'s-bird-profile'},
-  {kind:'human',name:'Phoebe',go:null},
-  {kind:'human',name:'Sara',go:null},
-  {kind:'human',name:'Maya',go:null},
-];
-document.getElementById('friendsGrid').innerHTML=FRIENDS.map(f=>{
-  const src=f.kind==='human'?'person.jpg':'bird.jpg';
-  return `<div class="fg-tile tap"${f.go?` data-go="${f.go}"`:''} onclick="${f.go?'':`toast('${f.name}')`}"><div class="av ${f.kind}"><img src="${src}" alt=""></div><div class="fn">${f.name}</div><div class="sk s w35"></div></div>`;
-}).join('');
+// ── friends grids (birds / humans separated) ──
+let BIRD_FRIENDS=[{name:'Joe'},{name:'Steve'},{name:'Wanda'}];
+let HUMAN_FRIENDS=[{name:'Phoebe'},{name:'Sara'},{name:'Maya'}];
+function renderFriendGrids(){
+  const birdEl=document.getElementById('birdFriendsGrid');
+  const humanEl=document.getElementById('humanFriendsGrid');
+  if(birdEl)birdEl.innerHTML=BIRD_FRIENDS.map(f=>`<div class="fg-tile tap" onclick="openBirdProfile('${f.name}');showScreen('s-bird-profile')"><div class="av bird"><img src="bird.jpg" alt=""></div><div class="fn">${f.name}</div><div class="sk s w35"></div></div>`).join('');
+  if(humanEl)humanEl.innerHTML=HUMAN_FRIENDS.map(f=>`<div class="fg-tile tap" onclick="toast('${f.name}')"><div class="av human"><img src="person.jpg" alt=""></div><div class="fn">${f.name}</div><div class="sk s w35"></div></div>`).join('');
+}
+function openBirdProfile(name){
+  const n=document.getElementById('bpName');if(n)n.textContent=name;
+  const nick=document.getElementById('bpNick');if(nick)nick.textContent=name;
+}
+renderFriendGrids();
+
+const SPECIES=['House Finch','Red-winged Blackbird','Dark-eyed Junco','American Robin','Mallard','Common Crow','Song Sparrow','Black-capped Chickadee','Anna\'s Hummingbird','Great Blue Heron'];
+let selectedSpecies=SPECIES[0];
+function renderSpecies(q=''){
+  const qq=q.trim().toLowerCase();
+  const list=SPECIES.filter(s=>!qq||s.toLowerCase().includes(qq));
+  document.getElementById('speciesList').innerHTML=list.map(s=>`<div class="sp${s===selectedSpecies?' on':''}" data-sp="${s}">${s}</div>`).join('');
+}
+renderSpecies();
+document.getElementById('speciesList').addEventListener('click',e=>{
+  const sp=e.target.closest('[data-sp]');if(!sp)return;
+  selectedSpecies=sp.dataset.sp;renderSpecies(document.getElementById('speciesSearch').value);
+});
+document.getElementById('speciesSearch').addEventListener('input',e=>renderSpecies(e.target.value));
+
+function saveNewBird(){
+  const nick=(document.getElementById('newBirdNick').textContent||'').trim()||'New bird';
+  BIRD_FRIENDS=[...BIRD_FRIENDS,{name:nick}];
+  renderFriendGrids();
+  openBirdProfile(nick);
+  const sp=document.getElementById('bpSpecies');if(sp)sp.textContent=selectedSpecies;
+  toast('Bird friend created');
+  showScreen('s-bird-profile');
+}
+function saveNewHuman(){
+  let u=(document.getElementById('newHumanUser').textContent||'').trim()||'friend';
+  u=u.replace(/^@/,'');
+  HUMAN_FRIENDS=[...HUMAN_FRIENDS,{name:u}];
+  renderFriendGrids();
+  toast('Added @'+u);
+  showScreen('s-friends');
+}
 
 function openShareSheet(){document.getElementById('shareSheet').classList.add('on');}
 function closeShareSheet(){document.getElementById('shareSheet').classList.remove('on');}
