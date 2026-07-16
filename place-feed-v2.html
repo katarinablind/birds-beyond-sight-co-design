@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Place × Feed × Map — v2 grid</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a1a1a;--line:#222;--paper:#fff;--muted:#8a8a8a;
+  --ph:#e6e6e6;--border:#cfcfcf;--sk:#d5d5d5;--mint:#eee;--mint-deep:#d8d8d8;
+  --font:Arial,Helvetica,sans-serif;
+}
+html{font-size:16px}
+body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
+  min-height:100vh;padding:22px 16px 70px;-webkit-font-smoothing:antialiased}
+
+.page-head{max-width:1100px;margin:0 auto 22px}
+.page-title{font-size:1.15rem;font-weight:700;letter-spacing:-.01em}
+.page-sub{font-size:.68rem;color:#555;margin-top:6px;line-height:1.5;max-width:720px}
+.legend{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
+.legend span{font-size:.52rem;font-weight:600;background:#fff;border:1px solid var(--border);
+  padding:4px 8px;border-radius:6px;color:#444}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:28px 20px;max-width:1280px;margin:0 auto;align-items:start}
+.cell{display:flex;flex-direction:column;align-items:center;gap:8px}
+.cell-num{align-self:stretch;display:flex;align-items:baseline;gap:8px;padding:0 4px}
+.cell-num .n{font-size:1.1rem;font-weight:800;letter-spacing:-.02em;min-width:1.6em}
+.cell-num .t{font-size:.62rem;font-weight:700;line-height:1.25}
+.cell-num .d{font-size:.55rem;color:#555;font-weight:400;margin-top:2px;line-height:1.35}
+
+.phone{width:300px;height:620px;background:var(--paper);border-radius:36px;position:relative;overflow:hidden;
+  box-shadow:0 0 0 8px #16160f,0 0 0 9.5px #2c2c22,0 18px 40px -12px rgba(0,0,0,.45);
+  display:flex;flex-direction:column}
+.statusbar{height:34px;flex:none;display:flex;align-items:center;justify-content:space-between;
+  padding:8px 18px 0;font-size:.62rem;font-weight:600;position:relative;z-index:2}
+.notch{position:absolute;top:7px;left:50%;transform:translateX(-50%);width:66px;height:18px;background:#000;border-radius:999px}
+.screen{flex:1;min-height:0;overflow-y:auto;padding:2px 12px 62px;scrollbar-width:thin}
+.tabbar{position:absolute;bottom:0;left:0;right:0;height:52px;background:#fff;border-top:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-around;padding:7px 4px 0;z-index:5}
+.tabbar span{font-size:.45rem;font-weight:600;color:var(--muted);text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabbar span.on{color:var(--ink)}
+.tabbar .dot{width:15px;height:15px;border-radius:3px;background:var(--ph);border:1px solid var(--border)}
+.tabbar span.on .dot{background:var(--ink);border-color:var(--ink)}
+
+.scr-top{display:flex;align-items:center;gap:6px;padding:2px 0 8px}
+.back{font-size:.95rem;width:18px}
+.scr-title{font-size:.95rem;font-weight:700;flex:1;letter-spacing:-.01em}
+.scr-sub{font-size:.52rem;color:var(--muted);margin:-2px 0 8px;line-height:1.35}
+.eyebrow{font-size:.5rem;font-weight:700;color:var(--muted);margin:10px 0 5px}
+.card{border:1.5px solid var(--line);border-radius:11px;padding:9px 10px;margin-bottom:8px;background:#fff}
+.card.soft{border-color:var(--border)}
+.card.mint{background:var(--mint);border-color:var(--mint-deep)}
+.row{display:flex;align-items:center;gap:8px}
+.grow{flex:1;min-width:0}
+.nm{font-size:.7rem;font-weight:700}
+.meta{font-size:.52rem;color:var(--muted);margin-top:1px;line-height:1.35}
+.play{width:28px;height:28px;border-radius:50%;background:var(--ink);flex:none;
+  display:flex;align-items:center;justify-content:center}
+.play::after{content:'';border-left:8px solid #fff;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px}
+.play.sm{width:22px;height:22px}.play.sm::after{border-left-width:6px;border-top-width:4px;border-bottom-width:4px}
+.wave{display:flex;align-items:center;gap:1.5px;height:18px;flex:1}
+.wave i{flex:1;background:#9a9a9a;border-radius:1px;opacity:.65}
+.avatar{width:24px;height:24px;object-fit:cover;background:var(--ph);border:1px solid var(--line);flex:none}
+.avatar.lg{width:32px;height:32px}
+.stack{display:flex}
+.stack img{margin-left:-7px;border:1.5px solid #fff}
+.stack img:first-child{margin-left:0}
+.chip{display:inline-block;font-size:.48rem;font-weight:600;border:1px solid var(--border);
+  padding:2px 6px;border-radius:999px;color:var(--muted);background:#fff}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip.warn{border-color:var(--ink);color:var(--ink)}
+.btn{display:block;width:100%;text-align:center;font-size:.64rem;font-weight:700;
+  padding:9px;border-radius:9px;border:1.5px solid var(--line);background:var(--ink);color:#fff;margin-top:7px}
+.btn.ghost{background:#fff;color:var(--ink)}
+.pill-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.list-row{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);align-items:center}
+.thumb{width:38px;height:38px;background:var(--ph);border:1px solid var(--border);flex:none;object-fit:cover}
+.quote{font-size:.56rem;color:#444;line-height:1.35;margin-top:4px;font-style:italic}
+.habit{font-size:.52rem;border-left:2px solid var(--ink);padding-left:7px;margin-top:5px;color:#444;line-height:1.35}
+.timeline{position:relative;padding-left:14px}
+.timeline::before{content:'';position:absolute;left:4px;top:4px;bottom:4px;width:1.5px;background:var(--border)}
+.t-item{position:relative;margin-bottom:9px}
+.t-item::before{content:'';position:absolute;left:-13px;top:7px;width:7px;height:7px;border-radius:50%;
+  background:#fff;border:1.5px solid var(--ink)}
+.t-item.shared::before{background:var(--ink)}
+.src{font-size:.46rem;font-weight:700;letter-spacing:.02em;color:var(--muted);text-transform:uppercase;margin-bottom:3px}
+.src.auto{color:#555}
+.src.you{color:var(--ink)}
+.src.friend{color:#444}
+.src.sys{color:#666}
+.hero{height:88px;background:var(--ph);border:1.5px solid var(--line);margin:0 -12px 10px;
+  display:flex;align-items:flex-end;padding:8px 12px;position:relative;overflow:hidden}
+.hero .shade{position:absolute;inset:0;background:linear-gradient(transparent 25%,rgba(255,255,255,.94))}
+.hero .inner{position:relative;z-index:1}
+.mapbox{height:160px;margin:0 -12px 10px;border-bottom:1px solid var(--border);background:var(--ph);z-index:0}
+.mapbox.tall{height:220px}
+.map-full{position:absolute;inset:34px 0 52px;z-index:1}
+.leaflet-container{font:inherit;background:#ddd}
+.update{border:1.5px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:10px;background:#fff}
+.update .top{padding:9px 10px 0}
+.update .art{height:100px;background:var(--mint);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;gap:10px;padding:12px}
+.update .bot{padding:8px 10px 10px}
+.retro-row{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}
+.retro-row::-webkit-scrollbar{display:none}
+.retro-sq{width:72px;height:72px;flex:none;border:1.5px solid var(--line);background:var(--ph);
+  display:flex;flex-direction:column;justify-content:flex-end;padding:5px;position:relative}
+.retro-sq.add{border-style:dashed;background:#fff;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700}
+.retro-sq .lab{font-size:.42rem;font-weight:700;line-height:1.2;background:rgba(255,255,255,.85);padding:2px}
+.flow{display:flex;flex-direction:column;gap:6px}
+.flow .step{border:1.5px solid var(--border);padding:8px;border-radius:8px;font-size:.55rem;line-height:1.35}
+.flow .step strong{display:block;font-size:.6rem;margin-bottom:2px}
+.flow .arrow{text-align:center;font-size:.7rem;color:var(--muted);line-height:1}
+.tiny{font-size:.48rem;color:var(--muted)}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:8px}
+.seg button{flex:1;border:none;background:#fff;font-size:.52rem;font-weight:700;padding:6px;color:var(--muted);font-family:var(--font)}
+.seg button.on{background:var(--ink);color:#fff}
+.pin-list .list-row:last-child{border:none}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="page-title">v2 · numbered grid (unique screens)</div>
+  <div class="page-sub">
+    Refined from your notes: place timeline naming, insight instead of seasons dashboard,
+    update cards without ratings, no listening-history shelf, Merlin reference sounds instead of “learn” features,
+    maps (live OpenStreetMap), and logging → resurfacing. Each cell is one screen — no duplicates.
+  </div>
+  <div class="legend">
+    <span>01–03 place</span>
+    <span>04–05 feed / data</span>
+    <span>06–07 retro audio</span>
+    <span>08 place + people</span>
+    <span>09–10 maps</span>
+    <span>11 log → resurface</span>
+    <span>12 share packet</span>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- 01 -->
+  <div class="cell">
+    <div class="cell-num">
+      <div class="n">01</div>
+      <div>
+        <div class="t">Place timeline</div>
+        <div class="d">Kept from v1 · date-first naming (same place won’t collide). Filters for shared / mine / mix.</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
+      <div class="screen">
+        <div class="scr-top"><span class="back">‹</span><div class="scr-title">Union Bay</div></div>
+        <div class="scr-sub">Your place · 14 listens · 3 shared</div>
+        <div class="pill-row">
+          <span class="chip on">All</span>
+          <span class="chip">Shared</span>
+          <span class="chip">Mine</span>
+          <span class="chip">Mix</span>
+        </div>
+        <div class="card mint">
+          <div class="row">
+            <div class="play"></div>
+            <div class="grow">
+              <div class="nm">This year’s mix</div>
+              <div class="meta">8 clips · 2:14 · auto from listens here</div>
+            </div>
+          </div>
+        </div>
+        <div class="eyebrow">Over time</div>
+        <div class="timeline">
+          <div class="t-item shared">
+            <div class="card soft" style="margin:0">
+              <div class="row">
+                <div class="play sm"></div>
+                <div class="grow">
+                  <div class="nm">Jul 12 · 4 birds</div>
+                  <div class="meta">0:42 · optional title if you named it</div>
+                </div>
+                <div class="stack">
+                  <img class="avatar" src="person.jpg" alt="">
+                  <img class="avatar" src="person.jpg" alt="">
+                </div>
+              </div>
+              <div class="meta" style="margin-top:5px">Shared · Phoebe, Sara</div>
+            </div>
+          </div>
+          <div class="t-item">
+            <div class="card soft" style="margin:0">
+              <div class="row">
+                <div class="play sm"></div>
+                <div class="grow">
+                  <div class="nm">Jun 3 · Song Sparrow</div>
+                  <div class="meta">0:18 · just you · incidental</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="t-item shared">
+            <div class="card soft" style="margin:0">
+              <div class="row">
+                <div class="play sm"></div>
+                <div class="grow">
+                  <div class="nm">May 2 · 6 birds</div>
+                  <div class="meta">1:05 · with Maya</div>
+                </div>
+                <div class="stack"><img class="avatar" src="person.jpg" alt=""></div>
+              </div>
+            </div>
+          </div>
+          <div class="t-item">
+            <div class="card soft" style="margin:0">
+              <div class="row">
+                <div class="play sm"></div>
+                <div class="grow">
+                  <div class="nm">Jul 2025 · 3 birds</div>
+                  <div class="meta"><span class="chip warn">resurfaced</span> same week last year</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <span><div class="dot"></div>ID</span>
+        <span class="on"><div class="dot"></div>Places</span>
+        <span><div class="dot"></div>Updates</span>
+        <span><div class="dot"></div>Friends</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 -->
+  <div class="cell">
+    <div class="cell-num">
+      <div class="n">02</div>
+      <div>
+        <div class="t">Outing at a place</div>
+        <div class="d">No “learn” block. Birds + share notes + compare to last year. Naming = date · bird count.</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
+      <div class="screen">
+        <div class="scr-top"><span class="back">‹</span><div class="scr-title">Jul 12 · 4 birds</div></div>
+        <div class="scr-sub">Union Bay · shared · 0:42</div>
+        <div class="card">
+          <div class="row">
+            <div class="play"></div>
+            <div class="wave"><i style="height:40%"></i><i style="height:70%"></i><i style="height:55%"></i><i style="height:90%"></i><i style="height:45%"></i><i style="height:75%"></i></div>
+          </div>
+        </div>
+        <div class="eyebrow">Shared with</div>
+        <div class="row" style="margin-bottom:8px">
+          <img class="avatar lg" src="person.jpg" alt=""><img class="avatar lg" src="person.jpg" alt="">
+          <div class="grow meta">Phoebe left a note · Sara listened</div>
+        </div>
+        <div class="card soft">
+          <div class="nm">Phoebe</div>
+          <div class="quote">“the liquid call from the reeds again”</div>
+        </div>
+        <div class="eyebrow">Birds in this listen</div>
+        <div class="list-row">
+          <img class="thumb" src="bird.jpg" alt="">
+          <div class="grow"><div class="nm">Red-winged Blackbird</div><div class="meta">might be the reed one</div></div>
+          <div class="play sm"></div>
+        </div>
+        <div class="list-row">
+          <img class="thumb" src="bird.jpg" alt="">
+          <div class="grow"><div class="nm">Song Sparrow</div><div class="meta">your clip · 0:08</div></div>
+          <div class="play sm"></div>
+        </div>
+        <div class="eyebrow">Also here</div>
+        <div class="card mint">
+          <div class="nm">Jul 2025 · same week</div>
+          <div class="meta">Play beside this outing</div>
+          <button class="btn ghost">Compare audio</button>
+        </div>
+      </div>
+      <div class="tabbar">
+        <span><div class="dot"></div>ID</span>
+        <span class="on"><div class="dot"></div>Places</span>
+        <span><div class="dot"></div>Updates</span>
+        <span><div class="dot"></div>Friends</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 03 -->
+  <div class="cell">
+    <div class="cell-num">
+      <div class="n">03</div>
+      <div>
+        <div class="t">Place insight (not seasons)</div>
+        <div class="d">Replaces dashboard seasons. One sensory insight + playable evidence + old audio. No grids of counts.</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
+      <div class="screen">
+        <div class="scr-top"><span class="back">‹</span><div class="scr-title">Backyard</div></div>
+        <div class="scr-sub">Everyday place · how it sounds lately</div>
+        <div class="card">
+          <div class="src sys">Insight · from your last 4 listens</div>
+          <div class="nm" style="font-size:.78rem;margin-top:4px">More dawn chatter than in spring</div>
+          <div class="habit">House Finch @ feeder — often late morning</div>
+          <div class="meta" style="margin-top:6px">Provisional · confirm or ignore</div>
+          <div class="row" style="margin-top:8px">
+            <div class="play"></div>
+            <div class="grow meta">Hear spring vs now · 0:40 side-by-side</div>
+          </div>
+        </div>
+        <div class="eyebrow">Shared here recently</div>
+        <div class="list-row">
+          <img class="avatar lg" src="person.jpg" alt="">
+          <div class="grow"><div class="nm">Phoebe · Jul 8</div><div class="meta">feeder · 0:15</div></div>
+          <div class="play sm"></div>
+        </div>
+        <div class="list-row">
+          <img class="avatar lg" src="person.jpg" alt="">
+          <div class="grow"><div class="nm">You → Sara · Jun 22</div><div class="meta">0:31</div></div>
+          <div class="play sm"></div>
+        </div>
+        <div class="eyebrow">Resurfaced</div>
+        <div class="card mint">
+          <div class="row">
+            <div class="play sm"></div>
+            <div class="grow">
+              <div class="nm">Jul 2025 · quieter mornings</div>
+              <div class="meta">3 clips from this place last year</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn ghost">Open full timeline</button>
+      </div>
+      <div class="tabbar">
+        <span><div class="dot"></div>ID</span>
+        <span class="on"><div class="dot"></div>Places</span>
+        <span><div class="dot"></div>Updates</span>
+        <span><div class="dot"></div>Friends</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 -->
+  <div class="cell">
+    <div class="cell-num">
+      <div class="n">04</div>
+      <div>
+        <div class="t">Updates (not a list, no ratings)</div>
+        <div class="d">Letterboxd/Goodreads energy as playable cards. Auto Merlin data + optional thin share line. No ★.</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
+      <div class="screen">
+        <div class="scr-top"><div class="scr-title">Updates</div></div>
+        <div class="scr-sub">Quick listens from friends + resurfacing · not a feed of posts</div>
+
+        <div class="update">
+          <div class="top">
+            <div class="row">
+              <img class="avatar" src="person.jpg" alt="">
+              <div class="grow">
+                <div class="nm">Phoebe</div>
+                <div class="meta">Backyard · 6h ago · shared</div>
+              </div>
+            </div>
+          </div>
+          <div class="art">
+            <div class="play"></div>
+            <div>
+              <div class="nm">Jul 8 · American Robin</div>
+              <div class="meta">0:18 · your place too</div>
+            </div>
+          </div>
+          <div class="bot">
+            <div class="meta">Open place · save · reply with audio</div>
+          </div>
+        </div>
+
+        <div class="update">
+          <div class="top">
+            <div class="row">
+              <div class="avatar" style="display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:800">M</div>
+              <div class="grow">
+                <div class="nm">For you</div>
+                <div class="meta">Past audio · same week last year</div>
+              </div>
+            </div>
+          </div>
+          <div class="art" style="background:var(--ph)">
+            <div class="play"></div>
+            <div>
+              <div class="nm">Union Bay · Jul 2025</div>
+              <div class="meta">Compare with this week</div>
+            </div>
+          </div>
+          <div class="bot"><div class="meta">Resurfaced · you recorded this</div></div>
+        </div>
+
+        <div class="update">
+          <div class="top">
+            <div class="row">
+              <img class="avatar" src="person.jpg" alt="">
+              <div class="grow">
+                <div class="nm">You → Sara</div>
+                <div class="meta">Union Bay · she listened</div>
+              </div>
+            </div>
+          </div>
+          <div class="art">
+            <div class="play"></div>
+            <div>
+              <div class="nm">Jul 12 · 4 birds</div>
+              <div class="meta">0:42</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <span><div class="dot"></div>ID</span>
+        <span><div class="dot"></div>Places</span>
+        <span class="on"><div class="dot"></div>Updates</span>
+        <span><div class="dot"></div>Friends</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 -->
+  <div class="cell">
+    <div class="cell-num">
+      <div class="n">05</div>
+      <div>
+        <div class="t">Where the update info comes from</div>
+        <div class="d">Answers “if people don’t input much” — most fields are Merlin-auto; only share + optional note are human.</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
+      <div class="screen">
+        <div class="scr-top"><div class="scr-title">One update · sources</div></div>
+        <div class="scr-sub">Prototype annotation — what must be typed vs automatic</div>
+
+        <div class="card">
+          <div class="src auto">Merlin · automatic</div>
+          <div class="list-row" style="border:none;padding:4px 0"><div class="grow"><div class="nm">Date · time · duration</div><div class="meta">from Sound ID session</div></div></div>
+          <div class="list-row" style="border:none;padding:4px 0"><div class="grow"><div class="nm">Place (approx)</div><div class="meta">GPS / your saved places</div></div></div>
+          <div class="list-row" style="border:none;padding:4px 0"><div class="grow"><div class="nm">Bird list + clips</div><div class="meta">detections · audio already exists</div></div></div>
+        </div>
+        <div class="card soft">
+          <div class="src you">You · optional</div>
+          <div class="list-row" style="border:none;padding:4px 0"><div class="grow"><div class="nm">Short title or note</div><div class="meta">skip = card still works</div></div></div>
+          <div class="list-row" style="border:none;padding:4px 0"><div class="grow"><div class="nm">Share with…</div><div class="meta">creates the “update” for them</div></div></div>
+        </div>
+        <div class="card soft">
+          <div class="src friend">Friend · only if shared</div>
+          <div class="meta">Their listen / optional reply audio or one line — never required</div>
+        </div>
+        <div class="card mint">
+          <div class="src sys">System · resurfacing</div>
+          <div class="meta">Same place · same week last year · no input needed</div>
+        </div>
+        <div class="eyebrow">So the feed isn’t empty when people don’t journal</div>
+        <div class="meta">Logging stays thin; sharing + time/place do the resurfacing work.</div>
+      </div>
+      <div class="tabbar">
+        <span><div class="dot"></div>ID</span>
+        <span><div class="dot"></div>Places</span>
+        <span class="on"><div class="dot"></div>Updates</span>
+        <span><div class="dot"></div>Friends</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 -->
+  <div class="cell">
+    <div class="cell-num">
+      <div class="n">06</div>
+      <div>
+        <div class="t">Past outings · Retro row</div>
+        <div class="d">No “who listened” activity. Horizontal outing tiles (like Retro) → open audio. Mixes as objects.</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
+      <div class="screen">
+        <div class="scr-top"><div class="scr-title">Past audio</div></div>
+        <div class="scr-sub">Outings you can reopen · not a listening leaderboard</div>
+
+        <div class="eyebrow">Your past outings</div>
+        <div class="retro-row">
+          <div class="retro-sq add">+</div>
+          <div class="retro-sq" style="background:#ddd"><div class="lab">Jul 12<br>Union Bay</div></div>
+          <div class="retro-sq" style="background:#ccc"><div class="lab">Jun 3<br>Bus stop</div></div>
+          <div class="retro-sq" style="background:#bbb"><div class="lab">May 2<br>Union Bay</div></div>
+          <div class="retro-sq" style="background:#aaa"><div class="lab">Jul ’25<br>resurfaced</div></div>
+        </div>
+
+        <div class="eyebrow">Mixes</div>
+        <div class="card">
+          <div class="row">
+            <div style="width:48px;height:48px;background:var(--ph);border:1px solid var(--line);flex:none"></div>
+            <div class="grow">
+              <div class="nm">May mix</div>
+              <div class="meta">6 clips · places woven</div>
+            </div>
+            <div class="play"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="row">
+            <div style="width:48px;height:48px;background:var(--mint);border:1px solid var(--line);flex:none"></div>
+            <div class="grow">
+              <div class="nm">Last year · this week</div>
+              <div class="meta">3 clips · quieter</div>
+            </div>
+            <div class="play"></div>
+          </div>
+        </div>
+        <div class="card soft">
+          <div class="row">
+            <div style="width:48px;height:48px;background:var(--sk);border:1px solid var(--line);flex:none"></div>
+            <div class="grow">
+              <div class="nm">From Phoebe</div>
+              <div class="meta">Jul 8 · Robin · shared to you</div>
+            </div>
+            <div class="play"></div>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <span><div class="dot"></div>ID</span>
+        <span><div class="dot"></div>Places</span>
+        <span class="on"><div class="dot"></div>Past</span>
+        <span><div class="dot"></div>Friends</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07 -->
+  <div class="cell">
+    <div class="cell-num">
+      <div class="n">07</div>
+      <div>
+        <div class="t">Mix detail · your clips + Merlin sounds</div>
+        <div class="d">“Learn” replaced by original Merlin call/song references beside your field clips.</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
+      <div class="screen">
+        <div class="scr-top"><span class="back">‹</span><div class="scr-title">May mix</div></div>
+        <div class="hero">
+          <div class="shade"></div>
+          <div class="inner">
+            <div class="nm">6 clips · 2:14</div>
+            <div class="meta">Your field audio + Merlin library sounds</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="row">
+            <div class="play"></div>
+            <div class="grow"><div class="nm">Play full mix</div><div class="meta">Reminisce · ear stays in the audio</div></div>
+          </div>
+        </div>
+        <div class="eyebrow">Your recordings</div>
+        <div class="list-row">
+          <span class="tiny" style="width:12px">1</span>
+          <div class="grow"><div class="nm">May 2 · Union Bay</div><div class="meta">you · with Maya</div></div>
+          <div class="play sm"></div>
+        </div>
+        <div class="list-row">
+          <span class="tiny" style="width:12px">2</span>
+          <div class="grow"><div class="nm">May 11 · Backyard</div><div class="meta">House Finch · your clip</div></div>
+          <div class="play sm"></div>
+        </div>
+        <div class="eyebrow">Merlin reference · same species</div>
+        <div class="card soft">
+          <div class="row">
+            <img class="thumb" src="bird.jpg" alt="">
+            <div class="grow">
+              <div class="nm">House Finch</div>
+              <div class="meta">Song · Merlin library</div>
+            </div>
+            <div class="play sm"></div>
+          </div>
+          <div class="row" style="margin-top:6px">
+            <div class="grow meta">Call · Merlin library</div>
+            <div class="play sm"></div>
+          </div>
+          <div class="meta" style="margin-top:6px">Sit next to your field clip — not a lesson module</div>
+        </div>
+        <button class="btn">Share mix</button>
+        <button class="btn ghost">Open Union Bay over time</button>
+      </div>
+      <div class="tabbar">
+        <span><div class="dot"></div>ID</span>
+        <span><div class="dot"></div>Places</span>
+        <span class="on"><div class="dot"></div>Past</span>
+        <span><div class="dot"></div>Friends</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 08 -->
+  <div class="cell">
+    <div class="cell-num">
+      <div class="n">08</div>
+      <div>
+        <div class="t">Place as shared hub</div>
+        <div class="d">Kept from v1. Privacy membrane: private listens stay off the place feed.</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
+      <div class="screen">
+        <div class="hero">
+          <div class="shade"></div>
+          <div class="inner">
+            <div class="scr-title" style="padding:0">Union Bay</div>
+            <div class="meta">You + 3 friends have audio here</div>
+          </div>
+        </div>
+        <div class="row" style="margin-bottom:8px">
+          <div class="stack">
+            <img class="avatar lg" src="person.jpg" alt="">
+            <img class="avatar lg" src="person.jpg" alt="">
+            <img class="avatar lg" src="person.jpg" alt="">
+          </div>
+          <div class="grow meta">Phoebe · Sara · Maya</div>
+        </div>
+        <div class="card mint">
+          <div class="row">
+            <div class="play"></div>
+            <div class="grow">
+              <div class="nm">Place mix · shared only</div>
+              <div class="meta">Not private notes</div>
+            </div>
+          </div>
+        </div>
+        <div class="eyebrow">At this place</div>
+        <div class="card soft">
+          <div class="row">
+            <img class="avatar" src="person.jpg" alt="">
+            <div class="grow">
+              <div class="nm">Phoebe · Jul 12</div>
+              <div class="meta">Shared with you</div>
+            </div>
+            <div class="play sm"></div>
+          </div>
+        </div>
+        <div class="card soft">
+          <div class="row">
+            <img class="avatar" src="person.jpg" alt="">
+            <div class="grow">
+              <div class="nm">You · Jun 3</div>
+              <div class="meta">Private · only on your timeline</div>
+            </div>
+          </div>
+        </div>
+        <div class="card soft">
+          <div class="row">
+            <img class="avatar" src="person.jpg" alt="">
+            <div class="grow">
+              <div class="nm">Maya · May 2</div>
+              <div class="meta">Co-listen</div>
+            </div>
+            <div class="play sm"></div>
+          </div>
+        </div>
+        <div class="eyebrow">Over years</div>
+        <div class="card"><div class="nm">2025 → 2026</div><div class="meta">Same week · compare</div></div>
+      </div>
+      <div class="tabbar">
+        <span><div class="dot"></div>ID</span>
+        <span class="on"><div class="dot"></div>Places</span>
+        <span><div class="dot"></div>Updates</span>
+        <span><div class="dot"></div>Friends</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 09 -->
+  <div class="cell">
+    <div class="cell-num">
+      <div class="n">09</div>
+      <div>
+        <div class="t">Map of listens (live OSM)</div>
+        <div class="d">Strava-ish: pins = Sound ID sessions. Real map tiles · Union Bay area. Think about Merlin note, not copy it.</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
+      <div id="map09" class="map-full"></div>
+      <div class="tabbar" style="z-index:3">
+        <span><div class="dot"></div>ID</span>
+        <span class="on"><div class="dot"></div>Map</span>
+        <span><div class="dot"></div>Updates</span>
+        <span><div class="dot"></div>Friends</span>
+      </div>
+      <!-- overlay chrome -->
+      <div style="position:absolute;top:34px;left:0;right:0;z-index:2;pointer-events:none;padding:8px 12px">
+        <div style="background:rgba(255,255,255,.92);border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;pointer-events:auto">
+          <div class="nm">Your listens</div>
+          <div class="meta">Tap a pin · place over time</div>
+          <div class="pill-row" style="margin:6px 0 0">
+            <span class="chip on">Mine</span>
+            <span class="chip">Shared</span>
+            <span class="chip">Friends</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10 -->
+  <div class="cell">
+    <div class="cell-num">
+      <div class="n">10</div>
+      <div>
+        <div class="t">Map → place sheet</div>
+        <div class="d">Pin opens a sheet: recent audio + who shares this place. Bridge from map to timeline/insight.</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
+      <div id="map10" class="mapbox tall"></div>
+      <div class="screen" style="padding-top:0">
+        <div class="card" style="margin-top:-4px">
+          <div class="nm">Union Bay</div>
+          <div class="meta">14 listens · 3 shared · ~0.4 mi</div>
+          <div class="row" style="margin-top:8px">
+            <div class="play"></div>
+            <div class="grow">
+              <div class="nm">Jul 12 · 4 birds</div>
+              <div class="meta">Latest · shared with Phoebe</div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <div class="stack">
+              <img class="avatar" src="person.jpg" alt="">
+              <img class="avatar" src="person.jpg" alt="">
+            </div>
+            <div class="grow meta">Also birded by friends</div>
+          </div>
+          <button class="btn ghost">Open place over time</button>
+        </div>
+        <div class="eyebrow">Nearby</div>
+        <div class="list-row pin-list">
+          <div class="grow"><div class="nm">Backyard</div><div class="meta">7 listens · insight available</div></div>
+        </div>
+        <div class="list-row">
+          <div class="grow"><div class="nm">Bus stop</div><div class="meta">1 listen · incidental</div></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <span><div class="dot"></div>ID</span>
+        <span class="on"><div class="dot"></div>Map</span>
+        <span><div class="dot"></div>Updates</span>
+        <span><div class="dot"></div>Friends</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11 -->
+  <div class="cell">
+    <div class="cell-num">
+      <div class="n">11</div>
+      <div>
+        <div class="t">Log → resurface path</div>
+        <div class="d">From your sketch: location · bird · optional reflect → share / past outings / place resurfacing. Product contract, not UI polish.</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
+      <div class="screen">
+        <div class="scr-top"><div class="scr-title">How data moves</div></div>
+        <div class="scr-sub">Logging fields → later surfaces</div>
+        <div class="flow">
+          <div class="step">
+            <strong>1 · Sound ID session</strong>
+            Auto: audio, birds, time, approx GPS
+          </div>
+          <div class="arrow">↓</div>
+          <div class="step">
+            <strong>2 · Light log (optional)</strong>
+            Place name · optional reflect · share with…
+          </div>
+          <div class="arrow">↓</div>
+          <div class="step">
+            <strong>3a · Share</strong>
+            Becomes an Update for a person (04)<br>
+            Lands on Place hub if shared to place (08)
+          </div>
+          <div class="step">
+            <strong>3b · Keep private</strong>
+            Stays on your place timeline (01)<br>
+            Can still resurface to you later
+          </div>
+          <div class="arrow">↓</div>
+          <div class="step">
+            <strong>4 · Resurface later</strong>
+            Place insight (03) · Past outings row (06)<br>
+            Map pin (09) · “same week last year”
+          </div>
+        </div>
+        <div class="eyebrow">Reflect is sauce, not the pipe</div>
+        <div class="meta">Audio + place + time are enough for resurfacing without journaling.</div>
+      </div>
+      <div class="tabbar">
+        <span><div class="dot"></div>ID</span>
+        <span><div class="dot"></div>Places</span>
+        <span><div class="dot"></div>Updates</span>
+        <span><div class="dot"></div>Friends</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12 -->
+  <div class="cell">
+    <div class="cell-num">
+      <div class="n">12</div>
+      <div>
+        <div class="t">Share packet (outside Merlin)</div>
+        <div class="d">Merlin-team “fun graphics” thought about — audio-first card, accessible, no ratings. Different layouts later.</div>
+      </div>
+    </div>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
+      <div class="screen">
+        <div class="scr-top"><span class="back">‹</span><div class="scr-title">Share outside</div></div>
+        <div class="scr-sub">Outing packet · notes off by default</div>
+        <div style="background:#1a1a1a;color:#fff;border-radius:12px;padding:14px;margin-bottom:10px">
+          <div style="font-size:.52rem;opacity:.65;margin-bottom:6px">@you · Merlin</div>
+          <div style="font-size:.8rem;font-weight:700;margin-bottom:4px">Jul 12 · Union Bay</div>
+          <div style="font-size:.55rem;opacity:.75;margin-bottom:10px">4 birds · 0:42</div>
+          <div style="display:flex;gap:6px;margin-bottom:10px">
+            <img src="bird.jpg" alt="" style="width:48px;height:48px;object-fit:cover;border:1px solid #444">
+            <img src="bird.jpg" alt="" style="width:48px;height:48px;object-fit:cover;border:1px solid #444;opacity:.85">
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;background:#2a2a2a;padding:8px;border-radius:8px">
+            <div class="play" style="background:#fff"></div>
+            <div style="font-size:.55rem;opacity:.8">Play encounter audio</div>
+          </div>
+        </div>
+        <div class="pill-row">
+          <span class="chip on">Audio + birds</span>
+          <span class="chip">Audio only</span>
+          <span class="chip">+ my note</span>
+        </div>
+        <div class="meta" style="margin-bottom:8px">Privacy membrane: field notes stay off unless you add them.</div>
+        <button class="btn">Copy link / Stories / Texts</button>
+        <button class="btn ghost">Share in Merlin instead</button>
+      </div>
+      <div class="tabbar">
+        <span><div class="dot"></div>ID</span>
+        <span class="on"><div class="dot"></div>Places</span>
+        <span><div class="dot"></div>Updates</span>
+        <span><div class="dot"></div>Friends</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Union Bay Nature Area-ish
+const UB = [47.6555, -122.2925];
+const pins = [
+  {lat:47.6555, lng:-122.2925, label:'Union Bay · 14'},
+  {lat:47.6612, lng:-122.3010, label:'Backyard · 7'},
+  {lat:47.6498, lng:-122.3055, label:'Bus stop · 1'},
+  {lat:47.6580, lng:-122.2850, label:'May 2 · shared'},
+];
+
+function makeMap(id, zoom, interactive){
+  const el = document.getElementById(id);
+  if (!el || typeof L === 'undefined') return null;
+  const map = L.map(el, {
+    zoomControl: interactive,
+    attributionControl: true,
+    dragging: interactive,
+    scrollWheelZoom: interactive,
+    doubleClickZoom: interactive,
+    boxZoom: false,
+    keyboard: false,
+  }).setView(UB, zoom);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OSM &copy; CARTO',
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+  const icon = L.divIcon({
+    className: '',
+    html: '<div style="width:14px;height:14px;border-radius:50%;background:#1a1a1a;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div>',
+    iconSize: [14,14],
+    iconAnchor: [7,7]
+  });
+  pins.forEach(p => {
+    L.marker([p.lat, p.lng], {icon}).addTo(map).bindPopup(p.label);
+  });
+  setTimeout(() => map.invalidateSize(), 200);
+  return map;
+}
+
+window.addEventListener('load', () => {
+  makeMap('map09', 13, true);
+  makeMap('map10', 13, false);
+});
+</script>
+</body>
+</html>
