@@ -33,7 +33,7 @@
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --safe-t:env(safe-area-inset-top,0px);
   --safe-b:env(safe-area-inset-bottom,0px);
-  --nav-h:72px;
+  --nav-h:68px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{height:100%;-webkit-text-size-adjust:100%}
@@ -96,13 +96,14 @@ a{color:var(--blue);text-decoration:none}
 .screen{
   position:absolute;inset:0;display:none;flex-direction:column;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
-  padding:calc(8px + var(--safe-t)) var(--pad) calc(var(--nav-h) + 12px + var(--safe-b));
+  padding:calc(8px + var(--safe-t)) var(--pad) calc(var(--nav-h) + 20px + var(--safe-b));
   background:var(--bg);
 }
 .screen.on{display:flex}
 .screen > *{flex-shrink:0}
-.screen.no-nav{padding-bottom:calc(24px + var(--safe-b))}
+.screen.no-nav{padding-bottom:calc(var(--nav-h) + 24px + var(--safe-b))}
 .screen.flush{padding-left:0;padding-right:0}
+#s-history-location{padding-bottom:0}
 .pad{padding-left:var(--pad);padding-right:var(--pad)}
 
 /* iOS sheet chrome: grabber + title/subtitle toolbar + close circle */
@@ -119,7 +120,7 @@ a{color:var(--blue);text-decoration:none}
   padding-top:0;
   padding-left:var(--pad);
   padding-right:var(--pad);
-  padding-bottom:calc(24px + var(--safe-b));
+  padding-bottom:calc(var(--nav-h) + 28px + var(--safe-b));
 }
 .screen.sheet.flush{padding-left:0;padding-right:0}
 .grabber{
@@ -147,7 +148,7 @@ a{color:var(--blue);text-decoration:none}
 
 /* Top bars */
 .top{
-  display:grid;grid-template-columns:40px 1fr 40px;
+  display:grid;grid-template-columns:40px 1fr auto;
   align-items:center;column-gap:8px;
   min-height:44px;margin-bottom:4px;
 }
@@ -171,9 +172,9 @@ a{color:var(--blue);text-decoration:none}
 .top.between > .text-btn{grid-column:2;justify-self:end}
 .top .center{
   text-align:center;font-size:.8125rem;font-weight:600;line-height:1.25;
-  grid-column:2;
+  grid-column:2;min-width:0;overflow:visible;
 }
-.top .center .sub{font-weight:400;color:var(--muted);font-size:.75rem;margin-top:1px}
+.top .center .sub{font-weight:400;color:var(--muted);font-size:.75rem;margin-top:1px;line-height:1.25}
 .top > .icon-btn:first-child{grid-column:1;justify-self:start}
 .top > .icon-btn:last-child,
 .top > span[aria-hidden]:last-child{grid-column:3;justify-self:end}
@@ -193,9 +194,10 @@ a{color:var(--blue);text-decoration:none}
   background:var(--red);border:1.5px solid #fff;
 }
 .notif-bell[data-unread="0"] .dot{display:none}
-.toolbar .notif-bell{width:36px;height:36px;background:var(--fill);margin-right:6px}
-.toolbar .notif-bell svg{width:18px;height:18px}
-.toolbar .notif-bell .dot{top:6px;right:6px;width:7px;height:7px}
+/* Notifications only on main product screens — never on sheets/modals */
+.screen.sheet .notif-bell,
+.screen.share-dark .notif-bell,
+.toolbar .notif-bell{display:none!important}
 
 /* Activity / notifications feed */
 .activity-list{list-style:none;margin:0;padding:0}
@@ -243,29 +245,23 @@ a{color:var(--blue);text-decoration:none}
 .text-btn.save-outline:disabled{opacity:.35;cursor:default}
 .text-btn.save-outline[hidden]{display:none!important}
 
-/* Tab bar: flat on Identify, floating pill on History */
+/* Tab bar: floating pill on every screen */
 .tabbar{
-  position:absolute;left:0;right:0;bottom:0;z-index:20;
-  height:calc(var(--nav-h) + var(--safe-b));
-  padding:8px 6px var(--safe-b);
-  background:rgba(255,255,255,.94);
+  position:absolute;left:12px;right:12px;bottom:6px;z-index:20;
+  height:56px;padding:4px 2px;
+  box-sizing:border-box;
+  background:rgba(255,255,255,.96);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-top:1px solid var(--line);
-  display:flex;justify-content:space-around;align-items:flex-start;
-}
-.tabbar.pill{
-  left:16px;right:16px;bottom:calc(10px + var(--safe-b));
-  height:58px;padding:6px 4px;
-  border:1px solid rgba(0,0,0,.06);border-top:none;border-radius:999px;
+  border:1px solid rgba(0,0,0,.06);border-radius:999px;
   box-shadow:0 8px 28px rgba(0,0,0,.12);
-  align-items:center;
+  display:flex;justify-content:space-around;align-items:center;
 }
 .tabbar[hidden]{display:none!important}
 .tab{
-  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
-  padding:2px;min-height:48px;justify-content:center;
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;
+  padding:2px 0;min-height:0;height:100%;justify-content:center;
   color:#1C1C1E;font-size:.625rem;font-weight:600;
-  border-radius:999px;
+  border-radius:999px;min-width:0;
 }
 .tab .ticon{
   width:30px;height:30px;border-radius:50%;
@@ -368,15 +364,21 @@ a{color:var(--blue);text-decoration:none}
 .thumb-wrap{
   position:relative;flex:none;width:80px;height:59px;border-radius:2px;overflow:hidden;
 }
-.thumb-wrap .thumb{width:100%;height:100%;display:block;transition:opacity .2s}
-.thumb-wrap .eye-off{
-  position:absolute;inset:0;display:none;align-items:center;justify-content:center;
-  color:#fff;pointer-events:none;
-  background:rgba(28,28,30,.28);
+.thumb-wrap .thumb{width:100%;height:100%;display:block}
+.avatar-wrap{
+  position:relative;flex:none;border-radius:50%;
+  margin-left:-14px;
 }
-.thumb-wrap .eye-off svg{width:22px;height:22px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
-#s-save.share-off .thumb-wrap .thumb{opacity:.42}
-#s-save.share-off .thumb-wrap .eye-off{display:flex}
+.avatar-stack .avatar-wrap:first-child{margin-left:0}
+.avatar-wrap .avatar{margin-left:0!important;display:block;transition:opacity .2s}
+.avatar-wrap .eye-off{
+  position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+  color:#fff;pointer-events:none;border-radius:50%;
+  background:rgba(28,28,30,.35);
+}
+.avatar-wrap .eye-off svg{width:16px;height:16px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+#s-save.share-off #shared-people .avatar-wrap .avatar{opacity:.42}
+#s-save.share-off #shared-people .avatar-wrap .eye-off{display:flex}
 .thumb{
   width:var(--thumb);height:var(--thumb);border-radius:2px;
   object-fit:cover;background:#D9D9D9;flex:none;
@@ -512,13 +514,14 @@ a{color:var(--blue);text-decoration:none}
   font-size:.6875rem;font-weight:600;font-variant-numeric:tabular-nums;
   padding:3px 8px;border-radius:6px;pointer-events:none;
 }
+#s-identify{padding-bottom:calc(var(--nav-h) + 2px + var(--safe-b))}
 .id-body{flex:1;display:flex;flex-direction:column;min-height:0}
 .empty-msg{
   text-align:center;padding:28px 12px 8px;
   color:var(--ink);font-size:.9375rem;font-weight:500;line-height:1.4;
 }
 .empty-msg a{display:inline-block;margin-top:10px;font-size:.8125rem;font-weight:400}
-.mic-wrap{margin-top:auto;padding:28px 0 8px;text-align:center;flex:none}
+.mic-wrap{margin-top:auto;padding:8px 0 2px;text-align:center;flex:none}
 
 /* Save form */
 .field{
@@ -539,10 +542,27 @@ a{color:var(--blue);text-decoration:none}
   font-size:.8125rem;line-height:1.45;outline:none;color:var(--ink);
 }
 .notes::placeholder{color:var(--muted)}
-.photos{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.photos{display:flex;align-items:flex-start;gap:12px;margin:14px 0 10px;flex-wrap:wrap}
 .photos .add-person{margin-right:2px}
+.add-photo-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  width:112px;height:112px;border-radius:12px;flex:none;
+  border:2px dashed var(--green);background:var(--green-soft);
+  color:var(--green-dark);font-size:.8125rem;font-weight:700;line-height:1.2;
+}
+.add-photo-btn .plus{
+  width:40px;height:40px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:#fff;border:1.5px solid var(--green);
+  font-size:1.625rem;line-height:1;color:var(--green);font-weight:500;
+  box-shadow:0 1px 4px rgba(0,155,73,.18);
+}
+.add-photo-btn:active{background:#dff3e6}
+.photos .shot{
+  width:92px;height:92px;border-radius:10px;object-fit:cover;background:var(--fill);
+}
 .photo-slot{
-  width:110px;height:82px;border-radius:2px;background:var(--fill);
+  width:92px;height:92px;border-radius:10px;background:var(--fill);
   display:flex;align-items:center;justify-content:center;color:rgba(102,114,115,.5);overflow:hidden;flex:none;
   position:relative;
 }
@@ -553,7 +573,7 @@ a{color:var(--blue);text-decoration:none}
   display:flex;align-items:center;justify-content:center;
 }
 .save-private{margin:8px 0 4px;padding-top:4px;border-top:1px solid var(--line)}
-.save-birds-label{font-size:1.125rem;font-weight:600;margin:20px 0 4px;letter-spacing:-.005em}
+.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 10px;letter-spacing:-.005em;line-height:1.3;padding-bottom:4px}
 .toggle-row{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
@@ -604,11 +624,27 @@ a{color:var(--blue);text-decoration:none}
   background:var(--fill);border-radius:4px;padding:12px 16px;
   font-size:.8125rem;line-height:1.45;color:var(--ink);margin:12px 0 8px;
 }
-.sticky-cta{
-  position:sticky;bottom:0;margin:24px calc(var(--pad) * -1) 0;
-  padding:16px var(--pad) calc(8px + var(--safe-b));
-  background:linear-gradient(180deg,transparent,var(--bg) 30%);
+#s-save{
+  padding-bottom:calc(132px + var(--safe-b));
 }
+#s-save .sticky-cta{
+  position:absolute;
+  left:0;right:0;
+  bottom:calc(62px + var(--safe-b));
+  margin:0;
+  padding:14px var(--pad) 10px;
+  background:linear-gradient(180deg,rgba(255,255,255,0),var(--bg) 40%);
+  z-index:6;
+  pointer-events:none;
+}
+#s-save .sticky-cta .btn{pointer-events:auto}
+.sess-photos{
+  display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px;
+}
+.sess-photos img{
+  width:92px;height:92px;border-radius:10px;object-fit:cover;background:var(--fill);
+}
+.clips[hidden]{display:none!important}
 
 /* Modal */
 .modal-root[hidden]{display:none!important}
@@ -709,8 +745,11 @@ a{color:var(--blue);text-decoration:none}
 .cal-cell.blank{visibility:hidden}
 .cal-cell:disabled{cursor:default}
 
-/* Share screen — black canvas, swipeable white calendar cards */
-.screen.share-dark{background:#000;color:#fff;overflow:hidden}
+/* Share screen — black canvas, swipeable white calendar / collage cards */
+.screen.share-dark{
+  background:#000;color:#fff;overflow:hidden;
+  padding-bottom:calc(var(--nav-h) + 8px + var(--safe-b));
+}
 .share-top{
   display:grid;grid-template-columns:40px 1fr 40px;align-items:center;
   margin:6px 0 8px;min-height:44px;flex:none;
@@ -724,7 +763,7 @@ a{color:var(--blue);text-decoration:none}
 .share-close svg{width:15px;height:15px}
 .share-track-wrap{
   flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;
-  overflow:hidden;touch-action:pan-y;
+  overflow:hidden;touch-action:pan-y;cursor:grab;
 }
 .share-track{
   display:flex;gap:0;width:100%;
@@ -737,16 +776,25 @@ a{color:var(--blue);text-decoration:none}
   box-shadow:0 20px 60px rgba(0,0,0,.5);
   flex:0 0 calc(100% - 36px);width:calc(100% - 36px);box-sizing:border-box;
 }
-.share-card .cal-h{font-size:1.5rem;font-weight:700;margin-bottom:14px}
+.share-card .cal-h{font-size:1.5rem;font-weight:700;margin-bottom:14px;letter-spacing:-.02em;line-height:1.2}
 .share-card .cal-grid{gap:8px 2px}
 .share-card .cal-cell .num{font-size:.75rem;font-weight:400;color:var(--muted)}
 .share-card .cal-cell .slot{width:34px;height:34px}
 .share-card .cal-cell .slot img{width:34px;height:34px;border-radius:2px;object-fit:cover}
 .share-card .cal-cell .dot{width:20px;height:20px}
 .share-card .cal-cell .dot.green{background:var(--green)}
+.share-card.share-collage{padding:22px 18px 16px}
+.share-card.share-collage .cal-h{font-size:1.625rem;margin-bottom:16px;max-width:92%}
+.share-bird-grid{
+  display:grid;gap:4px;margin-top:2px;
+}
+.share-bird-grid.cols-4{grid-template-columns:repeat(4,1fr)}
+.share-bird-grid img{
+  width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;display:block;background:var(--fill);
+}
 .share-brand{
-  display:flex;justify-content:flex-end;align-items:center;gap:4px;
-  margin-top:14px;font-size:.75rem;font-weight:800;letter-spacing:-.01em;color:#1C1C1E;
+  display:flex;justify-content:flex-end;align-items:center;gap:5px;
+  margin-top:16px;font-size:.8125rem;font-weight:800;letter-spacing:-.01em;color:#1C1C1E;
 }
 .share-caption{
   text-align:center;font-size:.75rem;color:rgba(255,255,255,.55);margin-top:14px;flex:none;
@@ -756,7 +804,7 @@ a{color:var(--blue);text-decoration:none}
 .share-dots i.on{background:#fff}
 .share-fab{
   width:52px;height:52px;border-radius:50%;background:var(--green);color:#fff;
-  margin:24px auto 16px;display:flex;align-items:center;justify-content:center;flex:none;
+  margin:16px auto 8px;display:flex;align-items:center;justify-content:center;flex:none;
 }
 .share-fab svg{width:22px;height:22px}
 
@@ -836,7 +884,7 @@ a{color:var(--blue);text-decoration:none}
 /* Map peek card — compact preview when a pin is chosen */
 .loc-peek{
   position:absolute;left:12px;right:12px;
-  bottom:calc(72px + var(--safe-b));
+  bottom:calc(64px + var(--safe-b));
   z-index:6;background:#fff;border-radius:16px;
   box-shadow:0 10px 36px rgba(0,0,0,.18);
   padding:10px 14px 14px;
@@ -852,15 +900,17 @@ a{color:var(--blue);text-decoration:none}
 
 /* Expandable locations list sheet on the map */
 .loc-sheet{
-  position:absolute;left:0;right:0;bottom:0;z-index:5;
+  position:absolute;left:0;right:0;
+  bottom:calc(64px + var(--safe-b));
+  z-index:5;
   background:#fff;border-radius:24px 24px 0 0;
   box-shadow:0 -6px 28px rgba(0,0,0,.12);
-  padding:8px var(--pad) calc(70px + var(--safe-b));
-  max-height:42%;
+  padding:8px var(--pad) 12px;
+  max-height:min(340px, calc(52% + 16px));
   transition:max-height .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s;
   display:flex;flex-direction:column;min-height:0;
 }
-.loc-sheet.expanded{max-height:72%}
+.loc-sheet.expanded{max-height:calc(78% - 8px)}
 .loc-sheet.hidden-by-peek{
   transform:translateY(110%);opacity:0;pointer-events:none;
 }
@@ -874,15 +924,17 @@ a{color:var(--blue);text-decoration:none}
   font-size:.8125rem;font-weight:600;color:var(--green);padding:6px 4px;min-height:36px;
 }
 .loc-sheet-list{
-  list-style:none;margin:4px 0 0;padding:0;overflow:auto;min-height:0;flex:1;
+  list-style:none;margin:4px 0 0;padding:0 0 6px;overflow:auto;min-height:0;flex:1;
   -webkit-overflow-scrolling:touch;
 }
 .loc-sheet-list > li + li{border-top:1px solid var(--line)}
 .loc-sheet-list .row{
-  padding:12px 0;min-height:64px;gap:12px;
+  padding:14px 0;min-height:70px;gap:12px;align-items:center;
 }
-.loc-sheet-list .row .thumb{width:56px;height:42px;border-radius:2px}
-.loc-sheet-list .meta{font-size:.75rem}
+.loc-sheet-list .row .thumb{width:56px;height:42px;border-radius:2px;flex:none}
+.loc-sheet-list .row .grow{min-width:0}
+.loc-sheet-list .row .nm{line-height:1.3}
+.loc-sheet-list .meta{font-size:.75rem;line-height:1.4;margin-top:3px}
 .loc-a11y{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
 .sheet-h{font-size:1.0625rem;font-weight:700;margin-bottom:4px}
@@ -898,7 +950,7 @@ a{color:var(--blue);text-decoration:none}
 .audio-credit{font-size:.65rem;color:var(--muted);margin-top:4px;line-height:1.35}
 
 .toast{
-  position:absolute;left:50%;bottom:calc(var(--nav-h) + 8px + var(--safe-b));
+  position:absolute;left:50%;bottom:calc(72px + var(--safe-b));
   transform:translateX(-50%);z-index:30;
   background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;
   font-size:.8rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s;
@@ -936,8 +988,8 @@ a{color:var(--blue);text-decoration:none}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
         <div class="center" id="id-heading">
-          July 22 — Seattle, WA
-          <div class="sub" id="id-meta">5:04 PM · 0 birds</div>
+          9–11am Union Bay
+          <div class="sub" id="id-meta">0 birds</div>
         </div>
         <div style="display:flex;gap:6px;justify-content:flex-end;align-items:center">
           <button type="button" class="text-btn save-outline" id="btn-done-top" hidden>Done</button>
@@ -945,16 +997,13 @@ a{color:var(--blue);text-decoration:none}
         </div>
       </header>
 
-      <div class="sono" id="sono-live" role="img" aria-label="Sound ID spectrogram. Not playing.">
+      <div class="sono" id="sono-live" role="img" aria-label="Live Sound ID spectrogram. Not listening.">
         <canvas id="sonoCanvas" width="390" height="168" aria-hidden="true"></canvas>
-        <div class="sono-playhead" aria-hidden="true"></div>
-        <button type="button" class="sono-play" id="sono-play" aria-label="Play recording"></button>
-        <span class="sono-time" id="sono-time">0:00</span>
       </div>
 
       <div class="id-body">
         <p class="empty-msg" id="id-empty">
-          No suggestions for Seattle, WA<br>
+          No suggestions for Union Bay<br>
           <a href="#" id="why-link">Why isn’t Merlin identifying my bird?</a>
         </p>
         <ul class="list" id="detect-list" hidden></ul>
@@ -973,17 +1022,17 @@ a{color:var(--blue);text-decoration:none}
         <div class="t-titles">
           <span class="t-title" id="save-heading">Save Session</span>
         </div>
-        <button type="button" class="close-circle" aria-label="Close without saving" data-go="s-identify">
+        <button data-close type="button" class="close-circle" aria-label="Close without saving">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </header>
 
       <label class="sr-only" for="session-title">Session title</label>
-      <textarea class="field" id="session-title" rows="2">Wednesday Morning at Seward Park</textarea>
+      <textarea class="field" id="session-title" rows="2">Saturday Morning at Union Bay</textarea>
       <p class="field-hint">Tap to edit title</p>
 
       <div class="meta-block">
-        <p class="meta">July 22, 2026 · Seward Park, Seattle · 75° F, Overcast</p>
+        <p class="meta" id="save-meta">July 25, 2026 · Union Bay, Seattle · 64° F, Clear</p>
       </div>
 
       <div class="section-row" style="border-top:1px solid var(--line)">
@@ -999,7 +1048,7 @@ a{color:var(--blue);text-decoration:none}
         <div class="avatar-stack" id="shared-people" aria-label="Shared with Lucy and Joe"></div>
         <div class="who-copy" style="flex:1">
           <div class="label" id="share-label">Share recordings</div>
-          <div class="sub" id="share-location-label">Seward Park</div>
+          <div class="sub" id="share-location-label">Union Bay</div>
         </div>
         <button type="button" class="switch" id="share-toggle" role="switch" aria-checked="true" aria-labelledby="share-label"></button>
       </div>
@@ -1015,7 +1064,10 @@ a{color:var(--blue);text-decoration:none}
         <label class="sr-only" for="field-notes">Field notes</label>
         <textarea class="notes" id="field-notes" placeholder="Add field notes"></textarea>
         <div class="photos" id="session-photos" role="group" aria-label="Session photos">
-          <button type="button" class="add-person" id="add-photo" aria-label="Add photo">+</button>
+          <button type="button" class="add-photo-btn" id="add-photo" aria-label="Add photos to this session">
+            <span class="plus" aria-hidden="true">+</span>
+            <span>Add photos</span>
+          </button>
         </div>
         <input type="file" id="photo-input" accept="image/*" multiple hidden>
       </div>
@@ -1024,60 +1076,42 @@ a{color:var(--blue);text-decoration:none}
       <ul class="list" id="save-species-list" aria-label="Species in this session">
         <li>
           <button type="button" class="row bird" data-go="s-species-detail">
-            <span class="thumb-wrap">
-              <img class="thumb" src="assets/birds/house-finch.jpg" alt="">
-              <span class="eye-off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></span>
-            </span>
+            <img class="thumb" src="assets/birds/house-finch.jpg" alt="">
             <span class="grow"><span class="nm">House Finch</span><span class="meta">12 detections</span></span>
             <span class="chev" aria-hidden="true">›</span>
           </button>
         </li>
         <li>
           <button type="button" class="row bird">
-            <span class="thumb-wrap">
-              <img class="thumb" src="assets/birds/spotted-towhee.jpg" alt="">
-              <span class="eye-off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></span>
-            </span>
+            <img class="thumb" src="assets/birds/spotted-towhee.jpg" alt="">
             <span class="grow"><span class="nm">Spotted Towhee</span><span class="meta">4 detections</span></span>
             <span class="chev" aria-hidden="true">›</span>
           </button>
         </li>
         <li>
           <button type="button" class="row bird">
-            <span class="thumb-wrap">
-              <img class="thumb" src="assets/birds/lazuli-bunting.jpg" alt="">
-              <span class="eye-off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></span>
-            </span>
+            <img class="thumb" src="assets/birds/lazuli-bunting.jpg" alt="">
             <span class="grow"><span class="nm">Lazuli Bunting</span><span class="meta">3 detections</span></span>
             <span class="chev" aria-hidden="true">›</span>
           </button>
         </li>
         <li>
           <button type="button" class="row bird">
-            <span class="thumb-wrap">
-              <img class="thumb" src="assets/birds/american-robin.jpg" alt="">
-              <span class="eye-off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></span>
-            </span>
+            <img class="thumb" src="assets/birds/american-robin.jpg" alt="">
             <span class="grow"><span class="nm">American Robin</span><span class="meta">7 detections</span></span>
             <span class="chev" aria-hidden="true">›</span>
           </button>
         </li>
         <li>
           <button type="button" class="row bird">
-            <span class="thumb-wrap">
-              <img class="thumb" src="assets/birds/black-capped-chickadee.jpg" alt="">
-              <span class="eye-off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></span>
-            </span>
+            <img class="thumb" src="assets/birds/black-capped-chickadee.jpg" alt="">
             <span class="grow"><span class="nm">Black-capped Chickadee</span><span class="meta">2 detections</span></span>
             <span class="chev" aria-hidden="true">›</span>
           </button>
         </li>
         <li>
           <button type="button" class="row bird">
-            <span class="thumb-wrap">
-              <img class="thumb" src="assets/birds/song-sparrow.jpg" alt="">
-              <span class="eye-off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></span>
-            </span>
+            <img class="thumb" src="assets/birds/song-sparrow.jpg" alt="">
             <span class="grow"><span class="nm">Song Sparrow</span><span class="meta">6 detections</span></span>
             <span class="chev" aria-hidden="true">›</span>
           </button>
@@ -1176,7 +1210,7 @@ a{color:var(--blue);text-decoration:none}
           <span class="t-title" id="cal-title">History</span>
           <span class="t-sub">All time</span>
         </div>
-        <button type="button" class="close-circle" aria-label="Close calendar" data-go="s-history-date">
+        <button data-close type="button" class="close-circle" aria-label="Close calendar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </header>
@@ -1184,108 +1218,56 @@ a{color:var(--blue);text-decoration:none}
       <div id="calendar-stack"></div>
     </section>
 
-    <!-- 6b. Share calendar — swipe between photo month + species green-dot month -->
-    <section class="screen no-nav share-dark" id="s-share" aria-labelledby="share-h" hidden>
+    <!-- 6b. Share — swipeable cards (collage / photo calendar / activity) -->
+    <section class="screen share-dark" id="s-share" aria-labelledby="share-h" hidden>
       <header class="share-top">
         <h1 class="share-title" id="share-h">Share</h1>
-        <button type="button" class="share-close" id="share-close" aria-label="Close share">
+        <button data-close type="button" class="share-close" id="share-close" aria-label="Close share">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </header>
       <div class="share-track-wrap" id="share-track-wrap">
-        <div class="share-track" id="share-track" role="listbox" aria-label="Share styles">
-          <div class="share-card" id="share-card-photos" role="option" aria-selected="true"></div>
-          <div class="share-card" id="share-card-dots" role="option" aria-selected="false"></div>
-        </div>
+        <div class="share-track" id="share-track" role="listbox" aria-label="Share styles"></div>
         <p class="share-caption" id="share-caption">All species · photo calendar</p>
-        <div class="share-dots" id="share-dots" aria-hidden="true"><i class="on"></i><i></i></div>
+        <div class="share-dots" id="share-dots" aria-hidden="true"></div>
       </div>
-      <button type="button" class="share-fab" id="share-send" aria-label="Share this month">
+      <button type="button" class="share-fab" id="share-send" aria-label="Share this card">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
       </button>
     </section>
 
-    <!-- 7. Session detail (Past Session) -->
-    <section class="screen no-nav flush sheet" id="s-session" aria-labelledby="sess-title" hidden>
+    <!-- 7. Session detail (Past Session) — filled by openSession() -->
+    <section class="screen flush sheet" id="s-session" aria-labelledby="sess-title" hidden>
       <div class="pad">
         <div class="grabber" aria-hidden="true"></div>
         <header class="toolbar">
           <div class="t-titles"><span class="t-title">Past Session</span></div>
-          <button type="button" class="close-circle" aria-label="Close session" data-go="s-history-date">
+          <button type="button" class="circle-btn" id="sess-share" aria-label="Share session">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
+          </button>
+          <button data-close type="button" class="close-circle" aria-label="Close session">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </header>
       </div>
       <div class="hero">
-        <img src="bird.jpg" alt="Canada geese grazing on a lawn at Seward Park">
+        <img id="sess-hero" src="assets/birds/canada-goose.jpg" alt="">
       </div>
       <div class="pad" style="padding-top:16px">
         <header class="top between" style="margin-bottom:4px;min-height:0">
-          <h1 id="sess-title" style="font-size:1.375rem;font-weight:700;letter-spacing:-.01em;line-height:1.25;white-space:normal;overflow:visible">Wednesday Morning at Seward Park</h1>
+          <h1 id="sess-title" style="font-size:1.375rem;font-weight:700;letter-spacing:-.01em;line-height:1.25;white-space:normal;overflow:visible">Session</h1>
           <button type="button" class="pill-btn" data-go="s-save">Edit</button>
         </header>
         <div class="meta-block">
-          <p class="meta">July 22, 2026 · Seward Park, Seattle · 75° F, Overcast</p>
+          <p class="meta" id="sess-meta">—</p>
         </div>
         <div class="section-row" id="who-sess-row" style="border-top:1px solid var(--line)">
           <div class="who-copy"><div class="label" id="who-sess">Who joined</div></div>
-          <div class="avatar-stack" role="group" aria-labelledby="who-sess">
-            <img class="avatar sm" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80" alt="Alex">
-            <img class="avatar sm" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80" alt="Sam">
-            <img class="avatar sm" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80" alt="Lucy">
-          </div>
+          <div class="avatar-stack" id="sess-avatars" role="group" aria-labelledby="who-sess"></div>
         </div>
-        <p class="note-chip">The Lazuli buntings hung out at the taller trees behind the west parking lot</p>
-
-        <ul class="list">
-          <li>
-            <button type="button" class="row bird" id="expand-finch" aria-expanded="true" aria-controls="finch-clips">
-              <img class="thumb" src="bird.jpg" alt="" style="object-position:40% 25%">
-              <span class="grow"><span class="nm">House Finch</span><span class="meta">3 detections</span></span>
-              <span class="chev" aria-hidden="true">▾</span>
-            </button>
-            <div class="clips" id="finch-clips">
-              <div class="spectro-row no-date">
-                <span class="spectro-wrap">
-                  <button type="button" class="spectro" data-audio="birds/house-finch.mp3" data-dur="0:45" aria-label="Play House Finch clip 1 of 3, 45 seconds">
-                    <span class="tex" aria-hidden="true"></span><span class="played" aria-hidden="true"></span><span class="ph-line" aria-hidden="true"></span><span class="sp-play" aria-hidden="true"></span><span class="dur" aria-hidden="true">0:45</span>
-                  </button>
-                  <span class="sp-share" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span>
-                </span>
-              </div>
-              <div class="spectro-row no-date">
-                <span class="spectro-wrap">
-                  <button type="button" class="spectro" data-audio="birds/house-finch.mp3" data-dur="0:23" aria-label="Play House Finch clip 2 of 3, 23 seconds">
-                    <span class="tex" aria-hidden="true"></span><span class="played" aria-hidden="true"></span><span class="ph-line" aria-hidden="true"></span><span class="sp-play" aria-hidden="true"></span><span class="dur" aria-hidden="true">0:23</span>
-                  </button>
-                  <span class="sp-share" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span>
-                </span>
-              </div>
-              <div class="spectro-row no-date">
-                <span class="spectro-wrap">
-                  <button type="button" class="spectro" data-audio="birds/house-finch.mp3" data-dur="0:20" aria-label="Play House Finch clip 3 of 3, 20 seconds">
-                    <span class="tex" aria-hidden="true"></span><span class="played" aria-hidden="true"></span><span class="ph-line" aria-hidden="true"></span><span class="sp-play" aria-hidden="true"></span><span class="dur" aria-hidden="true">0:20</span>
-                  </button>
-                  <span class="sp-share" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span>
-                </span>
-              </div>
-            </div>
-          </li>
-          <li>
-            <button type="button" class="row bird">
-              <img class="thumb" src="bird.jpg" alt="" style="object-position:70% 40%">
-              <span class="grow"><span class="nm">Spotted Towhee</span><span class="meta">4 detections</span></span>
-              <span class="chev" aria-hidden="true">›</span>
-            </button>
-          </li>
-          <li>
-            <button type="button" class="row bird">
-              <img class="thumb" src="bird.jpg" alt="" style="object-position:20% 60%">
-              <span class="grow"><span class="nm">Lazuli Bunting</span><span class="meta">3 detections</span></span>
-              <span class="chev" aria-hidden="true">›</span>
-            </button>
-          </li>
-        </ul>
+        <p class="note-chip" id="sess-note"></p>
+        <div class="sess-photos" id="sess-photos" hidden></div>
+        <ul class="list" id="sess-birds"></ul>
       </div>
     </section>
 
@@ -1297,7 +1279,7 @@ a{color:var(--blue);text-decoration:none}
           <span class="t-title" id="sp-title">History</span>
           <span class="t-sub" id="sp-sub">House Finch</span>
         </div>
-        <button type="button" class="close-circle" id="sp-close" aria-label="Close species history" data-go="s-history-species">
+        <button data-close type="button" class="close-circle" id="sp-close" aria-label="Close species history">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </header>
@@ -1331,7 +1313,7 @@ a{color:var(--blue);text-decoration:none}
           <span class="t-title" id="sp-cal-title">Listening calendar</span>
           <span class="t-sub" id="sp-cal-sub">House Finch</span>
         </div>
-        <button type="button" class="close-circle" id="sp-cal-close" aria-label="Close species calendar">
+        <button data-close type="button" class="close-circle" id="sp-cal-close" aria-label="Close species calendar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </header>
@@ -1346,7 +1328,7 @@ a{color:var(--blue);text-decoration:none}
           <span class="t-title" id="sp-info-h">Details</span>
           <span class="t-sub" id="sp-info-sub">House Finch</span>
         </div>
-        <button type="button" class="close-circle" id="sp-info-close" aria-label="Close species details">
+        <button data-close type="button" class="close-circle" id="sp-info-close" aria-label="Close species details">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </header>
@@ -1368,7 +1350,7 @@ a{color:var(--blue);text-decoration:none}
           <span class="t-title" id="loc-title">History</span>
           <span class="t-sub" id="loc-sub">Seward Park, Seattle</span>
         </div>
-        <button type="button" class="close-circle" id="loc-close" aria-label="Close location history" data-go="s-history-location">
+        <button data-close type="button" class="close-circle" id="loc-close" aria-label="Close location history">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </header>
@@ -1409,7 +1391,7 @@ a{color:var(--blue);text-decoration:none}
           <span class="t-title" id="activity-h">Activity</span>
           <span class="t-sub">Friends & shared locations</span>
         </div>
-        <button type="button" class="close-circle" id="activity-close" aria-label="Close activity">
+        <button data-close type="button" class="close-circle" id="activity-close" aria-label="Close activity">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </header>
@@ -1440,11 +1422,10 @@ a{color:var(--blue);text-decoration:none}
   <!-- Finish logging modal -->
   <div class="modal-root" id="modal" hidden>
     <div class="modal-backdrop" id="modal-backdrop"></div>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
-      <h2 id="modal-title">Finish logging your session</h2>
-      <p id="modal-desc">Add details to remember the session better later.</p>
-      <button type="button" class="btn btn-blue" id="modal-now">Now</button>
-      <button type="button" class="later" id="modal-later">Later</button>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <h2 id="modal-title">Add more details to remember your session</h2>
+      <button type="button" class="btn btn-blue" id="modal-now">Add details</button>
+      <button type="button" class="later" id="modal-later">No, thanks</button>
     </div>
   </div>
 
@@ -1516,8 +1497,15 @@ a{color:var(--blue);text-decoration:none}
   let listening = false;
   let audio = null;
   let lastFocus = null;
+  let screenStack = [];
 
   const NAV_SCREENS = new Set(['s-identify','s-history-date','s-history-species','s-history-location']);
+  const IDENTIFY_FLOW = new Set(['s-identify', 's-save']);
+  const HISTORY_FLOW = new Set([
+    's-history-date', 's-history-species', 's-history-location',
+    's-calendar', 's-share', 's-session', 's-species-detail',
+    's-species-calendar', 's-species-info', 's-location-detail', 's-activity'
+  ]);
   const LABELS = {
     's-identify': 'Identify and log birds',
     's-history-date': 'History by date',
@@ -1594,26 +1582,38 @@ a{color:var(--blue);text-decoration:none}
   function shareContextFor(el) {
     const screen = el.closest('.screen');
     const speciesName = currentSpecies?.name || 'House Finch';
-    if (screen?.id === 's-species-detail') {
-      return { title: `Share ${speciesName}`, subtitle: 'Recording from Merle', image: currentSpecies?.image || birdImg(speciesName) };
+    if (screen?.id === 's-species-detail' || el.closest('#species-mix')) {
+      return { title: `Share ${speciesName} mix`, subtitle: 'Your mix from Merle', image: currentSpecies?.image || birdImg(speciesName) };
     }
-    if (screen?.id === 's-location-detail') {
-      return { title: `Share ${currentPlace?.name || 'location'} mix`, subtitle: 'Birding history from Merle', image: currentSpecies?.image || birdImg('House Finch') };
+    if (el.closest('#summer-mix') || screen?.id === 's-history-date') {
+      return { title: 'Share Chorus of July 21, 2025', subtitle: 'This time last summer', image: birdImg('American Robin') };
     }
     return { title: 'Share bird recording', subtitle: 'Audio from Merle', image: birdImg('House Finch') };
   }
   document.body.addEventListener('click', e => {
-    const share = e.target.closest('.mix-share,.sp-share');
+    const share = e.target.closest('.mix-share,.sp-share,#sess-share');
     if (!share) return;
     e.preventDefault();
     e.stopPropagation();
+    const screen = share.closest('.screen');
+    // Outing share → species collage card (img 2)
+    if (share.id === 'sess-share' || (screen?.id === 's-session' && share.classList.contains('mix-share'))) {
+      openShareSession();
+      return;
+    }
+    // Location share → place collage card (img 3)
+    if (screen?.id === 's-location-detail' && share.classList.contains('mix-share')) {
+      openSharePlace(currentPlace);
+      return;
+    }
+    // Mixes / clip shares → iOS share panel
     openShareSheet(shareContextFor(share));
   }, true);
   document.body.addEventListener('keydown', e => {
-    const share = e.target.closest('.mix-share,.sp-share');
+    const share = e.target.closest('.mix-share,.sp-share,#sess-share');
     if (share && (e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
-      openShareSheet(shareContextFor(share));
+      share.click();
     }
   });
 
@@ -1633,11 +1633,19 @@ a{color:var(--blue);text-decoration:none}
     });
   })();
 
-  function go(id, { silent } = {}) {
+  function go(id, { silent, closing } = {}) {
     if (!document.getElementById(id)) return;
     if (!modal.hidden) closeModal(true);
 
     const prev = current;
+    if (!closing && prev && prev !== id) {
+      if (NAV_SCREENS.has(id)) {
+        screenStack = [];
+      } else if (screenStack[screenStack.length - 1] !== prev) {
+        screenStack.push(prev);
+      }
+    }
+
     screens.forEach(s => {
       const on = s.id === id;
       s.classList.toggle('on', on);
@@ -1645,17 +1653,17 @@ a{color:var(--blue);text-decoration:none}
     });
     current = id;
 
-    const showTabs = NAV_SCREENS.has(id);
-    tabbar.hidden = !showTabs;
-    tabbar.classList.toggle('pill', id !== 's-identify');
+    // Same pill tab bar on every screen
+    tabbar.hidden = false;
+    tabbar.classList.add('pill');
     tabbar.querySelectorAll('[data-go]').forEach(tab => {
-      if (tab.closest('#tabbar')) {
-        if (tab.dataset.go === id || (id.startsWith('s-history') && tab.dataset.go === 's-history-date')) {
-          tab.setAttribute('aria-current', 'page');
-        } else {
-          tab.removeAttribute('aria-current');
-        }
-      }
+      if (!tab.closest('#tabbar')) return;
+      const dest = tab.dataset.go;
+      let on = false;
+      if (dest === 's-identify') on = IDENTIFY_FLOW.has(id);
+      else if (dest === 's-history-date') on = HISTORY_FLOW.has(id);
+      if (on) tab.setAttribute('aria-current', 'page');
+      else tab.removeAttribute('aria-current');
     });
 
     document.querySelectorAll('.facil button').forEach(b => {
@@ -1696,11 +1704,62 @@ a{color:var(--blue);text-decoration:none}
     if (window.__voSim) window.__voSim.refresh();
   }
 
+  const CLOSE_FALLBACK = {
+    's-calendar': 's-history-date',
+    's-share': 's-calendar',
+    's-session': 's-history-date',
+    's-species-detail': 's-history-species',
+    's-species-calendar': 's-species-detail',
+    's-species-info': 's-species-detail',
+    's-location-detail': 's-history-location',
+    's-save': 's-identify',
+    's-activity': 's-identify'
+  };
+
+  function closeOverlays() {
+    if (!shareSheet.hidden) closeShareSheet();
+    const friend = document.getElementById('friend-modal');
+    if (friend && !friend.hidden) closeFriendPicker();
+    if (!modal.hidden) closeModal(true);
+  }
+
+  /** Close the top sheet and any sheet stacked under it — return to a main tab. */
+  function closeCurrent() {
+    closeOverlays();
+
+    let back = null;
+    for (let i = screenStack.length - 1; i >= 0; i--) {
+      if (NAV_SCREENS.has(screenStack[i])) {
+        back = screenStack[i];
+        break;
+      }
+    }
+    screenStack = [];
+
+    if (!back) {
+      if (current === 's-activity' && activityReturn && NAV_SCREENS.has(activityReturn)) {
+        back = activityReturn;
+      } else if (IDENTIFY_FLOW.has(current)) {
+        back = 's-identify';
+      } else if (HISTORY_FLOW.has(current)) {
+        back = 's-history-date';
+      } else {
+        back = CLOSE_FALLBACK[current] || 's-history-date';
+        if (!NAV_SCREENS.has(back)) {
+          back = NAV_SCREENS.has(CLOSE_FALLBACK[back]) ? CLOSE_FALLBACK[back] : 's-history-date';
+        }
+      }
+    }
+
+    if (back === current) return;
+    go(back, { closing: true });
+  }
+
   function openModal() {
     lastFocus = document.activeElement;
     modal.hidden = false;
     document.getElementById('modal-now').focus();
-    announce('Dialog: Finish logging your session');
+    announce('Dialog: Add more details to remember your session');
   }
   function closeModal(silent) {
     modal.hidden = true;
@@ -1709,9 +1768,19 @@ a{color:var(--blue);text-decoration:none}
 
   // Clicks
   document.body.addEventListener('click', (e) => {
+    const closeEl = e.target.closest('[data-close]');
+    if (closeEl) {
+      e.preventDefault();
+      closeCurrent();
+      return;
+    }
     const goEl = e.target.closest('[data-go]');
     if (goEl && !goEl.disabled) {
       e.preventDefault();
+      if (goEl.dataset.go === 's-session') {
+        openSession(typeof currentOutingIndex === 'number' ? currentOutingIndex : 0);
+        return;
+      }
       go(goEl.dataset.go);
       return;
     }
@@ -1727,11 +1796,26 @@ a{color:var(--blue);text-decoration:none}
     const saveBtn = document.getElementById('btn-save-top');
     saveBtn.disabled = false;
     saveBtn.hidden = false;
-    announce('Done identifying. Play a bird, then save the session.');
+    announce('Done identifying. Review birds, then save the session.');
     showToast('Review birds, then Save');
   });
   document.getElementById('modal-now').addEventListener('click', () => {
     closeModal(true);
+    const detected = [...document.querySelectorAll('#detect-list .row.bird')];
+    if (detected.length) {
+      const list = document.getElementById('save-species-list');
+      list.innerHTML = detected.map(row => {
+        const name = row.querySelector('.nm')?.textContent?.trim() || 'Bird';
+        const img = row.querySelector('img')?.src || birdImg(name);
+        return `<li>
+          <button type="button" class="row bird">
+            <img class="thumb" src="${img}" alt="">
+            <span class="grow"><span class="nm">${name}</span><span class="meta">Likely · just now</span></span>
+            <span class="chev" aria-hidden="true">›</span>
+          </button>
+        </li>`;
+      }).join('');
+    }
     go('s-save');
   });
   document.getElementById('modal-later').addEventListener('click', () => {
@@ -1743,9 +1827,10 @@ a{color:var(--blue);text-decoration:none}
   document.getElementById('modal-backdrop').addEventListener('click', () => closeModal());
 
   document.getElementById('save-session').addEventListener('click', () => {
+    commitLoggedSession();
     go('s-history-date');
-    showToast('Session saved');
-    announce('Session saved. History by date.');
+    showToast('Session saved · Sat Jul 25');
+    announce('Session saved. Latest outing Saturday July 25.');
   });
 
   // Add session photos from device
@@ -1775,14 +1860,11 @@ a{color:var(--blue);text-decoration:none}
   document.getElementById('share-toggle').addEventListener('click', function () {
     const on = this.getAttribute('aria-checked') !== 'true';
     this.setAttribute('aria-checked', on ? 'true' : 'false');
-    document.getElementById('shared-people').style.visibility = on ? 'visible' : 'hidden';
     document.getElementById('share-location-label').textContent = on
-      ? 'Seward Park'
+      ? 'Union Bay'
       : 'Recordings stay private';
     document.getElementById('s-save').classList.toggle('share-off', !on);
-    const list = document.getElementById('save-species-list');
-    if (list) list.setAttribute('aria-label', on ? 'Species in this session' : 'Species in this session, recordings private');
-    announce(on ? 'Share recordings on' : 'Share recordings off. Bird photos hidden from shared session.');
+    announce(on ? 'Share recordings on' : 'Share recordings off. Shared with people hidden.');
   });
 
   document.getElementById('why-link').addEventListener('click', (e) => {
@@ -1804,8 +1886,8 @@ a{color:var(--blue);text-decoration:none}
     cancelAnimationFrame(sonoRAF);
     drawSono(false);
     const count = detectList.children.length;
-    idMeta.textContent = `5:04 PM · ${count} ${count === 1 ? 'bird' : 'birds'}`;
-    sonoLive.setAttribute('aria-label', 'Sound ID spectrogram. Not playing.');
+    idMeta.textContent = `${count} ${count === 1 ? 'bird' : 'birds'}`;
+    sonoLive.setAttribute('aria-label', 'Live Sound ID spectrogram. Not listening.');
   }
 
   mic.addEventListener('click', () => {
@@ -1813,24 +1895,16 @@ a{color:var(--blue);text-decoration:none}
     mic.setAttribute('aria-pressed', listening ? 'true' : 'false');
     mic.setAttribute('aria-label', listening ? 'Stop listening' : 'Start listening');
     if (listening) {
-      stopReviewAudio();
       announce('Listening for birds');
       idEmpty.hidden = true;
       detectList.hidden = false;
       detectList.innerHTML = '';
       idMeta.textContent = 'Listening… · 0 birds';
-      sonoLive.setAttribute('aria-label', 'Sound ID spectrogram. Listening.');
-      sonoTime.textContent = '0:00';
+      sonoLive.setAttribute('aria-label', 'Live Sound ID spectrogram. Listening.');
       document.getElementById('btn-done-top').hidden = true;
       document.getElementById('btn-save-top').disabled = true;
       document.getElementById('btn-save-top').hidden = false;
-      let secs = 0;
       clearInterval(mic._timer);
-      mic._timer = setInterval(() => {
-        if (!listening) { clearInterval(mic._timer); return; }
-        secs += 1;
-        sonoTime.textContent = formatTime(secs);
-      }, 1000);
       setTimeout(() => {
         if (!listening) return;
         detectList.innerHTML = `
@@ -1849,7 +1923,7 @@ a{color:var(--blue);text-decoration:none}
             </button>
           </li>`;
         idMeta.textContent = 'Listening… · 2 birds';
-        sonoLive.setAttribute('aria-label', 'Sound ID spectrogram. House Finch and Spotted Towhee detected.');
+        sonoLive.setAttribute('aria-label', 'Live Sound ID spectrogram. House Finch and Spotted Towhee detected.');
         document.getElementById('btn-done-top').hidden = false;
         document.getElementById('btn-save-top').hidden = true;
         announce('House Finch and Spotted Towhee detected. Tap Done when finished.');
@@ -1866,48 +1940,18 @@ a{color:var(--blue);text-decoration:none}
     }
   });
 
-  // Tapping an ID'd bird plays its clip on the spectrogram for review
+  // Identify is live — tapping a suggestion only selects it (no playback)
   detectList.addEventListener('click', (e) => {
     const bird = e.target.closest('[data-id-bird]');
     if (!bird) return;
     e.preventDefault();
-    if (listening) {
-      listening = false;
-      mic.setAttribute('aria-pressed', 'false');
-      mic.setAttribute('aria-label', 'Start listening');
-      clearInterval(mic._timer);
-      cancelAnimationFrame(sonoRAF);
-    }
-    const key = bird.dataset.idBird;
+    detectList.querySelectorAll('[data-id-bird]').forEach(b => b.removeAttribute('aria-current'));
+    bird.setAttribute('aria-current', 'true');
     const name = bird.querySelector('.nm')?.textContent || 'Bird';
-    stopReviewAudio();
-    const src = key === 'spotted-towhee' ? 'birds/house-finch.mp3' : `birds/${key}.mp3`;
-    reviewAudio = new Audio(src);
-    reviewAudio.play().catch(() => announce('Could not play'));
-    sonoPlay.classList.add('playing');
-    drawSono(true);
-    sonoLive.setAttribute('aria-label', `Playing ${name}`);
-    announce(`Playing ${name}`);
-    const tick = () => {
-      if (!reviewAudio) return;
-      const d = reviewAudio.duration || 45;
-      const t = reviewAudio.currentTime || 0;
-      const pct = Math.min(0.92, 0.08 + (t / d) * 0.84);
-      playhead.style.left = (pct * 100) + '%';
-      sonoPlay.style.left = (pct * 100) + '%';
-      sonoTime.textContent = formatTime(t) + ' / ' + formatTime(d);
-      if (!reviewAudio.paused) requestAnimationFrame(tick);
-    };
-    reviewAudio.addEventListener('timeupdate', tick);
-    reviewAudio.onended = () => {
-      stopReviewAudio();
-      sonoTime.textContent = formatTime(reviewAudio?.duration || 0);
-      announce('Finished');
-    };
-    tick();
+    announce(`${name} selected`);
   });
 
-  // Audio playback
+  // Audio playback (History / session clips — not Identify)
   const MIX_FILE = encodeURI('Formal birding.mp4');
   const MIX_SECONDS = 30;
 
@@ -2082,15 +2126,11 @@ a{color:var(--blue);text-decoration:none}
   }
   fillWaves();
 
-  // Spectrogram — Merlin / Cornell Sound ID look
+  // Spectrogram — live Sound ID look (no playback on Identify)
   const canvas = document.getElementById('sonoCanvas');
   const ctx = canvas.getContext('2d');
-  const sonoPlay = document.getElementById('sono-play');
-  const sonoTime = document.getElementById('sono-time');
-  const playhead = document.querySelector('.sono-playhead');
   let sonoRAF = 0;
   let sonoPhase = 0;
-  let reviewAudio = null;
 
   function noise(x, y) {
     const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
@@ -2143,7 +2183,7 @@ a{color:var(--blue);text-decoration:none}
         }
       }
 
-      // Soft vertical fade at the playhead edge
+      // Soft vertical fade at the live/heard edge
       const grad = ctx.createLinearGradient(split - 18, 0, split + 8, 0);
       grad.addColorStop(0, 'rgba(235,238,241,0)');
       grad.addColorStop(1, 'rgba(235,238,241,0.55)');
@@ -2160,55 +2200,6 @@ a{color:var(--blue);text-decoration:none}
     const s = Math.max(0, Math.floor(sec || 0));
     return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
   }
-
-  function stopReviewAudio() {
-    if (reviewAudio) {
-      reviewAudio.pause();
-      reviewAudio = null;
-    }
-    sonoPlay.classList.remove('playing');
-    playhead.style.left = '42%';
-    sonoPlay.style.left = '42%';
-  }
-
-  sonoPlay.addEventListener('click', () => {
-    // Prefer Formal birding mix as the Sound ID review clip when available
-    if (reviewAudio && !reviewAudio.paused) {
-      reviewAudio.pause();
-      sonoPlay.classList.remove('playing');
-      drawSono(false);
-      return;
-    }
-    if (listening) {
-      // stop live listen first
-      mic.click();
-    }
-    stopReviewAudio();
-    reviewAudio = new Audio(MIX_FILE);
-    reviewAudio.play().catch(() => announce('Could not play'));
-    sonoPlay.classList.add('playing');
-    drawSono(true);
-    sonoLive.setAttribute('aria-label', 'Sound ID spectrogram. Playing.');
-    const tick = () => {
-      if (!reviewAudio) return;
-      const d = reviewAudio.duration || 90;
-      const t = reviewAudio.currentTime || 0;
-      sonoTime.textContent = formatTime(t);
-      const pct = 12 + (t / d) * 76;
-      playhead.style.left = pct + '%';
-      sonoPlay.style.left = pct + '%';
-      if (!reviewAudio.paused) requestAnimationFrame(tick);
-    };
-    reviewAudio.ontimeupdate = tick;
-    reviewAudio.onended = () => {
-      sonoPlay.classList.remove('playing');
-      drawSono(false);
-      playhead.style.left = '42%';
-      sonoPlay.style.left = '42%';
-      reviewAudio = null;
-      sonoLive.setAttribute('aria-label', 'Sound ID spectrogram. Finished.');
-    };
-  });
 
   // Species-matched local bird photography (Wikimedia Commons)
   const BIRD_BY_NAME = {
@@ -2267,25 +2258,28 @@ a{color:var(--blue);text-decoration:none}
     { id: 'maya', name: 'Maya', image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=160&q=80' },
     { id: 'rio', name: 'Rio', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=160&q=80' }
   ];
-  const joinedIds = new Set(['alex', 'sam']);
+  const joinedIds = new Set();
   const sharedIds = new Set(['lucy', 'joe']);
   let friendDraft = new Set();
   let currentSpecies = null;
   let currentPlace = null;
   let shareMonthIndex = 4;
   let sharePage = 0;
+  let sharePageCount = 2;
+  let shareMode = 'calendar'; // calendar | place | session
   let shareReturnScreen = 's-calendar';
   let shareSpeciesOnly = false;
+  let shareCaptions = [];
   let activityReturn = 's-identify';
 
   // Friend activity: shared-location saves + outing invites only
   const ACTIVITY = [
-    { id: 'a1', type: 'recording', personId: 'lucy', bird: 'House Finch', place: 'Seward Park', placeId: 'seward', when: '12m ago', unread: true },
+    { id: 'a1', type: 'recording', personId: 'lucy', bird: 'House Finch', others: 5, place: 'Seward Park', placeId: 'seward', when: '12m ago', unread: true },
     { id: 'a2', type: 'outing', personId: 'joe', place: 'Marymoor Park', placeId: 'redmond', title: 'Saturday morning at Marymoor', when: '1h ago', unread: true },
-    { id: 'a3', type: 'recording', personId: 'joe', bird: 'American Robin', place: 'Seward Park', placeId: 'seward', when: '3h ago', unread: true },
+    { id: 'a3', type: 'recording', personId: 'joe', bird: 'American Robin', others: 3, place: 'Seward Park', placeId: 'seward', when: '3h ago', unread: true },
     { id: 'a4', type: 'outing', personId: 'maya', place: 'Seward Park', placeId: 'seward', title: 'Dawn walk at Seward', when: 'Yesterday', unread: false },
-    { id: 'a5', type: 'recording', personId: 'lucy', bird: 'Steller’s Jay', place: 'University District', placeId: 'udistrict', when: 'Yesterday', unread: false },
-    { id: 'a6', type: 'recording', personId: 'joe', bird: 'Anna’s Hummingbird', place: 'Seward Park', placeId: 'seward', when: '2d ago', unread: false },
+    { id: 'a5', type: 'recording', personId: 'lucy', bird: 'Steller’s Jay', others: 2, place: 'University District', placeId: 'udistrict', when: 'Yesterday', unread: false },
+    { id: 'a6', type: 'recording', personId: 'joe', bird: 'Anna’s Hummingbird', others: 4, place: 'Seward Park', placeId: 'seward', when: '2d ago', unread: false },
     { id: 'a7', type: 'outing', personId: 'alex', place: 'University District', placeId: 'udistrict', title: 'Campus lunch birds', when: '3d ago', unread: false }
   ];
 
@@ -2327,6 +2321,10 @@ a{color:var(--blue);text-decoration:none}
   }
 
   function mountNotifBells() {
+    // Never leave bells on sheets / toolbars / share
+    document.querySelectorAll('.screen.sheet .notif-bell, .screen.share-dark .notif-bell, .toolbar .notif-bell')
+      .forEach(b => b.remove());
+
     // Identify — far right of the Save/Done cluster
     const idActions = document.querySelector('#s-identify .top > div:last-child');
     if (idActions && !idActions.querySelector('.notif-bell')) {
@@ -2352,17 +2350,6 @@ a{color:var(--blue);text-decoration:none}
       wrap.className = 'lead-actions';
       wrap.appendChild(makeNotifBell());
       lead.appendChild(wrap);
-    });
-
-    // Sheet toolbars — before close (skip Activity itself)
-    document.querySelectorAll('.screen .toolbar').forEach(tb => {
-      const screen = tb.closest('.screen');
-      if (!screen || screen.id === 's-activity') return;
-      if (tb.querySelector('.notif-bell')) return;
-      const close = tb.querySelector('.close-circle');
-      const bell = makeNotifBell();
-      if (close) tb.insertBefore(bell, close);
-      else tb.appendChild(bell);
     });
 
     syncNotifBadges();
@@ -2402,8 +2389,7 @@ a{color:var(--blue);text-decoration:none}
         <button type="button" class="activity-row${item.unread ? ' unread' : ''}" data-activity="${item.id}">
           ${personAvatar(person)}
           <span class="body">
-            <span class="line"><strong>${person.name}</strong> saved a <strong>${item.bird}</strong></span>
-            <span class="meta">At shared location · ${item.place}</span>
+            <span class="line"><strong>${person.name}</strong> added <strong>${item.bird}</strong> and ${item.others} others in ${item.place}</span>
             <span class="tag">Shared location</span>
             <span class="meta">${item.when}</span>
           </span>
@@ -2413,27 +2399,30 @@ a{color:var(--blue);text-decoration:none}
     }).join('');
   }
 
-  document.getElementById('activity-close')?.addEventListener('click', () => go(activityReturn || 's-identify'));
   document.getElementById('activity-list')?.addEventListener('click', e => {
     const row = e.target.closest('[data-activity]');
     if (!row) return;
     const item = ACTIVITY.find(a => a.id === row.dataset.activity);
     if (!item) return;
     if (item.type === 'outing') {
-      const place = typeof PLACES !== 'undefined' ? PLACES.find(p => p.id === item.placeId) : null;
-      if (place) currentPlace = place;
-      go('s-session');
+      const byPlace = OUTINGS.findIndex(o => o.place === item.placeId);
+      openSession(byPlace >= 0 ? byPlace : 0);
       showToast(`${item.title}`);
       announce(`Opened outing: ${item.title}`);
       return;
     }
-    const species = typeof SPECIES !== 'undefined' ? SPECIES.find(s => s.name === item.bird) : null;
-    if (species) openSpecies(species);
-    else go('s-session');
+    const place = PLACES.find(p => p.id === item.placeId);
+    openLocationDetail(place);
   });
+
+  const EYE_OFF_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>`;
 
   function personAvatar(person, className = 'avatar') {
     return `<img class="${className}" src="${person.image}" alt="${person.name}">`;
+  }
+
+  function personAvatarWrapped(person) {
+    return `<span class="avatar-wrap">${personAvatar(person)}<span class="eye-off">${EYE_OFF_SVG}</span></span>`;
   }
 
   function renderPeople() {
@@ -2444,7 +2433,7 @@ a{color:var(--blue);text-decoration:none}
     }
     const sharedPeople = PEOPLE.filter(p => sharedIds.has(p.id));
     if (shared) {
-      shared.innerHTML = sharedPeople.map(p => personAvatar(p)).join('');
+      shared.innerHTML = sharedPeople.map(p => personAvatarWrapped(p)).join('');
       shared.setAttribute('aria-label', `Shared with ${sharedPeople.map(p => p.name).join(' and ')}`);
     }
   }
@@ -2568,6 +2557,101 @@ a{color:var(--blue);text-decoration:none}
     </div>`;
   }
 
+  function birdGridCard(title, count, speciesIdx = null, speciesList = null) {
+    const imgs = [];
+    for (let i = 0; i < count; i++) {
+      if (speciesList?.length) {
+        const s = speciesList[i % speciesList.length];
+        imgs.push(typeof s === 'string' ? { image: birdImg(s), name: s } : s);
+      } else if (speciesIdx?.length) {
+        imgs.push(SPECIES[speciesIdx[i % speciesIdx.length] % SPECIES.length]);
+      } else {
+        imgs.push(SPECIES[i % SPECIES.length]);
+      }
+    }
+    return `<div class="share-card share-collage" role="option">
+      <h2 class="cal-h">${title}</h2>
+      <div class="share-bird-grid cols-4">${imgs.map(s => `<img src="${s.image || birdImg(s.name)}" alt="">`).join('')}</div>
+      ${shareBrand()}
+    </div>`;
+  }
+
+  function calendarShareCard(monthIndex, { mode = 'photos', speciesName = null } = {}) {
+    const m = CALENDAR_MONTHS[monthIndex];
+    return `<div class="share-card" role="option">
+      <h2 class="cal-h">${m.name}</h2>
+      <div class="cal-grid">${dowRow()}${calendarCells(m, monthIndex, { mode, speciesName, navigate: false })}</div>
+      ${shareBrand()}
+    </div>`;
+  }
+
+  function setShareDots() {
+    const dots = document.getElementById('share-dots');
+    if (!dots) return;
+    dots.innerHTML = Array.from({ length: sharePageCount }, (_, i) =>
+      `<i class="${i === sharePage ? 'on' : ''}"></i>`).join('');
+  }
+
+  function setSharePage(page) {
+    sharePage = Math.max(0, Math.min(sharePageCount - 1, page));
+    const track = document.getElementById('share-track');
+    if (track) track.style.transform = `translateX(${-sharePage * 100}%)`;
+    setShareDots();
+    track?.querySelectorAll('[role="option"]').forEach((card, i) => {
+      card.setAttribute('aria-selected', i === sharePage ? 'true' : 'false');
+    });
+    const cap = document.getElementById('share-caption');
+    if (cap) cap.textContent = shareCaptions[sharePage] || '';
+  }
+
+  function mountShareCards(cardsHtml, captions, returnScreen) {
+    shareReturnScreen = returnScreen || current;
+    shareCaptions = captions;
+    sharePageCount = captions.length;
+    const track = document.getElementById('share-track');
+    if (track) track.innerHTML = cardsHtml;
+    setSharePage(0);
+    go('s-share');
+  }
+
+  function openShare(monthIndex, species = null) {
+    shareMode = 'calendar';
+    shareMonthIndex = monthIndex;
+    shareSpeciesOnly = !!species;
+    if (species) currentSpecies = species;
+    const spName = shareSpeciesOnly && currentSpecies ? currentSpecies.name : null;
+    const returnTo = current === 's-species-calendar' ? 's-species-calendar' : 's-calendar';
+    const cards = calendarShareCard(monthIndex, { mode: 'photos', speciesName: spName })
+      + calendarShareCard(monthIndex, { mode: 'dots', speciesName: spName || 'House Finch' });
+    const captions = spName
+      ? [`${spName} · photo calendar`, `${spName} · activity`]
+      : ['All species · photo calendar', 'Species activity · green days'];
+    mountShareCards(cards, captions, returnTo);
+  }
+
+  function openSharePlace(place) {
+    shareMode = 'place';
+    currentPlace = place || currentPlace || PLACES[0];
+    const p = currentPlace;
+    // Location share: place name + 4×4 species collage (img 3)
+    const cards = birdGridCard(p.name, 16, p.speciesIdx);
+    mountShareCards(cards, [`${p.name} · species`], 's-location-detail');
+  }
+
+  function openShareSession() {
+    shareMode = 'session';
+    const o = OUTINGS[currentOutingIndex];
+    const title = document.getElementById('sess-title')?.textContent?.trim()
+      || o?.title
+      || 'Saturday Morning at Union Bay';
+    const speciesList = o?.speciesList?.length
+      ? o.speciesList
+      : null;
+    // Outing share: title + 3×4 bird collage (img 2)
+    const cards = birdGridCard(title, 12, null, speciesList);
+    mountShareCards(cards, ['Outing · species collage'], 's-session');
+  }
+
   function renderCalendar() {
     const stack = document.getElementById('calendar-stack');
     if (!stack) return;
@@ -2587,77 +2671,63 @@ a{color:var(--blue);text-decoration:none}
   }
   renderCalendar();
 
-  function setSharePage(page) {
-    sharePage = Math.max(0, Math.min(1, page));
-    const track = document.getElementById('share-track');
-    if (track) track.style.transform = `translateX(${-sharePage * 100}%)`;
-    document.querySelectorAll('#share-dots i').forEach((dot, i) => dot.classList.toggle('on', i === sharePage));
-    document.getElementById('share-card-photos')?.setAttribute('aria-selected', sharePage === 0 ? 'true' : 'false');
-    document.getElementById('share-card-dots')?.setAttribute('aria-selected', sharePage === 1 ? 'true' : 'false');
-    const cap = document.getElementById('share-caption');
-    if (cap) {
-      const sp = shareSpeciesOnly && currentSpecies ? currentSpecies.name : null;
-      if (sharePage === 0) {
-        cap.textContent = sp ? `${sp} · photo calendar` : 'All species · photo calendar';
-      } else {
-        cap.textContent = sp ? `${sp} · activity` : 'Species activity · green days';
-      }
-    }
-  }
-
-  function openShare(monthIndex, species = null) {
-    shareReturnScreen = current === 's-species-calendar' ? 's-species-calendar' : 's-calendar';
-    shareMonthIndex = monthIndex;
-    shareSpeciesOnly = !!species;
-    if (species) currentSpecies = species;
-    const m = CALENDAR_MONTHS[monthIndex];
-    const photos = document.getElementById('share-card-photos');
-    const dots = document.getElementById('share-card-dots');
-    const spName = shareSpeciesOnly && currentSpecies ? currentSpecies.name : null;
-    if (photos) {
-      photos.innerHTML = `<h2 class="cal-h">${m.name}</h2>
-        <div class="cal-grid">${dowRow()}${calendarCells(m, monthIndex, { mode: 'photos', speciesName: spName, navigate: false })}</div>
-        ${shareBrand()}`;
-    }
-    if (dots) {
-      dots.innerHTML = `<h2 class="cal-h">${m.name}</h2>
-        <div class="cal-grid">${dowRow()}${calendarCells(m, monthIndex, { mode: 'dots', speciesName: spName || 'House Finch', navigate: false })}</div>
-        ${shareBrand()}`;
-    }
-    setSharePage(0);
-    go('s-share');
-  }
-  document.getElementById('share-close')?.addEventListener('click', () => {
-    if (shareReturnScreen === 's-species-calendar') openSpeciesCalendar();
-    else go('s-calendar');
-  });
   document.getElementById('share-send')?.addEventListener('click', () => {
     const m = CALENDAR_MONTHS[shareMonthIndex];
-    const speciesName = currentSpecies?.name;
+    const label = shareCaptions[sharePage] || (m ? m.name : 'Merle');
+    let image = birdImg('House Finch');
+    if (shareMode === 'place' && currentPlace) {
+      const idx = (currentPlace.speciesIdx || [0])[0];
+      image = SPECIES[idx]?.image || image;
+    } else if (shareSpeciesOnly && currentSpecies) {
+      image = currentSpecies.image;
+    }
     openShareSheet({
-      title: `Share ${speciesName ? speciesName + ' ' : ''}${m.name} calendar`,
-      subtitle: sharePage === 0 ? 'Photo calendar from Merle' : 'Listening activity from Merle',
-      image: speciesName ? birdImg(speciesName) : birdImg('House Finch')
+      title: `Share ${label}`,
+      subtitle: shareMode === 'calendar' ? 'Calendar from Merle' : 'Birding history from Merle',
+      image
     });
   });
 
-  // Horizontal swipe on share cards
+  // Horizontal swipe on share cards (touch + mouse for desktop)
   (function setupShareSwipe() {
     const wrap = document.getElementById('share-track-wrap');
     if (!wrap) return;
-    let x0 = 0, y0 = 0, dx = 0, axis = null;
+    let x0 = 0, y0 = 0, dx = 0, axis = null, tracking = false;
+
+    const start = (x, y) => { x0 = x; y0 = y; dx = 0; axis = null; tracking = true; };
+    const move = (x, y) => {
+      if (!tracking) return;
+      const adx = x - x0, ady = y - y0;
+      if (!axis) axis = Math.abs(adx) > Math.abs(ady) ? 'x' : 'y';
+      if (axis === 'x') dx = adx;
+    };
+    const end = () => {
+      if (!tracking) return;
+      tracking = false;
+      if (axis === 'x' && Math.abs(dx) > 40) setSharePage(sharePage + (dx < 0 ? 1 : -1));
+    };
+
     wrap.addEventListener('touchstart', e => {
       const t = e.changedTouches[0];
-      x0 = t.clientX; y0 = t.clientY; dx = 0; axis = null;
+      start(t.clientX, t.clientY);
     }, { passive: true });
     wrap.addEventListener('touchmove', e => {
       const t = e.changedTouches[0];
-      const adx = t.clientX - x0, ady = t.clientY - y0;
-      if (!axis) axis = Math.abs(adx) > Math.abs(ady) ? 'x' : 'y';
-      if (axis === 'x') dx = adx;
+      move(t.clientX, t.clientY);
     }, { passive: true });
-    wrap.addEventListener('touchend', () => {
-      if (axis === 'x' && Math.abs(dx) > 40) setSharePage(sharePage + (dx < 0 ? 1 : -1));
+    wrap.addEventListener('touchend', end);
+
+    wrap.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      start(e.clientX, e.clientY);
+      const onMove = ev => move(ev.clientX, ev.clientY);
+      const onUp = () => {
+        end();
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
     });
   })();
 
@@ -2675,7 +2745,7 @@ a{color:var(--blue);text-decoration:none}
   }
 
   // ── Outings + identified birds data ──
-  const OUTINGS = [
+  let OUTINGS = [
     { month: 'July', day: 22, weekday: 'Wed', title: 'Wednesday Morning at Seward Park', meta: '5:04 PM · Seattle, WA', birds: 3, extra: 0, place: 'seward' },
     { month: 'July', day: 21, weekday: 'Tue', title: 'Dawn chorus at Arboretum', meta: '5:48 AM · Seattle, WA', birds: 5, extra: 2, place: 'seward' },
     { month: 'July', day: 19, weekday: 'Sun', title: 'Family walk · Discovery Park', meta: '10:20 AM · Seattle, WA', birds: 4, extra: 1, place: 'seward' },
@@ -2815,10 +2885,7 @@ a{color:var(--blue);text-decoration:none}
     });
     go('s-species-calendar');
   }
-  document.getElementById('sp-cal-close').addEventListener('click', () => {
-    if (currentSpecies) openSpecies(currentSpecies);
-    else go('s-history-species');
-  });
+  // sp-cal-close / sp-info-close use data-close → closeCurrent()
 
   function openSpeciesInfo() {
     const s = currentSpecies || SPECIES[0];
@@ -2838,9 +2905,11 @@ a{color:var(--blue);text-decoration:none}
     root.innerHTML = months.map(month => {
       const items = OUTINGS.filter(o => o.month === month);
       return `<h2 class="month group">${month}</h2>
-        <ul class="list">${items.map((o, idx) => `
+        <ul class="list">${items.map((o) => {
+          const idx = OUTINGS.indexOf(o);
+          return `
           <li>
-            <button type="button" class="sess-row" data-go="s-session">
+            <button type="button" class="sess-row" data-outing="${idx}">
               <span class="sess-date"><span class="d">${o.day}</span><span class="w">${o.weekday}</span></span>
               <span class="sess-body">
                 <span class="titles">
@@ -2851,8 +2920,171 @@ a{color:var(--blue);text-decoration:none}
                 <span class="sr-only">${o.birds + (o.extra || 0)} species</span>
               </span>
             </button>
-          </li>`).join('')}</ul>`;
+          </li>`;
+        }).join('')}</ul>`;
     }).join('');
+    root.querySelectorAll('[data-outing]').forEach(btn => {
+      btn.addEventListener('click', () => openSession(+btn.dataset.outing));
+    });
+  }
+
+  const SESSION_NOTES = [
+    'The Lazuli buntings hung out at the taller trees behind the west parking lot',
+    'Quiet dawn — robins and towhees trading phrases near the trailhead',
+    'Kids spotted the first chickadee; we stayed until the chorus thickened',
+    'Short lunch loop — two solid IDs before heading back',
+    'Evening light on the bay; sparrows along the reeds',
+    'Full loop around the lake, breezy but clear',
+    'After-work walk; flickers calling from the snags',
+    'Holiday morning birds before the crowds arrived',
+    'Month opener — dense mixed flock along the south shore',
+    'Marymoor boardwalk; red-wings active in the cattails',
+    'Campus lunch birds between classes',
+    'Classic Seward loop; shared the best clips with Lucy',
+    'Wetland morning — herons and blackbirds',
+    'Father’s Day outing with the family',
+    'Windy shoreline; still got a solid finch series',
+    'Rain held off just long enough for a short sit',
+    'Golden hour ducks and a distant jay',
+    'Migration push — more species than expected',
+    'Arboretum paths, slow and quiet',
+    'Seward with Lucy & Joe — best chorus of the spring',
+    'Mother’s Day dawn chorus at the usual bench',
+    'First clear warbler morning of the season'
+  ];
+  const SESSION_WEATHER = [
+    '75° F, Overcast', '62° F, Clear', '68° F, Partly cloudy', '72° F, Sunny',
+    '64° F, Breezy', '66° F, Clear', '70° F, Hazy', '74° F, Sunny',
+    '58° F, Foggy', '67° F, Overcast', '73° F, Sunny', '65° F, Clear',
+    '60° F, Misty', '71° F, Sunny', '63° F, Windy', '59° F, Drizzle',
+    '68° F, Clear', '61° F, Overcast', '69° F, Partly cloudy', '64° F, Clear',
+    '57° F, Calm', '66° F, Sunny'
+  ];
+  let currentOutingIndex = 0;
+
+  function clipRowsHtml(birdName, detections, startExpanded) {
+    const audio = birdName.includes('Robin') ? 'birds/american-robin.mp3' : 'birds/house-finch.mp3';
+    const durs = [45, 23, 20, 18, 32, 27].slice(0, Math.max(1, Math.min(detections, 5)));
+    return `<div class="clips" ${startExpanded ? '' : 'hidden'}>
+      ${durs.map((dur, c) => `
+        <div class="spectro-row no-date">
+          <span class="spectro-wrap">
+            <button type="button" class="spectro" data-audio="${audio}" data-dur="0:${String(dur).padStart(2, '0')}" aria-label="Play ${birdName} clip ${c + 1}, ${dur} seconds">
+              <span class="tex" aria-hidden="true"></span><span class="played" aria-hidden="true"></span><span class="ph-line" aria-hidden="true"></span><span class="sp-play" aria-hidden="true"></span><span class="dur" aria-hidden="true">0:${String(dur).padStart(2, '0')}</span>
+            </button>
+            <span class="sp-share" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span>
+          </span>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  function bindSessionBirdDropdowns(list) {
+    list.querySelectorAll('[data-expand-bird]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const li = btn.closest('li');
+        const clips = li.querySelector('.clips');
+        const open = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+        if (clips) clips.hidden = open;
+        const chev = btn.querySelector('.chev');
+        if (chev) chev.textContent = open ? '›' : '▾';
+        announce(open ? 'Collapsed recordings' : `${btn.dataset.expandBird} recordings`);
+      });
+    });
+    enhanceShareAffordances(list);
+  }
+
+  function commitLoggedSession() {
+    const title = (document.getElementById('session-title')?.value || '').trim() || 'Saturday Morning at Union Bay';
+    const notes = (document.getElementById('field-notes')?.value || '').trim();
+    const photos = [...document.querySelectorAll('#session-photos .photo-slot img')].map(img => img.src);
+    const speciesList = [...document.querySelectorAll('#save-species-list li')].map(li => {
+      const name = li.querySelector('.nm')?.textContent?.trim();
+      const meta = li.querySelector('.meta')?.textContent || '';
+      const detections = parseInt(meta, 10) || 2;
+      const img = li.querySelector('img')?.src || birdImg(name);
+      return name ? { name, detections, image: img } : null;
+    }).filter(Boolean);
+    // Prefer birds from the live identify list when present
+    const detected = [...document.querySelectorAll('#detect-list .nm')].map(el => el.textContent.trim());
+    const birdsFromDetect = detected.length
+      ? detected.map((name, i) => {
+          const s = SPECIES.find(x => x.name === name) || { name, image: birdImg(name) };
+          return { name: s.name, image: s.image || birdImg(s.name), detections: 2 + i };
+        })
+      : speciesList;
+
+    OUTINGS = OUTINGS.filter(o => !o.logged);
+    OUTINGS.unshift({
+      month: 'July',
+      day: 25,
+      weekday: 'Sat',
+      title,
+      meta: '9–11 AM · Seattle, WA',
+      birds: Math.max(1, birdsFromDetect.length),
+      extra: 0,
+      place: 'udistrict',
+      logged: true,
+      notes,
+      photos,
+      speciesList: birdsFromDetect,
+      weather: '64° F, Clear',
+      whoIds: [...joinedIds]
+    });
+    renderOutings();
+  }
+
+  function openSession(index = 0) {
+    const idx = Math.max(0, Math.min(OUTINGS.length - 1, index));
+    currentOutingIndex = idx;
+    const o = OUTINGS[idx];
+    const place = PLACES.find(p => p.id === o.place) || PLACES[0];
+    const birds = o.speciesList?.length
+      ? o.speciesList
+      : Array.from({ length: Math.min(o.birds + (o.extra || 0), 6) }, (_, i) => {
+          const s = SPECIES[(idx + i) % SPECIES.length];
+          return { ...s, detections: 2 + ((idx + i * 3) % 7) };
+        });
+    const who = o.whoIds?.length
+      ? PEOPLE.filter(p => o.whoIds.includes(p.id))
+      : PEOPLE.filter((_, i) => (idx + i) % 3 !== 2).slice(0, 1 + (idx % 3));
+
+    LABELS['s-session'] = o.title;
+    document.getElementById('sess-title').textContent = o.title;
+    document.getElementById('sess-meta').textContent =
+      `${o.month} ${o.day}, 2026 · ${place.name}, ${place.city} · ${o.weather || SESSION_WEATHER[idx % SESSION_WEATHER.length]}`;
+    const hero = document.getElementById('sess-hero');
+    hero.src = o.photos?.[0] || birds[0]?.image || SPECIES[0].image;
+    hero.alt = `${birds[0]?.name || 'Birds'} from ${o.title}`;
+    document.getElementById('sess-avatars').innerHTML = who.map(p => personAvatar(p, 'avatar sm')).join('');
+    const note = document.getElementById('sess-note');
+    const noteText = o.notes != null ? o.notes : SESSION_NOTES[idx % SESSION_NOTES.length];
+    note.textContent = noteText || '';
+    note.hidden = !noteText;
+
+    const photosEl = document.getElementById('sess-photos');
+    if (o.photos?.length) {
+      photosEl.hidden = false;
+      photosEl.innerHTML = o.photos.map(src => `<img src="${src}" alt="Session photo">`).join('');
+    } else {
+      photosEl.hidden = true;
+      photosEl.innerHTML = '';
+    }
+
+    const list = document.getElementById('sess-birds');
+    list.innerHTML = birds.map((b, i) => {
+      const expanded = i === 0;
+      return `<li>
+        <button type="button" class="row bird" data-expand-bird="${b.name}" aria-expanded="${expanded ? 'true' : 'false'}">
+          <img class="thumb" src="${b.image || birdImg(b.name)}" alt="">
+          <span class="grow"><span class="nm">${b.name}</span><span class="meta">${b.detections} detections</span></span>
+          <span class="chev" aria-hidden="true">${expanded ? '▾' : '›'}</span>
+        </button>
+        ${clipRowsHtml(b.name, b.detections, expanded)}
+      </li>`;
+    }).join('');
+    bindSessionBirdDropdowns(list);
+    go('s-session');
   }
 
   function renderSpecies() {
@@ -2885,10 +3117,6 @@ a{color:var(--blue);text-decoration:none}
     if (currentSpecies) openSpecies(currentSpecies);
     else openSpecies(SPECIES[0]);
   }
-  document.getElementById('sp-info-close')?.addEventListener('click', e => {
-    e.preventDefault();
-    backToSpeciesRecordings();
-  });
   document.getElementById('sp-info-back')?.addEventListener('click', e => {
     e.preventDefault();
     backToSpeciesRecordings();
@@ -2984,10 +3212,13 @@ a{color:var(--blue);text-decoration:none}
     const shared = PEOPLE.filter(x => sharedIds.has(x.id));
     document.getElementById('loc-shared-avatars').innerHTML = shared.map(x => personAvatar(x)).join('');
     document.getElementById('loc-shared-names').textContent = shared.map(x => x.name).join(', ');
-    const sessions = OUTINGS.filter(o => o.place === p.id).slice(0, 4);
-    document.getElementById('loc-sessions').innerHTML = sessions.map((o, idx) => `
+    const sessions = OUTINGS
+      .map((o, idx) => ({ o, idx }))
+      .filter(({ o }) => o.place === p.id)
+      .slice(0, 6);
+    document.getElementById('loc-sessions').innerHTML = sessions.map(({ o, idx }) => `
       <li>
-        <button type="button" class="sess-row" data-go="s-session">
+        <button type="button" class="sess-row" data-outing="${idx}">
           <span class="sess-date"><span class="d">${o.day}</span><span class="w">${o.weekday}</span></span>
           <span class="sess-body">
             <span class="titles">
@@ -2998,6 +3229,9 @@ a{color:var(--blue);text-decoration:none}
           </span>
         </button>
       </li>`).join('') || '<li><p class="meta">No sessions yet</p></li>';
+    document.getElementById('loc-sessions').querySelectorAll('[data-outing]').forEach(btn => {
+      btn.addEventListener('click', () => openSession(+btn.dataset.outing));
+    });
     go('s-location-detail');
   }
 
@@ -3176,33 +3410,41 @@ a{color:var(--blue);text-decoration:none}
   function audioKeyFromPath(path) { return audioKeyFromPathEarly(path); }
   window.__resolveAudio = resolveAudio;
 
-  // Escape closes modal / peek
+  // Escape closes overlays, or stacked sheets together
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !shareSheet.hidden) {
+    if (e.key !== 'Escape') return;
+    if (!shareSheet.hidden) {
       e.preventDefault();
       closeShareSheet();
       return;
     }
-    if (e.key === 'Escape' && !modal.hidden) {
+    const friend = document.getElementById('friend-modal');
+    if (friend && !friend.hidden) {
+      e.preventDefault();
+      closeFriendPicker();
+      return;
+    }
+    if (!modal.hidden) {
       e.preventDefault();
       closeModal();
+      return;
     }
-    if (e.key === 'Escape' && current === 's-history-location') hidePeek();
+    if (current === 's-history-location') {
+      const peek = document.getElementById('loc-peek');
+      if (peek?.classList.contains('on')) {
+        e.preventDefault();
+        hidePeek();
+        return;
+      }
+    }
+    if (!NAV_SCREENS.has(current)) {
+      e.preventDefault();
+      closeCurrent();
+    }
   });
 
-  // Sheet screens: swipe down to dismiss, slight up bounce
+  // Sheet screens: swipe down to dismiss (= close)
   (function setupSheetSwipe() {
-    const BACK = {
-      's-calendar': 's-history-date',
-      's-share': 's-calendar',
-      's-session': 's-history-date',
-      's-species-detail': 's-history-species',
-      's-species-calendar': 's-species-detail',
-      's-species-info': 's-species-detail',
-      's-location-detail': 's-history-location',
-      's-save': 's-identify',
-      's-activity': 's-identify'
-    };
     document.querySelectorAll('.screen.sheet, .screen.share-dark').forEach(scr => {
       let y0 = 0, dy = 0, active = false, startedOnGrabber = false;
       const onStart = (y, target) => {
@@ -3223,13 +3465,10 @@ a{color:var(--blue);text-decoration:none}
         scr.classList.remove('dragging');
         if (dy > 110) {
           scr.classList.add('dismissing');
-          const back = scr.id === 's-activity'
-            ? (activityReturn || 's-identify')
-            : (BACK[scr.id] || 's-history-species');
           setTimeout(() => {
             scr.style.transform = '';
             scr.classList.remove('dismissing');
-            go(back);
+            closeCurrent();
           }, 220);
         } else {
           scr.style.transform = '';
