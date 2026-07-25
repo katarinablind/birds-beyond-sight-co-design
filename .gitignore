@@ -1,6 +1,9 @@
 # Local API keys — never commit real keys
 config.local.js
 
+# Screen recordings — too large for GitHub's 100 MB file limit
+*.mp4
+
 # OS / editor cruft
 .DS_Store
 Thumbs.db

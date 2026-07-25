@@ -1,0 +1,3272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ffffff">
+<title>Merle · History & Sessions (hi-fi a11y prototype)</title>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="config.local.js" onerror="window.JJ_CONFIG=window.JJ_CONFIG||{}"></script>
+<style>
+/* Layout matched to Figma frames: 16px gutters, 4px radii, #009B49 green, sheet chrome */
+:root{
+  --green:#009B49;
+  --green-dark:#00813D;
+  --green-soft:#E9F7EE;
+  --blue:#007AFF;
+  --red:#FF3B30;
+  --ink:#000;
+  --muted:#687373;
+  --tertiary:rgba(60,60,67,.3);
+  --line:#E6E6E6;
+  --fill:#EEEEEF;
+  --seg-track:rgba(118,118,128,.12);
+  --surface:#FFFFFF;
+  --bg:#FFFFFF;
+  --pad:16px;
+  --radius:4px;
+  --radius-lg:4px;
+  --thumb:52px;
+  --thumb-sm:28px;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --nav-h:72px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font);color:var(--ink);background:#cfcfc9;
+  min-height:100%;min-height:100dvh;
+  display:flex;flex-direction:column;align-items:center;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,textarea{font:inherit;color:inherit}
+button{border:none;background:none;cursor:pointer}
+img{display:block;max-width:100%}
+a{color:var(--blue);text-decoration:none}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:6px}
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+.skip{
+  position:absolute;left:12px;top:12px;z-index:100;
+  background:var(--ink);color:#fff;padding:10px 14px;border-radius:8px;
+  transform:translateY(-150%);
+}
+.skip:focus{transform:none}
+
+.facil-wrap{width:min(420px,100%);padding:16px 12px 10px;text-align:center}
+.facil-wrap h1{font-size:1rem;font-weight:700}
+.facil-wrap p{font-size:.72rem;color:#666;margin-top:4px;line-height:1.4}
+.facil{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
+.facil button{
+  font-size:.62rem;font-weight:600;padding:6px 10px;border-radius:8px;
+  border:1px solid #bbb;background:#fff;color:#555;
+}
+.facil button[aria-current="true"]{background:var(--green);border-color:var(--green);color:#fff}
+
+/* Desktop: phone only (VO panel hidden for sighted testing) */
+.desk{
+  display:flex;align-items:flex-start;justify-content:center;gap:28px;
+  padding:8px 20px 40px;width:100%;max-width:920px;
+}
+.facil-wrap,.vo-panel{display:none!important}
+.app.vo-on [data-vo-hl]{outline:none}
+
+.app{
+  width:min(390px,100%);
+  height:min(844px,100dvh);
+  background:var(--bg);
+  position:relative;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.28);
+  flex:none;
+}
+@media (max-width:640px),(hover:none) and (pointer:coarse){
+  body{background:var(--bg);padding:0;align-items:stretch}
+  .desk{display:contents;padding:0;max-width:none}
+  .app{width:100%;max-width:none;height:100dvh;min-height:100dvh;box-shadow:none}
+}
+.stage{flex:1;min-height:0;position:relative;overflow:hidden;background:#3c3c3e}
+.screen{
+  position:absolute;inset:0;display:none;flex-direction:column;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:calc(8px + var(--safe-t)) var(--pad) calc(var(--nav-h) + 12px + var(--safe-b));
+  background:var(--bg);
+}
+.screen.on{display:flex}
+.screen > *{flex-shrink:0}
+.screen.no-nav{padding-bottom:calc(24px + var(--safe-b))}
+.screen.flush{padding-left:0;padding-right:0}
+.pad{padding-left:var(--pad);padding-right:var(--pad)}
+
+/* iOS sheet chrome: grabber + title/subtitle toolbar + close circle */
+/* Note: `.sheet` is also used for the in-page card on the map screen, which sets
+   position:relative — these longhands keep sheet screens absolutely positioned
+   so they stay their own scroll container. */
+.screen.sheet{
+  position:absolute;
+  top:calc(14px + var(--safe-t));
+  margin:0;
+  background:var(--bg);
+  border-radius:24px 24px 0 0;
+  box-shadow:0 -10px 38px rgba(0,0,0,.18);
+  padding-top:0;
+  padding-left:var(--pad);
+  padding-right:var(--pad);
+  padding-bottom:calc(24px + var(--safe-b));
+}
+.screen.sheet.flush{padding-left:0;padding-right:0}
+.grabber{
+  width:36px;height:5px;border-radius:99px;background:var(--tertiary);
+  margin:6px auto 8px;flex:none;
+}
+.toolbar{
+  display:flex;align-items:center;gap:10px;
+  min-height:44px;margin-bottom:8px;
+}
+.toolbar .t-titles{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.toolbar .t-title{font-size:.9375rem;font-weight:600;letter-spacing:-.01em;line-height:1.2}
+.toolbar .t-sub{font-size:.75rem;color:var(--muted);line-height:1.2}
+.close-circle{
+  width:32px;height:32px;border-radius:50%;background:var(--fill);
+  display:inline-flex;align-items:center;justify-content:center;color:#3C3C43;flex:none;
+}
+.close-circle svg{width:14px;height:14px}
+.circle-btn{
+  width:34px;height:34px;border-radius:50%;background:var(--fill);
+  display:inline-flex;align-items:center;justify-content:center;color:#3C3C43;flex:none;
+}
+.circle-btn svg{width:17px;height:17px}
+.circle-btn.green{background:var(--green);color:#fff}
+
+/* Top bars */
+.top{
+  display:grid;grid-template-columns:40px 1fr 40px;
+  align-items:center;column-gap:8px;
+  min-height:44px;margin-bottom:4px;
+}
+.top.lead{grid-template-columns:1fr auto}
+.top.lead h1{grid-column:1}
+.top:not(.between):not(.lead) > div:last-child{grid-column:3;justify-self:end}
+.top.between{grid-template-columns:1fr auto}
+.top h1,.top .title{
+  font-size:2.125rem;font-weight:700;letter-spacing:-.02em;line-height:1.1;
+  margin:0;grid-column:1 / -1;
+}
+.top .title.sm{font-size:1.125rem;letter-spacing:-.02em;font-weight:700}
+.top > .icon-btn:first-child + h1,
+.top > .icon-btn:first-child + .title,
+.top > .icon-btn:first-child + .center{
+  grid-column:2;justify-self:stretch;
+}
+.top > h1:first-child,
+.top.lead > h1{grid-column:1;justify-self:start}
+.top.between > h1,.top.between > .title{grid-column:1;justify-self:start}
+.top.between > .text-btn{grid-column:2;justify-self:end}
+.top .center{
+  text-align:center;font-size:.8125rem;font-weight:600;line-height:1.25;
+  grid-column:2;
+}
+.top .center .sub{font-weight:400;color:var(--muted);font-size:.75rem;margin-top:1px}
+.top > .icon-btn:first-child{grid-column:1;justify-self:start}
+.top > .icon-btn:last-child,
+.top > span[aria-hidden]:last-child{grid-column:3;justify-self:end}
+.top:not(.between):not(.lead) > .text-btn:last-child{grid-column:3;justify-self:end}
+.top.lead > .icon-btn,.top.lead > .circle-btn,.top.lead > .lead-actions{
+  grid-column:2;justify-self:end;align-self:center;
+}
+.lead-actions{display:flex;align-items:center;gap:4px}
+.notif-bell{
+  position:relative;width:40px;height:40px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  color:var(--ink);flex:none;background:transparent;
+}
+.notif-bell svg{width:22px;height:22px}
+.notif-bell .dot{
+  position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;
+  background:var(--red);border:1.5px solid #fff;
+}
+.notif-bell[data-unread="0"] .dot{display:none}
+.toolbar .notif-bell{width:36px;height:36px;background:var(--fill);margin-right:6px}
+.toolbar .notif-bell svg{width:18px;height:18px}
+.toolbar .notif-bell .dot{top:6px;right:6px;width:7px;height:7px}
+
+/* Activity / notifications feed */
+.activity-list{list-style:none;margin:0;padding:0}
+.activity-list > li + li{border-top:1px solid var(--line)}
+.activity-row{
+  display:flex;align-items:flex-start;gap:12px;width:100%;
+  padding:14px 0;text-align:left;background:none;border:none;min-height:72px;
+}
+.activity-row .avatar{width:44px;height:44px;flex:none;margin-top:2px}
+.activity-row .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.activity-row .line{font-size:.9375rem;line-height:1.35;color:var(--ink)}
+.activity-row .line strong{font-weight:700}
+.activity-row .meta{font-size:.75rem;color:var(--muted)}
+.activity-row .thumb{
+  width:56px;height:42px;border-radius:2px;object-fit:cover;flex:none;margin-top:2px;
+}
+.activity-row .tag{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:.6875rem;font-weight:600;color:var(--green);
+  background:var(--green-soft);padding:3px 8px;border-radius:999px;margin-top:2px;
+}
+.activity-empty{text-align:center;padding:48px 16px;color:var(--muted);font-size:.9375rem}
+.activity-row.unread{background:color-mix(in srgb, var(--green) 6%, transparent);margin:0 -20px;padding-left:20px;padding-right:20px;width:calc(100% + 40px)}
+.activity-row .outing-icon{
+  width:56px;height:42px;border-radius:2px;flex:none;margin-top:2px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--green-soft);color:var(--green);
+}
+.activity-row .outing-icon svg{width:22px;height:22px}
+.icon-btn{
+  width:40px;height:40px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  color:var(--ink);flex:none;
+}
+.icon-btn svg{width:22px;height:22px}
+.text-btn{
+  font-size:1rem;font-weight:600;color:var(--green);
+  padding:8px 2px;min-height:44px;min-width:44px;
+  display:inline-flex;align-items:center;justify-content:flex-end;
+}
+.text-btn.save-outline{
+  color:var(--ink);border:1.5px solid var(--line);border-radius:8px;
+  padding:6px 12px;min-width:0;font-size:.875rem;justify-content:center;
+}
+.text-btn.save-outline:disabled{opacity:.35;cursor:default}
+.text-btn.save-outline[hidden]{display:none!important}
+
+/* Tab bar: flat on Identify, floating pill on History */
+.tabbar{
+  position:absolute;left:0;right:0;bottom:0;z-index:20;
+  height:calc(var(--nav-h) + var(--safe-b));
+  padding:8px 6px var(--safe-b);
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--line);
+  display:flex;justify-content:space-around;align-items:flex-start;
+}
+.tabbar.pill{
+  left:16px;right:16px;bottom:calc(10px + var(--safe-b));
+  height:58px;padding:6px 4px;
+  border:1px solid rgba(0,0,0,.06);border-top:none;border-radius:999px;
+  box-shadow:0 8px 28px rgba(0,0,0,.12);
+  align-items:center;
+}
+.tabbar[hidden]{display:none!important}
+.tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:2px;min-height:48px;justify-content:center;
+  color:#1C1C1E;font-size:.625rem;font-weight:600;
+  border-radius:999px;
+}
+.tab .ticon{
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:inherit;
+}
+.tab svg{width:21px;height:21px}
+.tab[aria-current="page"]{color:var(--green)}
+.tab[aria-current="page"] .ticon{background:var(--green);color:#fff}
+.tab[aria-current="page"] .ticon svg{width:17px;height:17px}
+.tab:disabled{opacity:1;cursor:default}
+
+/* Segmented control — iOS style: grey track, white selected pill */
+.seg{
+  display:flex;gap:4px;margin:12px 0 16px;
+  background:var(--seg-track);border-radius:100px;padding:2px;height:32px;
+}
+.seg button{
+  flex:1;padding:3px 6px;border-radius:20px;
+  font-size:.8125rem;font-weight:500;color:var(--ink);
+  letter-spacing:-.08px;min-height:0;
+}
+.seg button[aria-selected="true"]{
+  background:#fff;color:var(--ink);font-weight:600;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:48px;padding:16px;border-radius:4px;
+  font-size:1rem;font-weight:600;width:100%;letter-spacing:-.005em;
+}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:active{background:var(--green-dark)}
+.btn-blue{background:var(--blue);color:#fff;border-radius:12px}
+.fab-mic{
+  width:76px;height:76px;border-radius:50%;background:var(--green);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 24px rgba(30,158,75,.4);margin:0 auto;
+}
+.fab-mic svg{width:30px;height:30px}
+.fab-mic[aria-pressed="true"]{background:var(--ink);box-shadow:none}
+
+.eyebrow{
+  font-size:1.125rem;font-weight:600;color:var(--ink);
+  letter-spacing:-.01em;margin:8px 0 16px;
+}
+.card.green{
+  background:var(--green);border:none;color:#fff;
+  display:flex;align-items:center;gap:12px;
+  border-radius:4px;padding:14px 16px;margin-bottom:16px;
+  width:100%;min-height:64px;text-align:left;position:relative;overflow:hidden;
+}
+.card.green .mix-progress{
+  position:absolute;left:0;right:0;bottom:0;height:3px;
+  background:rgba(255,255,255,.22);
+}
+.card.green .mix-progress > i{
+  display:block;height:100%;width:0%;background:#fff;
+  transition:width .1s linear;
+}
+.card.green .mix-time{
+  position:absolute;right:44px;top:50%;transform:translateY(-50%);
+  font-size:.65rem;font-weight:600;opacity:.95;
+  font-variant-numeric:tabular-nums;pointer-events:none;
+  background:rgba(0,0,0,.18);padding:2px 7px;border-radius:6px;
+}
+.card.green .play-lg{
+  width:36px;height:36px;border-radius:50%;background:#fff;
+  display:flex;align-items:center;justify-content:center;flex:none;
+}
+.card.green .play-lg::after{
+  content:"";border-left:11px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:3px;
+}
+.card.green.playing .play-lg::after{
+  border:none;width:12px;height:12px;margin:0;
+  background:linear-gradient(90deg,var(--green) 0 35%,transparent 35% 65%,var(--green) 65%);
+}
+.card.green .mix-title{font-weight:600;font-size:1.125rem;line-height:1.1;letter-spacing:-.01em}
+.card.green .mix-share{
+  flex:none;width:24px;height:24px;color:#fff;opacity:.95;
+  display:flex;align-items:center;justify-content:center;
+}
+.card.green .mix-share svg{width:20px;height:20px}
+
+/* Lists & rows */
+.list{list-style:none;margin:0;padding:0}
+.list > li + li .row,
+.list > li + li .sess-row{border-top:1px solid var(--line)}
+
+.row{
+  display:flex;align-items:center;gap:16px;
+  padding:12px 0;border:none;
+  width:100%;text-align:left;background:none;min-height:64px;
+}
+.row.species{gap:16px}
+.row.species .thumb{width:107px;height:79px;border-radius:2px;margin-left:auto;order:2}
+.row.species .grow{order:1}
+.row.bird{gap:16px}
+.row.bird .thumb{width:80px;height:59px;border-radius:2px}
+.thumb-wrap{
+  position:relative;flex:none;width:80px;height:59px;border-radius:2px;overflow:hidden;
+}
+.thumb-wrap .thumb{width:100%;height:100%;display:block;transition:opacity .2s}
+.thumb-wrap .eye-off{
+  position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+  color:#fff;pointer-events:none;
+  background:rgba(28,28,30,.28);
+}
+.thumb-wrap .eye-off svg{width:22px;height:22px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+#s-save.share-off .thumb-wrap .thumb{opacity:.42}
+#s-save.share-off .thumb-wrap .eye-off{display:flex}
+.thumb{
+  width:var(--thumb);height:var(--thumb);border-radius:2px;
+  object-fit:cover;background:#D9D9D9;flex:none;
+}
+.thumb.sm{width:38px;height:28px;border-radius:2px}
+.grow{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.nm{font-size:1.125rem;font-weight:600;letter-spacing:-.005em;line-height:1.2}
+.meta{font-size:.8125rem;color:var(--muted);line-height:1.3;font-weight:400}
+.chev{color:var(--tertiary);flex:none;font-size:1.25rem;font-weight:600;line-height:1}
+.section,.month{
+  font-size:1.125rem;font-weight:600;color:var(--ink);
+  margin:24px 0 8px;letter-spacing:-.005em;line-height:1.2;
+}
+.section.muted,.month.muted{color:var(--muted);font-size:.8125rem;font-weight:600;margin:18px 0 10px}
+.section.lock,.month.lock{
+  display:flex;align-items:center;gap:6px;font-size:.8125rem;color:var(--muted);font-weight:400;
+  margin:20px 0 8px;
+}
+.month.group{
+  font-size:1.125rem;font-weight:600;color:var(--ink);
+  letter-spacing:-.005em;margin:24px 0 4px;
+}
+.month-row{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin:24px 0 8px;
+}
+.month-row .month,.month-row .month.group{margin:0}
+.month-count{font-size:.75rem;font-weight:500;color:#727272}
+
+/* Session history row: date | (title / meta / thumb strip) */
+.sess-row{
+  display:grid;
+  grid-template-columns:32px 1fr;
+  column-gap:32px;
+  align-items:start;
+  padding:14px 0;
+  border:none;
+  width:100%;text-align:left;
+}
+.sess-row.with-avatar{grid-template-columns:32px 1fr 32px}
+.sess-row .sess-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;margin-top:4px}
+.sess-date{display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:2px}
+.sess-date .d{font-size:1.125rem;font-weight:600;line-height:1;letter-spacing:-.005em}
+.sess-date .w{font-size:.8125rem;color:var(--muted);line-height:1;font-weight:400;order:-1}
+.sess-body{display:flex;flex-direction:column;align-items:flex-start;gap:12px;min-width:0}
+.sess-body .titles{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.sess-body .nm{font-size:1.125rem}
+.thumbs{
+  display:flex;align-items:center;gap:4px;flex-wrap:wrap;
+}
+.thumbs.nowrap{flex-wrap:nowrap;min-width:0;overflow:hidden}
+.thumbs .more{font-size:.8125rem;color:var(--muted);font-weight:400;margin-left:4px}
+
+/* Spectrogram recording row */
+.spectro-row{
+  display:grid;grid-template-columns:32px 1fr;column-gap:32px;
+  align-items:center;padding:10px 0;width:100%;text-align:left;
+}
+.spectro-row.no-date{grid-template-columns:1fr;padding-left:96px}
+.spectro-wrap{display:flex;align-items:center;gap:8px;min-width:0}
+.spectro{
+  position:relative;flex:1;min-width:0;aspect-ratio:182/60;
+  border-radius:4px;overflow:hidden;background:#fff;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.05);
+  border:none;padding:0;text-align:left;cursor:pointer;
+}
+.spectro .tex{
+  position:absolute;inset:0;
+  background:url("assets/spectro-tex.jpg") center/cover no-repeat;
+}
+.spectro .played{
+  position:absolute;top:0;bottom:0;left:0;width:0%;
+  background:#E7EEEA;
+}
+.spectro .ph-line{
+  position:absolute;top:0;bottom:0;left:0%;width:2px;background:#B3261E;
+  transform:translateX(-50%);
+}
+.spectro .sp-play{
+  position:absolute;left:0%;top:50%;transform:translate(-50%,-50%);
+  width:32px;height:32px;border-radius:50%;background:#1C1C1E;
+  display:flex;align-items:center;justify-content:center;pointer-events:none;
+}
+.spectro .sp-play::after{
+  content:"";border-left:9px solid #fff;border-top:6px solid transparent;border-bottom:6px solid transparent;margin-left:2px;
+}
+.spectro.playing .sp-play::after{
+  border:none;width:9px;height:10px;margin:0;
+  background:linear-gradient(90deg,#fff 0 35%,transparent 35% 65%,#fff 65%);
+}
+.spectro .dur{
+  position:absolute;left:8px;bottom:8px;
+  background:rgba(108,117,117,.75);color:#fff;
+  font-size:.6875rem;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:2px 6px;border-radius:4px;pointer-events:none;
+}
+.sp-share{
+  flex:none;width:28px;height:28px;color:var(--tertiary);
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.sp-share svg{width:18px;height:18px}
+
+/* Identify — Merlin / Cornell Sound ID spectrogram */
+.sono{
+  position:relative;height:168px;margin:10px 0 4px;
+  border-radius:14px;overflow:hidden;flex:none;
+  background:#EBEEF1;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.04);
+}
+.sono canvas{position:absolute;inset:0;width:100%;height:100%}
+.sono-playhead{
+  position:absolute;top:0;bottom:0;left:42%;width:2px;background:#E53935;
+  z-index:2;pointer-events:none;transform:translateX(-50%);
+}
+.sono-play{
+  position:absolute;left:42%;top:50%;transform:translate(-50%,-50%);
+  z-index:3;width:52px;height:52px;border-radius:50%;
+  background:#1a1a1a;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.28);
+}
+.sono-play::after{
+  content:"";border-left:14px solid #fff;border-top:9px solid transparent;
+  border-bottom:9px solid transparent;margin-left:3px;
+}
+.sono-play.playing::after{
+  border:none;width:14px;height:14px;margin:0;
+  background:linear-gradient(90deg,#fff 0 35%,transparent 35% 65%,#fff 65%);
+}
+.sono-time{
+  position:absolute;left:10px;bottom:10px;z-index:3;
+  background:rgba(60,60,67,.72);color:#fff;
+  font-size:.6875rem;font-weight:600;font-variant-numeric:tabular-nums;
+  padding:3px 8px;border-radius:6px;pointer-events:none;
+}
+.id-body{flex:1;display:flex;flex-direction:column;min-height:0}
+.empty-msg{
+  text-align:center;padding:28px 12px 8px;
+  color:var(--ink);font-size:.9375rem;font-weight:500;line-height:1.4;
+}
+.empty-msg a{display:inline-block;margin-top:10px;font-size:.8125rem;font-weight:400}
+.mic-wrap{margin-top:auto;padding:28px 0 8px;text-align:center;flex:none}
+
+/* Save form */
+.field{
+  width:100%;border:none;outline:none;
+  padding:10px 12px;font-size:1.375rem;font-weight:700;
+  letter-spacing:-.01em;background:var(--fill);line-height:1.25;
+  border-radius:8px;border:1.5px solid transparent;
+  white-space:normal;overflow:visible;text-overflow:unset;
+  word-break:break-word;resize:none;min-height:2.6em;
+}
+.field:focus{border-color:var(--green);background:#fff}
+.field-hint{font-size:.6875rem;color:var(--muted);margin:4px 0 0;font-weight:500}
+.meta-block{margin:4px 0 16px}
+.meta-block .meta{margin:0}
+.notes{
+  width:100%;min-height:72px;border:none;border-radius:4px;
+  padding:14px 16px;resize:vertical;background:var(--fill);
+  font-size:.8125rem;line-height:1.45;outline:none;color:var(--ink);
+}
+.notes::placeholder{color:var(--muted)}
+.photos{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.photos .add-person{margin-right:2px}
+.photo-slot{
+  width:110px;height:82px;border-radius:2px;background:var(--fill);
+  display:flex;align-items:center;justify-content:center;color:rgba(102,114,115,.5);overflow:hidden;flex:none;
+  position:relative;
+}
+.photo-slot img{width:100%;height:100%;object-fit:cover}
+.photo-slot .remove-photo{
+  position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;
+  background:rgba(0,0,0,.55);color:#fff;font-size:.75rem;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.save-private{margin:8px 0 4px;padding-top:4px;border-top:1px solid var(--line)}
+.save-birds-label{font-size:1.125rem;font-weight:600;margin:20px 0 4px;letter-spacing:-.005em}
+.toggle-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  margin:8px 0 4px;
+}
+.toggle-row .label{font-size:1.125rem;font-weight:600;letter-spacing:-.005em;line-height:1.2}
+.toggle-row .sub{font-size:.8125rem;color:var(--muted);margin-top:3px}
+.switch{
+  width:51px;height:31px;border-radius:999px;background:#E5E5EA;position:relative;flex:none;
+  transition:background .2s;
+}
+.switch::after{
+  content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:transform .2s;
+}
+.switch[aria-checked="true"]{background:var(--green)}
+.switch[aria-checked="true"]::after{transform:translateX(20px)}
+
+.who{display:flex;align-items:center;gap:10px;margin:4px 0 12px}
+.avatar{
+  width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--fill);
+}
+.who-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.who-copy .label{font-size:1.125rem;font-weight:600;letter-spacing:-.005em;line-height:1.2}
+.shared-avatars{display:flex;align-items:center}
+.shared-avatars .avatar{width:44px;height:44px;border:2px solid #fff;margin-left:-16px}
+.shared-avatars .avatar:first-child{margin-left:0}
+.avatar-stack{display:flex;align-items:center}
+.avatar-stack .avatar{border:2px solid #fff;margin-left:-14px}
+.avatar-stack .avatar:first-child{margin-left:0}
+.avatar-stack .avatar.sm{width:32px;height:32px;margin-left:-10px}
+.avatar-stack .avatar.sm:first-child{margin-left:0}
+.add-person{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:#3C3C43;font-size:1.3rem;line-height:1;
+  background:var(--fill);flex:none;
+}
+.section-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:12px 0;
+}
+.section-row .who-copy .label{font-size:1.125rem}
+.pill-btn{
+  background:var(--fill);border-radius:100px;padding:7px 16px;
+  font-size:.8125rem;font-weight:600;color:var(--ink);flex:none;
+}
+.note-chip{
+  background:var(--fill);border-radius:4px;padding:12px 16px;
+  font-size:.8125rem;line-height:1.45;color:var(--ink);margin:12px 0 8px;
+}
+.sticky-cta{
+  position:sticky;bottom:0;margin:24px calc(var(--pad) * -1) 0;
+  padding:16px var(--pad) calc(8px + var(--safe-b));
+  background:linear-gradient(180deg,transparent,var(--bg) 30%);
+}
+
+/* Modal */
+.modal-root[hidden]{display:none!important}
+.modal-root{
+  position:absolute;inset:0;z-index:40;
+  display:flex;align-items:center;justify-content:center;padding:28px;
+}
+.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.4)}
+.modal{
+  position:relative;z-index:1;background:#fff;border-radius:16px;
+  padding:24px 20px 14px;width:min(290px,100%);text-align:center;
+  box-shadow:0 16px 48px rgba(0,0,0,.22);
+}
+.modal h2{font-size:1.0625rem;font-weight:700;margin-bottom:8px;letter-spacing:-.01em}
+.modal p{font-size:.875rem;color:var(--muted);line-height:1.4;margin-bottom:20px}
+.modal .btn{margin-bottom:4px}
+.modal .later{width:100%;min-height:44px;color:var(--red);font-weight:600;font-size:1rem}
+.friend-modal{
+  width:min(340px,100%);padding:20px;text-align:left;
+}
+.friend-modal h2{text-align:left;font-size:1.25rem;margin-bottom:4px}
+.friend-modal > p{text-align:left;margin-bottom:12px}
+.friend-options{list-style:none;margin:0 0 16px;padding:0;max-height:360px;overflow:auto}
+.friend-option{
+  display:flex;align-items:center;gap:12px;width:100%;padding:10px 0;
+  border-bottom:1px solid var(--line);text-align:left;
+}
+.friend-option .avatar{width:48px;height:48px}
+.friend-option .check{
+  margin-left:auto;width:26px;height:26px;border-radius:50%;
+  border:2px solid #C7C7CC;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:.8rem;font-weight:800;
+}
+.friend-option[aria-pressed="true"] .check{background:var(--green);border-color:var(--green)}
+.friend-option[aria-pressed="true"] .check::after{content:"✓"}
+.friend-actions{display:flex;gap:8px}
+.friend-actions .btn{min-height:44px;font-size:.9rem}
+.friend-actions .btn:first-child{background:var(--fill);color:var(--ink)}
+
+.hero{height:210px;margin:0;position:relative;background:var(--fill);flex:none}
+.hero img{width:100%;height:100%;object-fit:cover}
+.hero .back-fab{
+  position:absolute;top:12px;left:12px;z-index:2;
+  background:rgba(255,255,255,.92);box-shadow:0 1px 4px rgba(0,0,0,.12);
+}
+.note{font-size:.9375rem;line-height:1.45;margin:12px 0 8px;color:var(--ink)}
+
+.wave-row{
+  display:grid;grid-template-columns:auto 36px 1fr auto;
+  align-items:center;gap:10px;
+  padding:8px 0;margin:0;
+  background:transparent;border-radius:0;
+}
+.wave-row .time{font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums;width:32px}
+.wave{
+  height:32px;display:flex;align-items:center;gap:1.5px;min-width:0;
+}
+.wave i{flex:1;background:var(--green);opacity:.5;border-radius:1px;min-width:2px}
+.play-sm{
+  width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;flex:none;
+  display:flex;align-items:center;justify-content:center;
+}
+.play-sm::after{
+  content:"";border-left:9px solid #fff;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px;
+}
+.play-sm.playing::after{
+  border:none;width:11px;height:11px;margin:0;
+  background:linear-gradient(90deg,#fff 0 35%,transparent 35% 65%,#fff 65%);
+}
+.heart{color:#C7C7CC;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
+.heart svg{width:18px;height:18px}
+
+/* Calendar — day number above photo/dot, Monday-first */
+.cal{margin-bottom:36px}
+.cal-head{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:16px;
+}
+.cal-h{font-size:1.125rem;font-weight:600;letter-spacing:-.005em;line-height:1.2}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px 2px;justify-items:center}
+.cal-dow{font-size:.8125rem;font-weight:400;color:var(--muted);text-align:center;padding:0 0 2px}
+.cal-cell{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:none;padding:0;width:100%;
+}
+.cal-cell .num{
+  font-size:1.125rem;font-weight:600;line-height:1;color:var(--ink);
+  display:flex;align-items:center;gap:3px;
+}
+.cal-cell.today .num::after{
+  content:"";width:6px;height:6px;border-radius:50%;background:var(--green);
+}
+.cal-cell .slot{
+  width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+}
+.cal-cell .slot img{width:44px;height:44px;border-radius:2px;object-fit:cover}
+.cal-cell .dot{width:26px;height:26px;border-radius:50%;background:var(--fill)}
+.cal-cell.blank{visibility:hidden}
+.cal-cell:disabled{cursor:default}
+
+/* Share screen — black canvas, swipeable white calendar cards */
+.screen.share-dark{background:#000;color:#fff;overflow:hidden}
+.share-top{
+  display:grid;grid-template-columns:40px 1fr 40px;align-items:center;
+  margin:6px 0 8px;min-height:44px;flex:none;
+}
+.share-title{grid-column:2;text-align:center;font-size:1.0625rem;font-weight:600}
+.share-close{
+  grid-column:3;justify-self:end;width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.18);color:#fff;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.share-close svg{width:15px;height:15px}
+.share-track-wrap{
+  flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;
+  overflow:hidden;touch-action:pan-y;
+}
+.share-track{
+  display:flex;gap:0;width:100%;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1);
+  will-change:transform;
+}
+.share-card{
+  background:#fff;border-radius:14px;color:#000;
+  padding:20px 16px 14px;margin:0 18px;position:relative;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+  flex:0 0 calc(100% - 36px);width:calc(100% - 36px);box-sizing:border-box;
+}
+.share-card .cal-h{font-size:1.5rem;font-weight:700;margin-bottom:14px}
+.share-card .cal-grid{gap:8px 2px}
+.share-card .cal-cell .num{font-size:.75rem;font-weight:400;color:var(--muted)}
+.share-card .cal-cell .slot{width:34px;height:34px}
+.share-card .cal-cell .slot img{width:34px;height:34px;border-radius:2px;object-fit:cover}
+.share-card .cal-cell .dot{width:20px;height:20px}
+.share-card .cal-cell .dot.green{background:var(--green)}
+.share-brand{
+  display:flex;justify-content:flex-end;align-items:center;gap:4px;
+  margin-top:14px;font-size:.75rem;font-weight:800;letter-spacing:-.01em;color:#1C1C1E;
+}
+.share-caption{
+  text-align:center;font-size:.75rem;color:rgba(255,255,255,.55);margin-top:14px;flex:none;
+}
+.share-dots{display:flex;gap:6px;justify-content:center;margin-top:12px;flex:none}
+.share-dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35)}
+.share-dots i.on{background:#fff}
+.share-fab{
+  width:52px;height:52px;border-radius:50%;background:var(--green);color:#fff;
+  margin:24px auto 16px;display:flex;align-items:center;justify-content:center;flex:none;
+}
+.share-fab svg{width:22px;height:22px}
+
+/* Species calendar (green dots) */
+.sp-cal{margin:16px 0 8px}
+.sp-cal .cal-h{font-size:1.125rem;margin-bottom:12px}
+.species-month-summary{
+  display:flex;align-items:center;gap:14px;margin:18px 0 24px;
+  padding:16px;background:var(--fill);border-radius:12px;
+}
+.species-month-summary .copy{flex:1;min-width:0}
+.species-month-summary .headline{font-size:1.0625rem;font-weight:650;line-height:1.3}
+.species-month-summary .meta{margin-top:4px}
+.species-month-summary .circle-btn{background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* iOS-style share sheet used by every share affordance */
+.share-sheet-root{position:absolute;inset:0;z-index:90;display:flex;align-items:flex-end}
+.share-sheet-root[hidden]{display:none!important}
+.share-sheet-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.4)}
+.share-sheet-panel{
+  position:relative;width:100%;background:#F2F2F7;border-radius:18px 18px 0 0;
+  padding:8px 16px calc(16px + var(--safe-b));box-shadow:0 -10px 40px rgba(0,0,0,.18);
+  transform:translateY(0);transition:transform .2s ease;
+}
+.share-sheet-panel .grabber{margin:0 auto 10px}
+.share-preview{
+  display:flex;gap:12px;align-items:center;background:#fff;border-radius:12px;
+  padding:12px;margin-bottom:14px;
+}
+.share-preview img{width:52px;height:52px;border-radius:8px;object-fit:cover;background:var(--fill)}
+.share-preview-copy{min-width:0;flex:1}
+.share-preview-title{font-size:.9375rem;font-weight:650;line-height:1.25}
+.share-preview-sub{font-size:.75rem;color:var(--muted);margin-top:3px}
+.share-apps{display:flex;gap:18px;overflow-x:auto;padding:2px 4px 14px}
+.share-app{width:58px;flex:none;text-align:center;font-size:.6875rem;color:var(--ink)}
+.share-app i{
+  display:flex;width:52px;height:52px;border-radius:14px;background:#fff;
+  align-items:center;justify-content:center;margin-bottom:6px;font-style:normal;font-size:1.35rem;
+}
+.share-actions{background:#fff;border-radius:12px;overflow:hidden}
+.share-action{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 16px;font-size:.9375rem;text-align:left}
+.share-action + .share-action{border-top:1px solid var(--line)}
+.share-cancel{margin-top:10px;background:#fff;border-radius:12px;font-weight:650}
+.mix-share[role="button"],.sp-share[role="button"]{cursor:pointer}
+.cal-cell .dot.green{background:var(--green)}
+
+/* Species info page */
+.species-info-hero{
+  width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:8px;margin:4px 0 16px;background:var(--fill);
+}
+.species-blurb{font-size:.9375rem;line-height:1.45;color:var(--ink);margin:0 0 12px}
+.species-facts{list-style:none;padding:0;margin:0 0 16px;display:flex;flex-direction:column;gap:10px}
+.species-facts li{
+  display:flex;justify-content:space-between;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--line);font-size:.875rem;
+}
+.species-facts .k{color:var(--muted)}
+.species-facts .v{font-weight:600;text-align:right}
+
+.map{
+  flex:1;min-height:280px;position:relative;
+  background:#d5e2d4;
+}
+.map .maplibre-map{position:absolute;inset:0}
+.maplibregl-ctrl-attrib{font-size:10px!important}
+.map-pin-el{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--green);color:#fff;border:3px solid #fff;
+  box-shadow:0 4px 14px rgba(0,0,0,.22);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;padding:0;
+}
+.map-pin-el svg{width:18px;height:18px;pointer-events:none}
+.map-pin-el:focus-visible{outline:3px solid #007AFF;outline-offset:2px}
+.map-pin-el.on{transform:scale(1.08);box-shadow:0 6px 18px rgba(0,155,73,.45)}
+
+/* Map peek card — compact preview when a pin is chosen */
+.loc-peek{
+  position:absolute;left:12px;right:12px;
+  bottom:calc(72px + var(--safe-b));
+  z-index:6;background:#fff;border-radius:16px;
+  box-shadow:0 10px 36px rgba(0,0,0,.18);
+  padding:10px 14px 14px;
+  transform:translateY(140%);opacity:0;pointer-events:none;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s;
+}
+.loc-peek.on{transform:translateY(0);opacity:1;pointer-events:auto}
+.loc-peek .grabber{margin:0 auto 8px}
+.loc-peek .peek-title{font-size:1.0625rem;font-weight:700;line-height:1.2}
+.loc-peek .peek-sub{font-size:.8125rem;color:var(--muted);margin-top:2px}
+.loc-peek .peek-row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.loc-peek .btn{margin-top:12px;width:100%}
+
+/* Expandable locations list sheet on the map */
+.loc-sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:5;
+  background:#fff;border-radius:24px 24px 0 0;
+  box-shadow:0 -6px 28px rgba(0,0,0,.12);
+  padding:8px var(--pad) calc(70px + var(--safe-b));
+  max-height:42%;
+  transition:max-height .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s;
+  display:flex;flex-direction:column;min-height:0;
+}
+.loc-sheet.expanded{max-height:72%}
+.loc-sheet.hidden-by-peek{
+  transform:translateY(110%);opacity:0;pointer-events:none;
+}
+.loc-sheet .grabber{margin:0 auto 8px;cursor:grab}
+.loc-sheet-h{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-bottom:4px;flex:none;
+}
+.loc-sheet-h .sheet-h{margin:0}
+.loc-sheet-h .expand-btn{
+  font-size:.8125rem;font-weight:600;color:var(--green);padding:6px 4px;min-height:36px;
+}
+.loc-sheet-list{
+  list-style:none;margin:4px 0 0;padding:0;overflow:auto;min-height:0;flex:1;
+  -webkit-overflow-scrolling:touch;
+}
+.loc-sheet-list > li + li{border-top:1px solid var(--line)}
+.loc-sheet-list .row{
+  padding:12px 0;min-height:64px;gap:12px;
+}
+.loc-sheet-list .row .thumb{width:56px;height:42px;border-radius:2px}
+.loc-sheet-list .meta{font-size:.75rem}
+.loc-a11y{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+.sheet-h{font-size:1.0625rem;font-weight:700;margin-bottom:4px}
+.loc-list{list-style:none;margin:12px 0 0;padding:0}
+
+/* Sheet screens: swipe-to-dismiss */
+.screen.sheet{
+  transition:transform .28s cubic-bezier(.2,.8,.2,1);
+  touch-action:pan-y;
+}
+.screen.sheet.dragging{transition:none}
+.screen.sheet.dismissing{transform:translateY(110%)}
+.audio-credit{font-size:.65rem;color:var(--muted);margin-top:4px;line-height:1.35}
+
+.toast{
+  position:absolute;left:50%;bottom:calc(var(--nav-h) + 8px + var(--safe-b));
+  transform:translateX(-50%);z-index:30;
+  background:var(--ink);color:#fff;padding:10px 16px;border-radius:999px;
+  font-size:.8rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s;
+  white-space:nowrap;
+}
+.toast.on{opacity:1}
+
+.sp-hero{
+  width:100%;height:180px;border-radius:12px;object-fit:cover;
+  margin:4px 0 8px;background:var(--fill);
+}
+.clips{padding:0 0 8px 0;margin:0 0 4px}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to app</a>
+
+<div class="facil-wrap" aria-hidden="true">
+  <h1>Merle · hi-fi a11y prototype</h1>
+  <p>Desktop: use the VoiceOver simulator on the right. Phone: real VoiceOver/TalkBack in Safari.</p>
+  <div class="facil" id="facil"></div>
+</div>
+
+<div class="desk">
+<div class="app" id="app">
+  <div class="sr-only" aria-live="polite" id="live"></div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <main class="stage" id="main">
+
+    <!-- 1. Identify / start a new logging session -->
+    <section class="screen on" id="s-identify" aria-labelledby="id-heading">
+      <header class="top">
+        <button type="button" class="icon-btn" aria-label="Close identify" data-go="s-history-date">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+        <div class="center" id="id-heading">
+          July 22 — Seattle, WA
+          <div class="sub" id="id-meta">5:04 PM · 0 birds</div>
+        </div>
+        <div style="display:flex;gap:6px;justify-content:flex-end;align-items:center">
+          <button type="button" class="text-btn save-outline" id="btn-done-top" hidden>Done</button>
+          <button type="button" class="text-btn save-outline" id="btn-save-top" disabled>Save</button>
+        </div>
+      </header>
+
+      <div class="sono" id="sono-live" role="img" aria-label="Sound ID spectrogram. Not playing.">
+        <canvas id="sonoCanvas" width="390" height="168" aria-hidden="true"></canvas>
+        <div class="sono-playhead" aria-hidden="true"></div>
+        <button type="button" class="sono-play" id="sono-play" aria-label="Play recording"></button>
+        <span class="sono-time" id="sono-time">0:00</span>
+      </div>
+
+      <div class="id-body">
+        <p class="empty-msg" id="id-empty">
+          No suggestions for Seattle, WA<br>
+          <a href="#" id="why-link">Why isn’t Merlin identifying my bird?</a>
+        </p>
+        <ul class="list" id="detect-list" hidden></ul>
+        <div class="mic-wrap">
+          <button type="button" class="fab-mic" id="mic" aria-pressed="false" aria-label="Start listening">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11h-2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Save Session -->
+    <section class="screen no-nav sheet" id="s-save" aria-labelledby="save-heading" hidden>
+      <div class="grabber" aria-hidden="true"></div>
+      <header class="toolbar">
+        <div class="t-titles">
+          <span class="t-title" id="save-heading">Save Session</span>
+        </div>
+        <button type="button" class="close-circle" aria-label="Close without saving" data-go="s-identify">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+
+      <label class="sr-only" for="session-title">Session title</label>
+      <textarea class="field" id="session-title" rows="2">Wednesday Morning at Seward Park</textarea>
+      <p class="field-hint">Tap to edit title</p>
+
+      <div class="meta-block">
+        <p class="meta">July 22, 2026 · Seward Park, Seattle · 75° F, Overcast</p>
+      </div>
+
+      <div class="section-row" style="border-top:1px solid var(--line)">
+        <div class="who-copy">
+          <div class="label" id="who-label">Who joined</div>
+          <div class="sub meta">Share session details</div>
+        </div>
+        <div class="avatar-stack" id="joined-people" role="group" aria-labelledby="who-label"></div>
+        <button type="button" class="add-person" id="add-friends" aria-label="Add friends who joined">+</button>
+      </div>
+
+      <div class="toggle-row" style="margin-top:0">
+        <div class="avatar-stack" id="shared-people" aria-label="Shared with Lucy and Joe"></div>
+        <div class="who-copy" style="flex:1">
+          <div class="label" id="share-label">Share recordings</div>
+          <div class="sub" id="share-location-label">Seward Park</div>
+        </div>
+        <button type="button" class="switch" id="share-toggle" role="switch" aria-checked="true" aria-labelledby="share-label"></button>
+      </div>
+
+      <div class="save-private" id="details-h">
+        <div class="month-row" style="margin:0 0 8px">
+          <p class="month" style="margin:0">Details</p>
+          <p class="section lock" style="margin:0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 11V8a5 5 0 0 0-10 0v3a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zM9 8a3 3 0 0 1 6 0v3H9z"/></svg>
+            Only you can see these
+          </p>
+        </div>
+        <label class="sr-only" for="field-notes">Field notes</label>
+        <textarea class="notes" id="field-notes" placeholder="Add field notes"></textarea>
+        <div class="photos" id="session-photos" role="group" aria-label="Session photos">
+          <button type="button" class="add-person" id="add-photo" aria-label="Add photo">+</button>
+        </div>
+        <input type="file" id="photo-input" accept="image/*" multiple hidden>
+      </div>
+
+      <p class="save-birds-label">Birds</p>
+      <ul class="list" id="save-species-list" aria-label="Species in this session">
+        <li>
+          <button type="button" class="row bird" data-go="s-species-detail">
+            <span class="thumb-wrap">
+              <img class="thumb" src="assets/birds/house-finch.jpg" alt="">
+              <span class="eye-off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></span>
+            </span>
+            <span class="grow"><span class="nm">House Finch</span><span class="meta">12 detections</span></span>
+            <span class="chev" aria-hidden="true">›</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="row bird">
+            <span class="thumb-wrap">
+              <img class="thumb" src="assets/birds/spotted-towhee.jpg" alt="">
+              <span class="eye-off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></span>
+            </span>
+            <span class="grow"><span class="nm">Spotted Towhee</span><span class="meta">4 detections</span></span>
+            <span class="chev" aria-hidden="true">›</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="row bird">
+            <span class="thumb-wrap">
+              <img class="thumb" src="assets/birds/lazuli-bunting.jpg" alt="">
+              <span class="eye-off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></span>
+            </span>
+            <span class="grow"><span class="nm">Lazuli Bunting</span><span class="meta">3 detections</span></span>
+            <span class="chev" aria-hidden="true">›</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="row bird">
+            <span class="thumb-wrap">
+              <img class="thumb" src="assets/birds/american-robin.jpg" alt="">
+              <span class="eye-off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></span>
+            </span>
+            <span class="grow"><span class="nm">American Robin</span><span class="meta">7 detections</span></span>
+            <span class="chev" aria-hidden="true">›</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="row bird">
+            <span class="thumb-wrap">
+              <img class="thumb" src="assets/birds/black-capped-chickadee.jpg" alt="">
+              <span class="eye-off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></span>
+            </span>
+            <span class="grow"><span class="nm">Black-capped Chickadee</span><span class="meta">2 detections</span></span>
+            <span class="chev" aria-hidden="true">›</span>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="row bird">
+            <span class="thumb-wrap">
+              <img class="thumb" src="assets/birds/song-sparrow.jpg" alt="">
+              <span class="eye-off" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg></span>
+            </span>
+            <span class="grow"><span class="nm">Song Sparrow</span><span class="meta">6 detections</span></span>
+            <span class="chev" aria-hidden="true">›</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="sticky-cta">
+        <button type="button" class="btn btn-primary" id="save-session">Save Session</button>
+      </div>
+    </section>
+
+    <!-- History by Date -->
+    <section class="screen" id="s-history-date" aria-labelledby="hist-h" hidden>
+      <header class="top lead">
+        <h1 id="hist-h">History</h1>
+        <button type="button" class="circle-btn" aria-label="Open calendar view" data-go="s-calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        </button>
+      </header>
+
+      <div class="seg" role="tablist" aria-label="History organization">
+        <button type="button" role="tab" aria-selected="true" id="tab-date" data-go="s-history-date">Date</button>
+        <button type="button" role="tab" aria-selected="false" id="tab-species" data-go="s-history-species">Species</button>
+        <button type="button" role="tab" aria-selected="false" id="tab-location" data-go="s-history-location">Location</button>
+      </div>
+
+      <p class="eyebrow" id="summer-label">This time last summer</p>
+      <button type="button" class="card green" id="summer-mix" aria-label="Play Chorus of July 21, 2025. This time last summer.">
+        <span class="play-lg" aria-hidden="true"></span>
+        <span class="grow">
+          <span class="mix-title">Chorus of July 21, 2025</span>
+        </span>
+        <span class="mix-time" id="summer-mix-time" hidden>0:00</span>
+        <span class="mix-share" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
+        </span>
+        <span class="mix-progress" aria-hidden="true"><i id="summer-mix-bar"></i></span>
+      </button>
+
+      <div id="outings-root"></div>
+    </section>
+
+    <!-- History Species — start: identified birds -->
+    <section class="screen" id="s-history-species" aria-labelledby="hist-sp-h" hidden>
+      <header class="top lead">
+        <h1 id="hist-sp-h">History</h1>
+      </header>
+      <div class="seg" role="tablist" aria-label="History organization">
+        <button type="button" role="tab" aria-selected="false" data-go="s-history-date">Date</button>
+        <button type="button" role="tab" aria-selected="true" data-go="s-history-species">Species</button>
+        <button type="button" role="tab" aria-selected="false" data-go="s-history-location">Location</button>
+      </div>
+      <ul class="list" id="species-list" aria-label="Identified birds">
+        <!-- filled by JS -->
+      </ul>
+    </section>
+
+    <!-- 5. History Location / Map -->
+    <section class="screen flush" id="s-history-location" aria-labelledby="hist-loc-h" hidden>
+      <div class="pad">
+        <header class="top lead"><h1 id="hist-loc-h">History</h1></header>
+        <div class="seg" role="tablist" aria-label="History organization">
+          <button type="button" role="tab" aria-selected="false" data-go="s-history-date">Date</button>
+          <button type="button" role="tab" aria-selected="false" data-go="s-history-species">Species</button>
+          <button type="button" role="tab" aria-selected="true" data-go="s-history-location">Location</button>
+        </div>
+      </div>
+      <div class="map" id="map-wrap">
+        <div id="map-el" class="maplibre-map" role="application" aria-label="Interactive map of recording locations around Seattle. Choose a pin to open a preview, or browse the locations list."></div>
+        <div class="loc-peek" id="loc-peek" role="dialog" aria-labelledby="peek-title" aria-hidden="true">
+          <div class="grabber" aria-hidden="true"></div>
+          <div class="peek-title" id="peek-title">Seward Park</div>
+          <div class="peek-sub" id="peek-sub">Seattle · 16 species</div>
+          <div class="peek-row">
+            <div class="thumbs nowrap" id="peek-thumbs" aria-hidden="true"></div>
+          </div>
+          <button type="button" class="btn btn-primary" id="sheet-view">View All</button>
+        </div>
+        <div class="loc-sheet" id="loc-sheet" aria-label="Locations">
+          <div class="grabber" id="loc-sheet-grabber" aria-hidden="true"></div>
+          <div class="loc-sheet-h">
+            <div class="sheet-h" id="loc-sheet-title">Locations</div>
+            <button type="button" class="expand-btn" id="loc-sheet-expand" aria-expanded="false">Expand</button>
+          </div>
+          <ul class="loc-sheet-list" id="loc-sheet-list"></ul>
+        </div>
+      </div>
+      <ul class="loc-a11y" id="loc-list" aria-label="Recording locations"></ul>
+    </section>
+
+    <!-- 6. Calendar -->
+    <section class="screen no-nav sheet" id="s-calendar" aria-labelledby="cal-title" hidden>
+      <div class="grabber" aria-hidden="true"></div>
+      <header class="toolbar">
+        <div class="t-titles">
+          <span class="t-title" id="cal-title">History</span>
+          <span class="t-sub">All time</span>
+        </div>
+        <button type="button" class="close-circle" aria-label="Close calendar" data-go="s-history-date">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+
+      <div id="calendar-stack"></div>
+    </section>
+
+    <!-- 6b. Share calendar — swipe between photo month + species green-dot month -->
+    <section class="screen no-nav share-dark" id="s-share" aria-labelledby="share-h" hidden>
+      <header class="share-top">
+        <h1 class="share-title" id="share-h">Share</h1>
+        <button type="button" class="share-close" id="share-close" aria-label="Close share">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <div class="share-track-wrap" id="share-track-wrap">
+        <div class="share-track" id="share-track" role="listbox" aria-label="Share styles">
+          <div class="share-card" id="share-card-photos" role="option" aria-selected="true"></div>
+          <div class="share-card" id="share-card-dots" role="option" aria-selected="false"></div>
+        </div>
+        <p class="share-caption" id="share-caption">All species · photo calendar</p>
+        <div class="share-dots" id="share-dots" aria-hidden="true"><i class="on"></i><i></i></div>
+      </div>
+      <button type="button" class="share-fab" id="share-send" aria-label="Share this month">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
+      </button>
+    </section>
+
+    <!-- 7. Session detail (Past Session) -->
+    <section class="screen no-nav flush sheet" id="s-session" aria-labelledby="sess-title" hidden>
+      <div class="pad">
+        <div class="grabber" aria-hidden="true"></div>
+        <header class="toolbar">
+          <div class="t-titles"><span class="t-title">Past Session</span></div>
+          <button type="button" class="close-circle" aria-label="Close session" data-go="s-history-date">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </header>
+      </div>
+      <div class="hero">
+        <img src="bird.jpg" alt="Canada geese grazing on a lawn at Seward Park">
+      </div>
+      <div class="pad" style="padding-top:16px">
+        <header class="top between" style="margin-bottom:4px;min-height:0">
+          <h1 id="sess-title" style="font-size:1.375rem;font-weight:700;letter-spacing:-.01em;line-height:1.25;white-space:normal;overflow:visible">Wednesday Morning at Seward Park</h1>
+          <button type="button" class="pill-btn" data-go="s-save">Edit</button>
+        </header>
+        <div class="meta-block">
+          <p class="meta">July 22, 2026 · Seward Park, Seattle · 75° F, Overcast</p>
+        </div>
+        <div class="section-row" id="who-sess-row" style="border-top:1px solid var(--line)">
+          <div class="who-copy"><div class="label" id="who-sess">Who joined</div></div>
+          <div class="avatar-stack" role="group" aria-labelledby="who-sess">
+            <img class="avatar sm" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80" alt="Alex">
+            <img class="avatar sm" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80" alt="Sam">
+            <img class="avatar sm" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80" alt="Lucy">
+          </div>
+        </div>
+        <p class="note-chip">The Lazuli buntings hung out at the taller trees behind the west parking lot</p>
+
+        <ul class="list">
+          <li>
+            <button type="button" class="row bird" id="expand-finch" aria-expanded="true" aria-controls="finch-clips">
+              <img class="thumb" src="bird.jpg" alt="" style="object-position:40% 25%">
+              <span class="grow"><span class="nm">House Finch</span><span class="meta">3 detections</span></span>
+              <span class="chev" aria-hidden="true">▾</span>
+            </button>
+            <div class="clips" id="finch-clips">
+              <div class="spectro-row no-date">
+                <span class="spectro-wrap">
+                  <button type="button" class="spectro" data-audio="birds/house-finch.mp3" data-dur="0:45" aria-label="Play House Finch clip 1 of 3, 45 seconds">
+                    <span class="tex" aria-hidden="true"></span><span class="played" aria-hidden="true"></span><span class="ph-line" aria-hidden="true"></span><span class="sp-play" aria-hidden="true"></span><span class="dur" aria-hidden="true">0:45</span>
+                  </button>
+                  <span class="sp-share" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span>
+                </span>
+              </div>
+              <div class="spectro-row no-date">
+                <span class="spectro-wrap">
+                  <button type="button" class="spectro" data-audio="birds/house-finch.mp3" data-dur="0:23" aria-label="Play House Finch clip 2 of 3, 23 seconds">
+                    <span class="tex" aria-hidden="true"></span><span class="played" aria-hidden="true"></span><span class="ph-line" aria-hidden="true"></span><span class="sp-play" aria-hidden="true"></span><span class="dur" aria-hidden="true">0:23</span>
+                  </button>
+                  <span class="sp-share" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span>
+                </span>
+              </div>
+              <div class="spectro-row no-date">
+                <span class="spectro-wrap">
+                  <button type="button" class="spectro" data-audio="birds/house-finch.mp3" data-dur="0:20" aria-label="Play House Finch clip 3 of 3, 20 seconds">
+                    <span class="tex" aria-hidden="true"></span><span class="played" aria-hidden="true"></span><span class="ph-line" aria-hidden="true"></span><span class="sp-play" aria-hidden="true"></span><span class="dur" aria-hidden="true">0:20</span>
+                  </button>
+                  <span class="sp-share" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <button type="button" class="row bird">
+              <img class="thumb" src="bird.jpg" alt="" style="object-position:70% 40%">
+              <span class="grow"><span class="nm">Spotted Towhee</span><span class="meta">4 detections</span></span>
+              <span class="chev" aria-hidden="true">›</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="row bird">
+              <img class="thumb" src="bird.jpg" alt="" style="object-position:20% 60%">
+              <span class="grow"><span class="nm">Lazuli Bunting</span><span class="meta">3 detections</span></span>
+              <span class="chev" aria-hidden="true">›</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 8. Species detail / mix (filled by JS for every species) -->
+    <section class="screen no-nav sheet" id="s-species-detail" aria-labelledby="sp-title" hidden>
+      <div class="grabber" aria-hidden="true"></div>
+      <header class="toolbar">
+        <div class="t-titles">
+          <span class="t-title" id="sp-title">History</span>
+          <span class="t-sub" id="sp-sub">House Finch</span>
+        </div>
+        <button type="button" class="close-circle" id="sp-close" aria-label="Close species history" data-go="s-history-species">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+
+      <button type="button" class="card green" id="species-mix" aria-label="Play your species mix">
+        <span class="play-lg" aria-hidden="true"></span>
+        <span class="grow"><span class="mix-title" id="species-mix-title">Your Mix</span></span>
+        <span class="mix-time" id="species-mix-time" hidden>0:00</span>
+        <span class="mix-share" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
+        </span>
+        <span class="mix-progress" aria-hidden="true"><i id="species-mix-bar"></i></span>
+      </button>
+
+      <button type="button" class="row species" id="species-info-btn" style="padding-top:4px">
+        <span class="grow"><span class="nm" id="species-row-name">House Finch</span><span class="meta">Details</span></span>
+        <img class="thumb" id="species-row-img" src="" alt="" style="margin-left:0;order:0;width:107px;height:79px">
+        <span class="chev" aria-hidden="true" style="order:3">›</span>
+      </button>
+      <div style="border-bottom:1px solid var(--line)"></div>
+
+      <div class="sp-cal" id="species-cal" aria-label="Species calendar"></div>
+      <div id="species-recordings"></div>
+    </section>
+
+    <!-- 8a. Species activity calendar -->
+    <section class="screen no-nav sheet" id="s-species-calendar" aria-labelledby="sp-cal-title" hidden>
+      <div class="grabber" aria-hidden="true"></div>
+      <header class="toolbar">
+        <div class="t-titles">
+          <span class="t-title" id="sp-cal-title">Listening calendar</span>
+          <span class="t-sub" id="sp-cal-sub">House Finch</span>
+        </div>
+        <button type="button" class="close-circle" id="sp-cal-close" aria-label="Close species calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <div id="species-calendar-stack"></div>
+    </section>
+
+    <!-- 8b. Species info / details page -->
+    <section class="screen no-nav sheet" id="s-species-info" aria-labelledby="sp-info-h" hidden>
+      <div class="grabber" aria-hidden="true"></div>
+      <header class="toolbar">
+        <div class="t-titles">
+          <span class="t-title" id="sp-info-h">Details</span>
+          <span class="t-sub" id="sp-info-sub">House Finch</span>
+        </div>
+        <button type="button" class="close-circle" id="sp-info-close" aria-label="Close species details">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <div style="padding:48px 8px 24px;text-align:center">
+        <h2 id="sp-info-name" style="font-size:1.75rem;font-weight:700;margin:0 0 8px;letter-spacing:-.02em">House Finch details</h2>
+        <p class="meta" id="sp-info-sci" style="margin-bottom:28px">Haemorhous mexicanus</p>
+        <button type="button" class="btn btn-primary" id="sp-info-back" style="max-width:220px;margin:0 auto">Back</button>
+      </div>
+      <img class="species-info-hero" id="sp-info-hero" src="" alt="" hidden>
+      <p class="species-blurb" id="sp-info-blurb" hidden></p>
+      <ul class="species-facts" id="sp-info-facts" hidden></ul>
+    </section>
+
+    <!-- 9. Location detail (filled by JS for every place) -->
+    <section class="screen no-nav sheet" id="s-location-detail" aria-labelledby="loc-title" hidden>
+      <div class="grabber" aria-hidden="true"></div>
+      <header class="toolbar">
+        <div class="t-titles">
+          <span class="t-title" id="loc-title">History</span>
+          <span class="t-sub" id="loc-sub">Seward Park, Seattle</span>
+        </div>
+        <button type="button" class="close-circle" id="loc-close" aria-label="Close location history" data-go="s-history-location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+
+      <button type="button" class="card green" id="park-mix" aria-label="Play your location mix">
+        <span class="play-lg" aria-hidden="true"></span>
+        <span class="grow"><span class="mix-title" id="park-mix-title">Your Mix</span></span>
+        <span class="mix-time" id="park-mix-time" hidden>0:00</span>
+        <span class="mix-share" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
+        </span>
+        <span class="mix-progress" aria-hidden="true"><i id="park-mix-bar"></i></span>
+      </button>
+
+      <div style="display:flex;align-items:center;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line)">
+        <div class="thumbs nowrap" id="loc-thumbs" aria-hidden="true"></div>
+        <span class="meta" id="loc-species-count" style="margin-left:auto;white-space:nowrap">16 species</span>
+      </div>
+
+      <div class="section-row" style="border-bottom:1px solid var(--line)">
+        <div class="avatar-stack" id="loc-shared-avatars" aria-hidden="true"></div>
+        <div class="who-copy" style="flex:1">
+          <div class="label">Shared location</div>
+          <div class="sub meta" id="loc-shared-names">Lucy, Joe</div>
+        </div>
+        <button type="button" class="pill-btn">Edit</button>
+      </div>
+
+      <h2 class="month group">Sessions</h2>
+      <ul class="list" id="loc-sessions"></ul>
+    </section>
+
+    <!-- 10. Activity / notifications -->
+    <section class="screen no-nav sheet" id="s-activity" aria-labelledby="activity-h" hidden>
+      <div class="grabber" aria-hidden="true"></div>
+      <header class="toolbar">
+        <div class="t-titles">
+          <span class="t-title" id="activity-h">Activity</span>
+          <span class="t-sub">Friends & shared locations</span>
+        </div>
+        <button type="button" class="close-circle" id="activity-close" aria-label="Close activity">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+      <ul class="activity-list" id="activity-list" aria-label="Friend activity"></ul>
+    </section>
+
+  </main>
+
+  <nav class="tabbar" id="tabbar" aria-label="Main">
+    <button type="button" class="tab" data-go="s-identify" aria-current="page">
+      <span class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 0 1 5.1.7c0 1.7-2.6 2.1-2.6 3.5"/><path d="M12 17h.01"/></svg></span>
+      Identify
+    </button>
+    <button type="button" class="tab" disabled aria-disabled="true" title="Not in this prototype">
+      <span class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+      Explore
+    </button>
+    <button type="button" class="tab" data-go="s-history-date">
+      <span class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+      History
+    </button>
+    <button type="button" class="tab" disabled aria-disabled="true" title="Not in this prototype">
+      <span class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span>
+      Life List
+    </button>
+  </nav>
+
+  <!-- Finish logging modal -->
+  <div class="modal-root" id="modal" hidden>
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
+      <h2 id="modal-title">Finish logging your session</h2>
+      <p id="modal-desc">Add details to remember the session better later.</p>
+      <button type="button" class="btn btn-blue" id="modal-now">Now</button>
+      <button type="button" class="later" id="modal-later">Later</button>
+    </div>
+  </div>
+
+  <div class="modal-root" id="friend-modal" hidden>
+    <div class="modal-backdrop" id="friend-backdrop"></div>
+    <div class="modal friend-modal" role="dialog" aria-modal="true" aria-labelledby="friend-title">
+      <h2 id="friend-title">Who joined?</h2>
+      <p>Select friends who were with you at Seward Park.</p>
+      <ul class="friend-options" id="friend-options"></ul>
+      <div class="friend-actions">
+        <button type="button" class="btn" id="friend-cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="friend-confirm">Add selected</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="share-sheet-root" id="share-sheet" hidden>
+    <div class="share-sheet-backdrop" id="share-sheet-backdrop"></div>
+    <div class="share-sheet-panel" id="share-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="share-sheet-title">
+      <div class="grabber" aria-hidden="true"></div>
+      <div class="share-preview">
+        <img id="share-sheet-image" src="assets/birds/house-finch.jpg" alt="">
+        <div class="share-preview-copy">
+          <div class="share-preview-title" id="share-sheet-title">Share recording</div>
+          <div class="share-preview-sub" id="share-sheet-sub">Merle</div>
+        </div>
+      </div>
+      <div class="share-apps" aria-label="Share with">
+        <button type="button" class="share-app" data-share-choice="Messages"><i aria-hidden="true">💬</i>Messages</button>
+        <button type="button" class="share-app" data-share-choice="Mail"><i aria-hidden="true">✉️</i>Mail</button>
+        <button type="button" class="share-app" data-share-choice="AirDrop"><i aria-hidden="true">◉</i>AirDrop</button>
+        <button type="button" class="share-app" data-share-choice="Notes"><i aria-hidden="true">📝</i>Notes</button>
+      </div>
+      <div class="share-actions">
+        <button type="button" class="share-action" data-share-choice="Copy Link"><span>Copy Link</span><span aria-hidden="true">⧉</span></button>
+        <button type="button" class="share-action" data-share-choice="Save"><span>Save to Photos</span><span aria-hidden="true">↓</span></button>
+      </div>
+      <button type="button" class="share-action share-cancel" id="share-sheet-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<aside class="vo-panel" id="vo-panel" aria-label="VoiceOver simulator">
+  <h2>VoiceOver simulator</h2>
+  <div class="vo-controls">
+    <button type="button" id="vo-toggle" class="on" aria-pressed="true">Sim On</button>
+    <button type="button" id="vo-speak" class="on" aria-pressed="true">Speak</button>
+    <button type="button" id="vo-next">Next →</button>
+    <button type="button" id="vo-prev">← Prev</button>
+  </div>
+  <div class="vo-now" aria-live="off">
+    <div class="role" id="vo-role">Ready</div>
+    <div class="say" id="vo-say">Click Sim On, then Tab or use Next to move like VoiceOver.</div>
+  </div>
+  <div class="vo-log" id="vo-log"></div>
+  <p class="vo-hint">Approx. of what a screen reader would say — not a replacement for real VoiceOver. Speaks via your browser.</p>
+</aside>
+</div>
+
+<script>
+(function () {
+  const screens = [...document.querySelectorAll('.screen')];
+  const tabbar = document.getElementById('tabbar');
+  const live = document.getElementById('live');
+  const toast = document.getElementById('toast');
+  const modal = document.getElementById('modal');
+  const mic = document.getElementById('mic');
+  let current = 's-identify';
+  let listening = false;
+  let audio = null;
+  let lastFocus = null;
+
+  const NAV_SCREENS = new Set(['s-identify','s-history-date','s-history-species','s-history-location']);
+  const LABELS = {
+    's-identify': 'Identify and log birds',
+    's-history-date': 'History by date',
+    's-history-species': 'History by species',
+    's-history-location': 'History by location',
+    's-calendar': 'Calendar',
+    's-share': 'Share',
+    's-session': 'Past session',
+    's-species-detail': 'Species history',
+    's-species-calendar': 'Species listening calendar',
+    's-species-info': 'Species details',
+    's-location-detail': 'Location history',
+    's-save': 'Save Session',
+    's-activity': 'Activity'
+  };
+
+  function announce(msg) {
+    live.textContent = '';
+    requestAnimationFrame(() => { live.textContent = msg; });
+    if (window.__voSim) window.__voSim.live(msg);
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('on');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('on'), 2200);
+  }
+
+  const shareSheet = document.getElementById('share-sheet');
+  const shareSheetPanel = document.getElementById('share-sheet-panel');
+  let shareSheetFocus = null;
+
+  function openShareSheet({ title = 'Share recording', subtitle = 'Merle', image = 'assets/birds/house-finch.jpg' } = {}) {
+    shareSheetFocus = document.activeElement;
+    document.getElementById('share-sheet-title').textContent = title;
+    document.getElementById('share-sheet-sub').textContent = subtitle;
+    document.getElementById('share-sheet-image').src = image;
+    shareSheet.hidden = false;
+    shareSheetPanel.style.transform = '';
+    shareSheet.querySelector('.share-app')?.focus();
+    announce(`Share sheet. ${title}`);
+  }
+
+  function closeShareSheet() {
+    shareSheet.hidden = true;
+    shareSheetPanel.style.transform = '';
+    shareSheetFocus?.focus?.();
+  }
+
+  document.getElementById('share-sheet-backdrop').addEventListener('click', closeShareSheet);
+  document.getElementById('share-sheet-cancel').addEventListener('click', closeShareSheet);
+  shareSheet.querySelectorAll('[data-share-choice]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const choice = btn.dataset.shareChoice;
+      closeShareSheet();
+      showToast(choice === 'Copy Link' ? 'Link copied' : `Shared with ${choice}`);
+      announce(choice === 'Copy Link' ? 'Link copied' : `Shared with ${choice}`);
+    });
+  });
+
+  // The share icon is visually embedded in some playable cards. Make it a
+  // separate accessible action and keep its click from starting playback.
+  function enhanceShareAffordances(root = document) {
+    root.querySelectorAll('.mix-share,.sp-share').forEach(el => {
+      el.removeAttribute('aria-hidden');
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', 'Share');
+    });
+  }
+  enhanceShareAffordances();
+
+  function shareContextFor(el) {
+    const screen = el.closest('.screen');
+    const speciesName = currentSpecies?.name || 'House Finch';
+    if (screen?.id === 's-species-detail') {
+      return { title: `Share ${speciesName}`, subtitle: 'Recording from Merle', image: currentSpecies?.image || birdImg(speciesName) };
+    }
+    if (screen?.id === 's-location-detail') {
+      return { title: `Share ${currentPlace?.name || 'location'} mix`, subtitle: 'Birding history from Merle', image: currentSpecies?.image || birdImg('House Finch') };
+    }
+    return { title: 'Share bird recording', subtitle: 'Audio from Merle', image: birdImg('House Finch') };
+  }
+  document.body.addEventListener('click', e => {
+    const share = e.target.closest('.mix-share,.sp-share');
+    if (!share) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openShareSheet(shareContextFor(share));
+  }, true);
+  document.body.addEventListener('keydown', e => {
+    const share = e.target.closest('.mix-share,.sp-share');
+    if (share && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      openShareSheet(shareContextFor(share));
+    }
+  });
+
+  // Swipe the share sheet down to dismiss it.
+  (function setupShareSheetSwipe() {
+    let y0 = 0, dy = 0;
+    shareSheetPanel.addEventListener('touchstart', e => {
+      y0 = e.changedTouches[0].clientY; dy = 0;
+    }, { passive: true });
+    shareSheetPanel.addEventListener('touchmove', e => {
+      dy = Math.max(0, e.changedTouches[0].clientY - y0);
+      shareSheetPanel.style.transform = `translateY(${dy}px)`;
+    }, { passive: true });
+    shareSheetPanel.addEventListener('touchend', () => {
+      if (dy > 90) closeShareSheet();
+      else shareSheetPanel.style.transform = '';
+    });
+  })();
+
+  function go(id, { silent } = {}) {
+    if (!document.getElementById(id)) return;
+    if (!modal.hidden) closeModal(true);
+
+    const prev = current;
+    screens.forEach(s => {
+      const on = s.id === id;
+      s.classList.toggle('on', on);
+      s.hidden = !on;
+    });
+    current = id;
+
+    const showTabs = NAV_SCREENS.has(id);
+    tabbar.hidden = !showTabs;
+    tabbar.classList.toggle('pill', id !== 's-identify');
+    tabbar.querySelectorAll('[data-go]').forEach(tab => {
+      if (tab.closest('#tabbar')) {
+        if (tab.dataset.go === id || (id.startsWith('s-history') && tab.dataset.go === 's-history-date')) {
+          tab.setAttribute('aria-current', 'page');
+        } else {
+          tab.removeAttribute('aria-current');
+        }
+      }
+    });
+
+    document.querySelectorAll('.facil button').forEach(b => {
+      b.setAttribute('aria-current', b.dataset.go === id ? 'true' : 'false');
+    });
+
+    if (!silent) {
+      announce(LABELS[id] || id);
+      const t = document.querySelector('#' + id + ' h1, #' + id + ' .center');
+      if (t) {
+        t.setAttribute('tabindex', '-1');
+        t.focus({ preventScroll: true });
+      }
+    }
+    const scr = document.getElementById(id);
+    if (scr) scr.scrollTop = 0;
+    if (id === 's-calendar' && scr) {
+      // Images resolve after paint, so keep pinning to the newest month for a moment.
+      const toBottom = () => { scr.scrollTop = scr.scrollHeight; };
+      [0, 60, 180, 400, 800].forEach(ms => setTimeout(toBottom, ms));
+      scr.querySelectorAll('img').forEach(img => {
+        if (!img.complete) img.addEventListener('load', toBottom, { once: true });
+      });
+    }
+    if (id === 's-history-location') {
+      requestAnimationFrame(() => {
+        ensureMap();
+        mapInst?.resize();
+        hidePeek();
+        showLocSheet();
+      });
+    }
+    if (id === 's-activity') {
+      if (prev && prev !== 's-activity') activityReturn = prev;
+      markActivityRead();
+      renderActivity();
+    }
+    if (window.__voSim) window.__voSim.refresh();
+  }
+
+  function openModal() {
+    lastFocus = document.activeElement;
+    modal.hidden = false;
+    document.getElementById('modal-now').focus();
+    announce('Dialog: Finish logging your session');
+  }
+  function closeModal(silent) {
+    modal.hidden = true;
+    if (!silent && lastFocus) lastFocus.focus();
+  }
+
+  // Clicks
+  document.body.addEventListener('click', (e) => {
+    const goEl = e.target.closest('[data-go]');
+    if (goEl && !goEl.disabled) {
+      e.preventDefault();
+      go(goEl.dataset.go);
+      return;
+    }
+  });
+
+  document.getElementById('btn-save-top').addEventListener('click', () => {
+    if (listening) stopListening();
+    openModal();
+  });
+  document.getElementById('btn-done-top').addEventListener('click', () => {
+    if (listening) stopListening();
+    document.getElementById('btn-done-top').hidden = true;
+    const saveBtn = document.getElementById('btn-save-top');
+    saveBtn.disabled = false;
+    saveBtn.hidden = false;
+    announce('Done identifying. Play a bird, then save the session.');
+    showToast('Review birds, then Save');
+  });
+  document.getElementById('modal-now').addEventListener('click', () => {
+    closeModal(true);
+    go('s-save');
+  });
+  document.getElementById('modal-later').addEventListener('click', () => {
+    closeModal(true);
+    go('s-history-date');
+    showToast('Session saved for later');
+    announce('Session saved for later. History.');
+  });
+  document.getElementById('modal-backdrop').addEventListener('click', () => closeModal());
+
+  document.getElementById('save-session').addEventListener('click', () => {
+    go('s-history-date');
+    showToast('Session saved');
+    announce('Session saved. History by date.');
+  });
+
+  // Add session photos from device
+  document.getElementById('add-photo')?.addEventListener('click', () => {
+    document.getElementById('photo-input')?.click();
+  });
+  document.getElementById('photo-input')?.addEventListener('change', (e) => {
+    const files = [...(e.target.files || [])];
+    const root = document.getElementById('session-photos');
+    const addBtn = document.getElementById('add-photo');
+    files.forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const url = URL.createObjectURL(file);
+      const slot = document.createElement('div');
+      slot.className = 'photo-slot';
+      slot.innerHTML = `<img src="${url}" alt="Session photo"><button type="button" class="remove-photo" aria-label="Remove photo">×</button>`;
+      slot.querySelector('.remove-photo').addEventListener('click', () => {
+        URL.revokeObjectURL(url);
+        slot.remove();
+      });
+      root.insertBefore(slot, addBtn.nextSibling);
+    });
+    e.target.value = '';
+    if (files.length) announce(`${files.length} photo${files.length > 1 ? 's' : ''} added`);
+  });
+
+  document.getElementById('share-toggle').addEventListener('click', function () {
+    const on = this.getAttribute('aria-checked') !== 'true';
+    this.setAttribute('aria-checked', on ? 'true' : 'false');
+    document.getElementById('shared-people').style.visibility = on ? 'visible' : 'hidden';
+    document.getElementById('share-location-label').textContent = on
+      ? 'Seward Park'
+      : 'Recordings stay private';
+    document.getElementById('s-save').classList.toggle('share-off', !on);
+    const list = document.getElementById('save-species-list');
+    if (list) list.setAttribute('aria-label', on ? 'Species in this session' : 'Species in this session, recordings private');
+    announce(on ? 'Share recordings on' : 'Share recordings off. Bird photos hidden from shared session.');
+  });
+
+  document.getElementById('why-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    announce('Help: Merlin needs a clear recording of a bird singing nearby. Move closer or wait for a louder call.');
+    showToast('Needs a clearer bird song nearby');
+  });
+
+  // Listening simulation
+  const detectList = document.getElementById('detect-list');
+  const idEmpty = document.getElementById('id-empty');
+  const idMeta = document.getElementById('id-meta');
+  const sonoLive = document.getElementById('sono-live');
+
+  function stopListening() {
+    listening = false;
+    mic.setAttribute('aria-pressed', 'false');
+    mic.setAttribute('aria-label', 'Start listening');
+    cancelAnimationFrame(sonoRAF);
+    drawSono(false);
+    const count = detectList.children.length;
+    idMeta.textContent = `5:04 PM · ${count} ${count === 1 ? 'bird' : 'birds'}`;
+    sonoLive.setAttribute('aria-label', 'Sound ID spectrogram. Not playing.');
+  }
+
+  mic.addEventListener('click', () => {
+    listening = !listening;
+    mic.setAttribute('aria-pressed', listening ? 'true' : 'false');
+    mic.setAttribute('aria-label', listening ? 'Stop listening' : 'Start listening');
+    if (listening) {
+      stopReviewAudio();
+      announce('Listening for birds');
+      idEmpty.hidden = true;
+      detectList.hidden = false;
+      detectList.innerHTML = '';
+      idMeta.textContent = 'Listening… · 0 birds';
+      sonoLive.setAttribute('aria-label', 'Sound ID spectrogram. Listening.');
+      sonoTime.textContent = '0:00';
+      document.getElementById('btn-done-top').hidden = true;
+      document.getElementById('btn-save-top').disabled = true;
+      document.getElementById('btn-save-top').hidden = false;
+      let secs = 0;
+      clearInterval(mic._timer);
+      mic._timer = setInterval(() => {
+        if (!listening) { clearInterval(mic._timer); return; }
+        secs += 1;
+        sonoTime.textContent = formatTime(secs);
+      }, 1000);
+      setTimeout(() => {
+        if (!listening) return;
+        detectList.innerHTML = `
+          <li>
+            <button type="button" class="row bird" data-id-bird="house-finch">
+              <img class="thumb" src="assets/birds/house-finch.jpg" alt="">
+              <span class="grow"><span class="nm">House Finch</span><span class="meta">Likely · just now</span></span>
+              <span class="chev" aria-hidden="true">›</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="row bird" data-id-bird="spotted-towhee">
+              <img class="thumb" src="assets/birds/spotted-towhee.jpg" alt="">
+              <span class="grow"><span class="nm">Spotted Towhee</span><span class="meta">Likely · just now</span></span>
+              <span class="chev" aria-hidden="true">›</span>
+            </button>
+          </li>`;
+        idMeta.textContent = 'Listening… · 2 birds';
+        sonoLive.setAttribute('aria-label', 'Sound ID spectrogram. House Finch and Spotted Towhee detected.');
+        document.getElementById('btn-done-top').hidden = false;
+        document.getElementById('btn-save-top').hidden = true;
+        announce('House Finch and Spotted Towhee detected. Tap Done when finished.');
+      }, 1800);
+      drawSono(true);
+    } else {
+      clearInterval(mic._timer);
+      stopListening();
+      announce('Stopped listening');
+      if (detectList.children.length) {
+        document.getElementById('btn-done-top').hidden = false;
+        document.getElementById('btn-save-top').hidden = true;
+      }
+    }
+  });
+
+  // Tapping an ID'd bird plays its clip on the spectrogram for review
+  detectList.addEventListener('click', (e) => {
+    const bird = e.target.closest('[data-id-bird]');
+    if (!bird) return;
+    e.preventDefault();
+    if (listening) {
+      listening = false;
+      mic.setAttribute('aria-pressed', 'false');
+      mic.setAttribute('aria-label', 'Start listening');
+      clearInterval(mic._timer);
+      cancelAnimationFrame(sonoRAF);
+    }
+    const key = bird.dataset.idBird;
+    const name = bird.querySelector('.nm')?.textContent || 'Bird';
+    stopReviewAudio();
+    const src = key === 'spotted-towhee' ? 'birds/house-finch.mp3' : `birds/${key}.mp3`;
+    reviewAudio = new Audio(src);
+    reviewAudio.play().catch(() => announce('Could not play'));
+    sonoPlay.classList.add('playing');
+    drawSono(true);
+    sonoLive.setAttribute('aria-label', `Playing ${name}`);
+    announce(`Playing ${name}`);
+    const tick = () => {
+      if (!reviewAudio) return;
+      const d = reviewAudio.duration || 45;
+      const t = reviewAudio.currentTime || 0;
+      const pct = Math.min(0.92, 0.08 + (t / d) * 0.84);
+      playhead.style.left = (pct * 100) + '%';
+      sonoPlay.style.left = (pct * 100) + '%';
+      sonoTime.textContent = formatTime(t) + ' / ' + formatTime(d);
+      if (!reviewAudio.paused) requestAnimationFrame(tick);
+    };
+    reviewAudio.addEventListener('timeupdate', tick);
+    reviewAudio.onended = () => {
+      stopReviewAudio();
+      sonoTime.textContent = formatTime(reviewAudio?.duration || 0);
+      announce('Finished');
+    };
+    tick();
+  });
+
+  // Audio playback
+  const MIX_FILE = encodeURI('Formal birding.mp4');
+  const MIX_SECONDS = 30;
+
+  function audioKeyFromPathEarly(path) {
+    if (!path) return path;
+    if (path.includes('Formal') || path.includes('birding')) return 'chorus';
+    if (path.includes('house-finch')) return 'house-finch';
+    if (path.includes('american-robin') || path.includes('robin')) return 'american-robin';
+    if (path.includes('morning-chorus')) return 'chorus';
+    return path;
+  }
+
+  async function playSrc(pathOrKey, btn) {
+    if (audio) {
+      audio.pause();
+      document.querySelectorAll('.play-sm.playing, .card.green.playing, .spectro.playing').forEach(el => el.classList.remove('playing'));
+      if (audio._btn === btn) {
+        audio = null;
+        resetMixProgress();
+        resetSpectroProgress(btn);
+        announce('Paused');
+        return;
+      }
+      resetSpectroProgress(audio._btn);
+    }
+    const isMix = btn && (btn.id === 'summer-mix' || btn.id === 'species-mix' || btn.id === 'park-mix' || pathOrKey === MIX_FILE || pathOrKey === 'chorus');
+    let src = isMix ? MIX_FILE : pathOrKey;
+    let credit = isMix ? 'Formal birding mix' : '';
+    if (!isMix && window.__resolveAudio) {
+      const info = await window.__resolveAudio(audioKeyFromPathEarly(pathOrKey));
+      src = info.src;
+      credit = info.credit;
+    }
+    audio = new Audio(src);
+    audio._btn = btn;
+    btn.classList.add('playing');
+    audio.play().catch(() => announce('Could not play audio'));
+    announce(credit ? 'Playing. ' + credit : 'Playing');
+    if (isMix) {
+      audio.addEventListener('timeupdate', () => {
+        if (audio && audio.currentTime >= MIX_SECONDS) {
+          audio.pause();
+          audio.dispatchEvent(new Event('ended'));
+        }
+      });
+      trackMixProgress(audio, btn);
+    } else if (btn && btn.classList.contains('spectro')) {
+      trackSpectroProgress(audio, btn);
+    }
+    audio.onended = () => {
+      btn.classList.remove('playing');
+      resetSpectroProgress(btn);
+      audio = null;
+      resetMixProgress();
+      announce('Finished');
+    };
+  }
+
+  function formatMixTime(sec) {
+    const s = Math.max(0, Math.floor(sec || 0));
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+  function parseDur(str) {
+    if (!str) return 30;
+    const parts = String(str).split(':').map(Number);
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+    return Number(str) || 30;
+  }
+  function mixEls(btn) {
+    const id = btn?.id || '';
+    const prefix = id === 'species-mix' ? 'species-mix' : id === 'park-mix' ? 'park-mix' : 'summer-mix';
+    return {
+      bar: document.getElementById(prefix + '-bar'),
+      time: document.getElementById(prefix + '-time')
+    };
+  }
+  function resetMixProgress() {
+    ['summer-mix', 'species-mix', 'park-mix'].forEach(prefix => {
+      const bar = document.getElementById(prefix + '-bar');
+      const time = document.getElementById(prefix + '-time');
+      if (bar) bar.style.width = '0%';
+      if (time) { time.hidden = true; time.textContent = '0:00'; }
+    });
+  }
+  function trackMixProgress(media, btn) {
+    const { bar, time } = mixEls(btn);
+    if (time) {
+      time.hidden = false;
+      time.textContent = '0:00 / ' + formatMixTime(MIX_SECONDS);
+    }
+    const tick = () => {
+      if (!media || media !== audio) return;
+      const t = Math.min(media.currentTime || 0, MIX_SECONDS);
+      const pct = Math.min(100, (t / MIX_SECONDS) * 100);
+      if (bar) bar.style.width = pct + '%';
+      if (time) time.textContent = formatMixTime(t) + ' / ' + formatMixTime(MIX_SECONDS);
+      if (t >= MIX_SECONDS) {
+        media.pause();
+        media.dispatchEvent(new Event('ended'));
+        return;
+      }
+      if (!media.paused) requestAnimationFrame(tick);
+    };
+    media.addEventListener('timeupdate', tick);
+    tick();
+  }
+  function resetSpectroProgress(btn) {
+    if (!btn || !btn.classList.contains('spectro')) return;
+    const played = btn.querySelector('.played');
+    const line = btn.querySelector('.ph-line');
+    const play = btn.querySelector('.sp-play');
+    const dur = btn.querySelector('.dur');
+    if (played) played.style.width = '0%';
+    if (line) line.style.left = '0%';
+    if (play) play.style.left = '0%';
+    if (dur && btn.dataset.dur) dur.textContent = btn.dataset.dur;
+  }
+  function trackSpectroProgress(media, btn) {
+    const total = parseDur(btn.dataset.dur);
+    const played = btn.querySelector('.played');
+    const line = btn.querySelector('.ph-line');
+    const play = btn.querySelector('.sp-play');
+    const dur = btn.querySelector('.dur');
+    const tick = () => {
+      if (!media || media !== audio) return;
+      const t = Math.min(media.currentTime || 0, total);
+      const pct = Math.min(100, (t / total) * 100);
+      if (played) played.style.width = pct + '%';
+      if (line) line.style.left = pct + '%';
+      if (play) play.style.left = pct + '%';
+      if (dur) dur.textContent = formatMixTime(t) + ' / ' + formatMixTime(total);
+      if (t >= total - 0.05) {
+        media.pause();
+        media.dispatchEvent(new Event('ended'));
+        return;
+      }
+      if (!media.paused) requestAnimationFrame(tick);
+    };
+    media.addEventListener('timeupdate', tick);
+    tick();
+  }
+
+  document.body.addEventListener('click', (e) => {
+    const p = e.target.closest('[data-audio]');
+    if (p) {
+      e.preventDefault();
+      playSrc(p.dataset.audio, p);
+    }
+  });
+
+  ['summer-mix','species-mix','park-mix'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      playSrc(MIX_FILE, el);
+    });
+  });
+
+  // Waveform bars
+  function fillWaves() {
+    document.querySelectorAll('.wave').forEach(w => {
+      if (w.childElementCount) return;
+      let html = '';
+      for (let i = 0; i < 28; i++) {
+        const h = 20 + Math.abs(Math.sin(i * 0.7) * 70);
+        html += `<i style="height:${h}%"></i>`;
+      }
+      w.innerHTML = html;
+    });
+  }
+  fillWaves();
+
+  // Spectrogram — Merlin / Cornell Sound ID look
+  const canvas = document.getElementById('sonoCanvas');
+  const ctx = canvas.getContext('2d');
+  const sonoPlay = document.getElementById('sono-play');
+  const sonoTime = document.getElementById('sono-time');
+  const playhead = document.querySelector('.sono-playhead');
+  let sonoRAF = 0;
+  let sonoPhase = 0;
+  let reviewAudio = null;
+
+  function noise(x, y) {
+    const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+    return n - Math.floor(n);
+  }
+
+  function drawSono(active) {
+    cancelAnimationFrame(sonoRAF);
+    const w = canvas.width, h = canvas.height;
+    const split = Math.floor(w * 0.42);
+
+    function frame() {
+      if (active) sonoPhase += 1.6;
+      // Left = already-heard (flat pale); right = live spectrogram texture
+      ctx.fillStyle = '#EBEEF1';
+      ctx.fillRect(0, 0, split, h);
+      ctx.fillStyle = '#D8DCE0';
+      ctx.fillRect(split, 0, w - split, h);
+
+      // Faint residual energy on the left
+      for (let x = 0; x < split; x += 2) {
+        for (let band = 0; band < 18; band++) {
+          const y0 = (band / 18) * h;
+          const v = noise(x * 0.08, band + 2) * 0.12;
+          if (v < 0.06) continue;
+          const gray = 200 - v * 80;
+          ctx.fillStyle = `rgba(${gray},${gray},${gray + 4},${0.15 + v})`;
+          ctx.fillRect(x, y0 + noise(band, x) * 4, 2, h / 18);
+        }
+      }
+
+      // Right: scrolling spectrogram (grayscale frequency bands)
+      for (let x = split; x < w; x += 2) {
+        const t = (x + sonoPhase) * 0.045;
+        for (let band = 0; band < 22; band++) {
+          const mid = 0.35 + 0.35 * Math.sin(t * 0.7 + band * 0.4);
+          let energy = noise(x * 0.2 + sonoPhase * 0.05, band) * mid;
+          if (active) {
+            // Bird-like chirp bursts
+            const burst = Math.max(0, Math.sin(t * 2.2 + band * 0.15) - 0.65) * 2.2;
+            energy = Math.min(1, energy * 0.55 + burst * (band > 6 && band < 16 ? 1 : 0.25));
+          } else {
+            energy *= 0.35;
+          }
+          if (energy < 0.08) continue;
+          const g = Math.floor(210 - energy * 150);
+          ctx.fillStyle = `rgb(${g},${g},${Math.min(255, g + 6)})`;
+          const bh = h / 22;
+          ctx.fillRect(x, band * bh, 2, bh + 0.5);
+        }
+      }
+
+      // Soft vertical fade at the playhead edge
+      const grad = ctx.createLinearGradient(split - 18, 0, split + 8, 0);
+      grad.addColorStop(0, 'rgba(235,238,241,0)');
+      grad.addColorStop(1, 'rgba(235,238,241,0.55)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(split - 18, 0, 26, h);
+
+      if (active) sonoRAF = requestAnimationFrame(frame);
+    }
+    frame();
+  }
+  drawSono(false);
+
+  function formatTime(sec) {
+    const s = Math.max(0, Math.floor(sec || 0));
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  function stopReviewAudio() {
+    if (reviewAudio) {
+      reviewAudio.pause();
+      reviewAudio = null;
+    }
+    sonoPlay.classList.remove('playing');
+    playhead.style.left = '42%';
+    sonoPlay.style.left = '42%';
+  }
+
+  sonoPlay.addEventListener('click', () => {
+    // Prefer Formal birding mix as the Sound ID review clip when available
+    if (reviewAudio && !reviewAudio.paused) {
+      reviewAudio.pause();
+      sonoPlay.classList.remove('playing');
+      drawSono(false);
+      return;
+    }
+    if (listening) {
+      // stop live listen first
+      mic.click();
+    }
+    stopReviewAudio();
+    reviewAudio = new Audio(MIX_FILE);
+    reviewAudio.play().catch(() => announce('Could not play'));
+    sonoPlay.classList.add('playing');
+    drawSono(true);
+    sonoLive.setAttribute('aria-label', 'Sound ID spectrogram. Playing.');
+    const tick = () => {
+      if (!reviewAudio) return;
+      const d = reviewAudio.duration || 90;
+      const t = reviewAudio.currentTime || 0;
+      sonoTime.textContent = formatTime(t);
+      const pct = 12 + (t / d) * 76;
+      playhead.style.left = pct + '%';
+      sonoPlay.style.left = pct + '%';
+      if (!reviewAudio.paused) requestAnimationFrame(tick);
+    };
+    reviewAudio.ontimeupdate = tick;
+    reviewAudio.onended = () => {
+      sonoPlay.classList.remove('playing');
+      drawSono(false);
+      playhead.style.left = '42%';
+      sonoPlay.style.left = '42%';
+      reviewAudio = null;
+      sonoLive.setAttribute('aria-label', 'Sound ID spectrogram. Finished.');
+    };
+  });
+
+  // Species-matched local bird photography (Wikimedia Commons)
+  const BIRD_BY_NAME = {
+    'House Finch': 'assets/birds/house-finch.jpg',
+    'Spotted Towhee': 'assets/birds/spotted-towhee.jpg',
+    'American Robin': 'assets/birds/american-robin.jpg',
+    'Black-capped Chickadee': 'assets/birds/black-capped-chickadee.jpg',
+    'Song Sparrow': 'assets/birds/song-sparrow.jpg',
+    'Steller’s Jay': 'assets/birds/stellers-jay.jpg',
+    'Anna’s Hummingbird': 'assets/birds/annas-hummingbird.jpg',
+    'Northern Flicker': 'assets/birds/northern-flicker.jpg',
+    'Lazuli Bunting': 'assets/birds/lazuli-bunting.jpg',
+    'Merlin': 'assets/birds/merlin.jpg',
+    'Bald Eagle': 'assets/birds/bald-eagle.jpg',
+    'Mallard': 'assets/birds/mallard.jpg',
+    'Canada Goose': 'assets/birds/canada-goose.jpg',
+    'Red-winged Blackbird': 'assets/birds/red-winged-blackbird.jpg',
+    'Dark-eyed Junco': 'assets/birds/dark-eyed-junco.jpg',
+    'Cedar Waxwing': 'assets/birds/cedar-waxwing.jpg',
+    'Common Raven': 'assets/birds/common-raven.jpg',
+    'Great Blue Heron': 'assets/birds/great-blue-heron.jpg'
+  };
+
+  const SPECIES_META = {
+    'House Finch': { sci: 'Haemorhous mexicanus', blurb: 'A cheerful backyard finch with a rosy head and breast. Common at feeders across Seattle.', size: '5–6 in', habitat: 'Yards, parks, edges' },
+    'Spotted Towhee': { sci: 'Pipilo maculatus', blurb: 'A striking ground forager with rufous sides and white spots on black wings. Scratches loudly in leaf litter.', size: '7–8 in', habitat: 'Brushy understory' },
+    'American Robin': { sci: 'Turdus migratorius', blurb: 'Familiar thrush with an orange breast. Often hops across lawns after rain looking for worms.', size: '9–11 in', habitat: 'Lawns, parks, woods' },
+    'Black-capped Chickadee': { sci: 'Poecile atricapillus', blurb: 'Tiny, curious acrobat with a black cap and white cheeks. Famous for its chick-a-dee-dee call.', size: '4–5 in', habitat: 'Mixed woods, feeders' },
+    'Song Sparrow': { sci: 'Melospiza melodia', blurb: 'Streaky brown sparrow with a central breast spot. Sings a complex, musical song from low perches.', size: '5–7 in', habitat: 'Wet edges, thickets' },
+    'Steller’s Jay': { sci: 'Cyanocitta stelleri', blurb: 'Bold crest and deep blue body. Loud, opportunistic, and often first to notice hikers on forest trails.', size: '11–12 in', habitat: 'Conifer forests' },
+    'Anna’s Hummingbird': { sci: 'Calypte anna', blurb: 'Year-round Seattle resident. Males flash a rose-magenta throat and dive in spectacular courtship displays.', size: '4 in', habitat: 'Gardens, flowering shrubs' },
+    'Northern Flicker': { sci: 'Colaptes auratus', blurb: 'Large woodpecker often seen on the ground hunting ants. Shows a bright white rump in flight.', size: '11–14 in', habitat: 'Open woods, parks' },
+    'Lazuli Bunting': { sci: 'Passerina amoena', blurb: 'Sky-blue males and warm brown females. Prefers brushy edges and sings a bright, rapid warble.', size: '5–6 in', habitat: 'Shrubby slopes' },
+    'Merlin': { sci: 'Falco columbarius', blurb: 'Small, fierce falcon that hunts songbirds in open parks and shoreline corridors.', size: '9–12 in', habitat: 'Open country, coasts' },
+    'Bald Eagle': { sci: 'Haliaeetus leucocephalus', blurb: 'Iconic raptor with white head and tail. Regular along Lake Washington and Seward’s shoreline.', size: '28–38 in', habitat: 'Lakes, rivers, coasts' },
+    'Mallard': { sci: 'Anas platyrhynchos', blurb: 'Familiar dabbling duck. Males have a glossy green head; both sexes quack loudly near ponds.', size: '20–26 in', habitat: 'Ponds, wetlands' },
+    'Canada Goose': { sci: 'Branta canadensis', blurb: 'Large waterfowl with a black head and white chinstrap. Grazes lawns and wetlands in noisy flocks.', size: '30–43 in', habitat: 'Lakes, lawns' },
+    'Red-winged Blackbird': { sci: 'Agelaius phoeniceus', blurb: 'Males flash scarlet shoulder patches from cattails. Classic marsh sound of spring.', size: '7–9 in', habitat: 'Marshes, wet fields' },
+    'Dark-eyed Junco': { sci: 'Junco hyemalis', blurb: 'Slate-colored sparrow with a white belly and pink bill. Often forages under feeders in winter.', size: '5–6 in', habitat: 'Wood edges, yards' },
+    'Cedar Waxwing': { sci: 'Bombycilla cedrorum', blurb: 'Sleek berry specialist with a silky crest and yellow-tipped tail. Travels in sociable flocks.', size: '6–7 in', habitat: 'Fruiting trees' },
+    'Common Raven': { sci: 'Corvus corax', blurb: 'Largest songbird. Deep croak and aerial rolls; often soars over ridges and park canopies.', size: '22–27 in', habitat: 'Forests, cliffs' },
+    'Great Blue Heron': { sci: 'Ardea herodias', blurb: 'Tall, patient wader. Stalks fish in shallows with slow steps and a sudden spear of the bill.', size: '45–54 in', habitat: 'Shorelines, marshes' }
+  };
+
+  const BIRD_IMAGES = Object.values(BIRD_BY_NAME);
+
+  function birdImg(name) {
+    return BIRD_BY_NAME[name] || BIRD_IMAGES[0];
+  }
+
+  const PEOPLE = [
+    { id: 'alex', name: 'Alex', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80' },
+    { id: 'sam', name: 'Sam', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80' },
+    { id: 'lucy', name: 'Lucy', image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=160&q=80' },
+    { id: 'joe', name: 'Joe', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&q=80' },
+    { id: 'maya', name: 'Maya', image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=160&q=80' },
+    { id: 'rio', name: 'Rio', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=160&q=80' }
+  ];
+  const joinedIds = new Set(['alex', 'sam']);
+  const sharedIds = new Set(['lucy', 'joe']);
+  let friendDraft = new Set();
+  let currentSpecies = null;
+  let currentPlace = null;
+  let shareMonthIndex = 4;
+  let sharePage = 0;
+  let shareReturnScreen = 's-calendar';
+  let shareSpeciesOnly = false;
+  let activityReturn = 's-identify';
+
+  // Friend activity: shared-location saves + outing invites only
+  const ACTIVITY = [
+    { id: 'a1', type: 'recording', personId: 'lucy', bird: 'House Finch', place: 'Seward Park', placeId: 'seward', when: '12m ago', unread: true },
+    { id: 'a2', type: 'outing', personId: 'joe', place: 'Marymoor Park', placeId: 'redmond', title: 'Saturday morning at Marymoor', when: '1h ago', unread: true },
+    { id: 'a3', type: 'recording', personId: 'joe', bird: 'American Robin', place: 'Seward Park', placeId: 'seward', when: '3h ago', unread: true },
+    { id: 'a4', type: 'outing', personId: 'maya', place: 'Seward Park', placeId: 'seward', title: 'Dawn walk at Seward', when: 'Yesterday', unread: false },
+    { id: 'a5', type: 'recording', personId: 'lucy', bird: 'Steller’s Jay', place: 'University District', placeId: 'udistrict', when: 'Yesterday', unread: false },
+    { id: 'a6', type: 'recording', personId: 'joe', bird: 'Anna’s Hummingbird', place: 'Seward Park', placeId: 'seward', when: '2d ago', unread: false },
+    { id: 'a7', type: 'outing', personId: 'alex', place: 'University District', placeId: 'udistrict', title: 'Campus lunch birds', when: '3d ago', unread: false }
+  ];
+
+  function activityUnreadCount() {
+    return ACTIVITY.filter(a => a.unread).length;
+  }
+
+  function markActivityRead() {
+    ACTIVITY.forEach(a => { a.unread = false; });
+    syncNotifBadges();
+  }
+
+  function syncNotifBadges() {
+    const n = activityUnreadCount();
+    document.querySelectorAll('.notif-bell').forEach(btn => {
+      btn.dataset.unread = String(n);
+      btn.setAttribute('aria-label', n ? `Notifications, ${n} unread` : 'Notifications');
+    });
+  }
+
+  function makeNotifBell() {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'notif-bell';
+    btn.dataset.unread = String(activityUnreadCount());
+    btn.setAttribute('aria-label', 'Notifications');
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 7H3s3 0 3-7"/>
+        <path d="M10 19a2 2 0 0 0 4 0"/>
+      </svg>
+      <span class="dot" aria-hidden="true"></span>`;
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      openActivity();
+    });
+    return btn;
+  }
+
+  function mountNotifBells() {
+    // Identify — far right of the Save/Done cluster
+    const idActions = document.querySelector('#s-identify .top > div:last-child');
+    if (idActions && !idActions.querySelector('.notif-bell')) {
+      idActions.appendChild(makeNotifBell());
+    }
+
+    // History Date — wrap calendar + bell
+    const histLead = document.querySelector('#s-history-date header.top.lead');
+    if (histLead && !histLead.querySelector('.notif-bell')) {
+      const cal = histLead.querySelector('.circle-btn');
+      const wrap = document.createElement('div');
+      wrap.className = 'lead-actions';
+      if (cal) wrap.appendChild(cal);
+      wrap.appendChild(makeNotifBell());
+      histLead.appendChild(wrap);
+    }
+
+    // History Species / Location — bell only
+    ['#s-history-species', '#s-history-location'].forEach(sel => {
+      const lead = document.querySelector(`${sel} header.top.lead`);
+      if (!lead || lead.querySelector('.notif-bell')) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'lead-actions';
+      wrap.appendChild(makeNotifBell());
+      lead.appendChild(wrap);
+    });
+
+    // Sheet toolbars — before close (skip Activity itself)
+    document.querySelectorAll('.screen .toolbar').forEach(tb => {
+      const screen = tb.closest('.screen');
+      if (!screen || screen.id === 's-activity') return;
+      if (tb.querySelector('.notif-bell')) return;
+      const close = tb.querySelector('.close-circle');
+      const bell = makeNotifBell();
+      if (close) tb.insertBefore(bell, close);
+      else tb.appendChild(bell);
+    });
+
+    syncNotifBadges();
+  }
+
+  function openActivity() {
+    if (current !== 's-activity') activityReturn = current;
+    go('s-activity');
+  }
+
+  function renderActivity() {
+    const list = document.getElementById('activity-list');
+    if (!list) return;
+    if (!ACTIVITY.length) {
+      list.innerHTML = `<li class="activity-empty">No friend activity yet</li>`;
+      return;
+    }
+    list.innerHTML = ACTIVITY.map(item => {
+      const person = PEOPLE.find(p => p.id === item.personId) || PEOPLE[0];
+      if (item.type === 'outing') {
+        return `<li>
+          <button type="button" class="activity-row${item.unread ? ' unread' : ''}" data-activity="${item.id}">
+            ${personAvatar(person)}
+            <span class="body">
+              <span class="line"><strong>${person.name}</strong> added you to an outing</span>
+              <span class="meta">${item.title} · ${item.place}</span>
+              <span class="tag">Outing invite</span>
+              <span class="meta">${item.when}</span>
+            </span>
+            <span class="outing-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7L12 16.8 5.7 20.6 8 13.6 2 9.2h7.6z"/></svg>
+            </span>
+          </button>
+        </li>`;
+      }
+      return `<li>
+        <button type="button" class="activity-row${item.unread ? ' unread' : ''}" data-activity="${item.id}">
+          ${personAvatar(person)}
+          <span class="body">
+            <span class="line"><strong>${person.name}</strong> saved a <strong>${item.bird}</strong></span>
+            <span class="meta">At shared location · ${item.place}</span>
+            <span class="tag">Shared location</span>
+            <span class="meta">${item.when}</span>
+          </span>
+          <img class="thumb" src="${birdImg(item.bird)}" alt="">
+        </button>
+      </li>`;
+    }).join('');
+  }
+
+  document.getElementById('activity-close')?.addEventListener('click', () => go(activityReturn || 's-identify'));
+  document.getElementById('activity-list')?.addEventListener('click', e => {
+    const row = e.target.closest('[data-activity]');
+    if (!row) return;
+    const item = ACTIVITY.find(a => a.id === row.dataset.activity);
+    if (!item) return;
+    if (item.type === 'outing') {
+      const place = typeof PLACES !== 'undefined' ? PLACES.find(p => p.id === item.placeId) : null;
+      if (place) currentPlace = place;
+      go('s-session');
+      showToast(`${item.title}`);
+      announce(`Opened outing: ${item.title}`);
+      return;
+    }
+    const species = typeof SPECIES !== 'undefined' ? SPECIES.find(s => s.name === item.bird) : null;
+    if (species) openSpecies(species);
+    else go('s-session');
+  });
+
+  function personAvatar(person, className = 'avatar') {
+    return `<img class="${className}" src="${person.image}" alt="${person.name}">`;
+  }
+
+  function renderPeople() {
+    const joined = document.getElementById('joined-people');
+    const shared = document.getElementById('shared-people');
+    if (joined) {
+      joined.innerHTML = PEOPLE.filter(p => joinedIds.has(p.id)).map(p => personAvatar(p)).join('');
+    }
+    const sharedPeople = PEOPLE.filter(p => sharedIds.has(p.id));
+    if (shared) {
+      shared.innerHTML = sharedPeople.map(p => personAvatar(p)).join('');
+      shared.setAttribute('aria-label', `Shared with ${sharedPeople.map(p => p.name).join(' and ')}`);
+    }
+  }
+
+  function renderFriendOptions() {
+    const list = document.getElementById('friend-options');
+    if (!list) return;
+    list.innerHTML = PEOPLE.map(person => `
+      <li>
+        <button type="button" class="friend-option" data-friend="${person.id}" aria-pressed="${friendDraft.has(person.id)}">
+          ${personAvatar(person)}
+          <span class="grow"><span class="nm">${person.name}</span><span class="meta">${joinedIds.has(person.id) ? 'Already added' : 'Friend'}</span></span>
+          <span class="check" aria-hidden="true"></span>
+        </button>
+      </li>`).join('');
+  }
+
+  function openFriendPicker() {
+    friendDraft = new Set(joinedIds);
+    renderFriendOptions();
+    const picker = document.getElementById('friend-modal');
+    picker.hidden = false;
+    picker.querySelector('.friend-option')?.focus();
+  }
+
+  function closeFriendPicker() {
+    document.getElementById('friend-modal').hidden = true;
+    document.getElementById('add-friends')?.focus();
+  }
+
+  document.getElementById('add-friends')?.addEventListener('click', openFriendPicker);
+  document.getElementById('friend-options')?.addEventListener('click', event => {
+    const option = event.target.closest('[data-friend]');
+    if (!option) return;
+    const id = option.dataset.friend;
+    if (friendDraft.has(id)) friendDraft.delete(id);
+    else friendDraft.add(id);
+    renderFriendOptions();
+    document.querySelector(`[data-friend="${id}"]`)?.focus();
+  });
+  document.getElementById('friend-confirm')?.addEventListener('click', () => {
+    joinedIds.clear();
+    friendDraft.forEach(id => joinedIds.add(id));
+    renderPeople();
+    closeFriendPicker();
+    announce(`${joinedIds.size} people added`);
+  });
+  document.getElementById('friend-cancel')?.addEventListener('click', closeFriendPicker);
+  document.getElementById('friend-backdrop')?.addEventListener('click', closeFriendPicker);
+  renderPeople();
+
+  const CALENDAR_MONTHS = [
+    { year: 2026, month: 2, name: 'March', active: { 2:1, 8:2, 15:1, 21:3, 29:2 } },
+    { year: 2026, month: 3, name: 'April', active: { 3:1, 7:2, 12:2, 18:3, 24:1, 27:2 } },
+    { year: 2026, month: 4, name: 'May', active: { 4:2, 11:4, 18:5, 24:4, 30:6 } },
+    { year: 2026, month: 5, name: 'June', active: { 1:2, 4:3, 5:2, 6:1, 10:2, 11:4, 13:1, 18:5, 19:2, 20:3, 21:2, 22:5, 23:1, 24:2, 25:2, 26:3 } },
+    { year: 2026, month: 6, name: 'July', active: { 1:5, 4:3, 8:4, 12:3, 14:2, 17:2, 19:4, 21:5, 22:3 } }
+  ];
+
+  const TODAY = { y: 2026, m: 6, d: 22 };
+  const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  function dowRow() {
+    return DOW.map(d => `<span class="cal-dow" aria-hidden="true">${d}</span>`).join('');
+  }
+
+  function speciesDaysFor(speciesName, monthObj) {
+    // Deterministic subset of month.active days for this species
+    const days = Object.keys(monthObj.active).map(Number);
+    let hash = 0;
+    for (let i = 0; i < speciesName.length; i++) hash = (hash * 31 + speciesName.charCodeAt(i)) | 0;
+    const keep = {};
+    days.forEach((d, i) => {
+      if (((hash + d * 17 + i) % 3) !== 0) keep[d] = monthObj.active[d];
+    });
+    if (!Object.keys(keep).length && days.length) keep[days[0]] = monthObj.active[days[0]];
+    return keep;
+  }
+
+  function calendarCells(m, monthIndex, { mode = 'photos', speciesName = null, navigate = true } = {}) {
+    const days = new Date(m.year, m.month + 1, 0).getDate();
+    const startPad = (new Date(m.year, m.month, 1).getDay() + 6) % 7;
+    const active = speciesName ? speciesDaysFor(speciesName, m) : m.active;
+    let cells = '';
+    for (let i = 0; i < startPad; i++) {
+      cells += '<span class="cal-cell blank" aria-hidden="true"></span>';
+    }
+    const names = Object.keys(BIRD_BY_NAME);
+    for (let day = 1; day <= days; day++) {
+      const recordings = active[day];
+      const isToday = m.year === TODAY.y && m.month === TODAY.m && day === TODAY.d;
+      const todayCls = isToday ? ' today' : '';
+      const goAttr = navigate ? ' data-go="s-history-date"' : '';
+      if (recordings) {
+        if (mode === 'dots') {
+          cells += `<button type="button" class="cal-cell has${todayCls}" aria-label="${m.name} ${day}, recorded"${goAttr}>
+            <span class="num" aria-hidden="true">${day}</span>
+            <span class="slot"><span class="dot green"></span></span>
+          </button>`;
+        } else {
+          const imgName = speciesName || names[(day + monthIndex) % names.length];
+          const image = birdImg(imgName);
+          cells += `<button type="button" class="cal-cell has${todayCls}" aria-label="${m.name} ${day}, ${recordings} recordings"${goAttr}>
+            <span class="num" aria-hidden="true">${day}</span>
+            <span class="slot"><img src="${image}" alt=""></span>
+          </button>`;
+        }
+      } else {
+        cells += `<button type="button" class="cal-cell${todayCls}" disabled aria-label="${m.name} ${day}, no recordings">
+          <span class="num" aria-hidden="true">${day}</span>
+          <span class="slot"><span class="dot"></span></span>
+        </button>`;
+      }
+    }
+    return cells;
+  }
+
+  function shareBrand() {
+    return `<div class="share-brand" aria-hidden="true">
+      Merlin
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-2 3-5 4-5 9a5 5 0 0 0 10 0c0-5-3-6-5-9z"/></svg>
+    </div>`;
+  }
+
+  function renderCalendar() {
+    const stack = document.getElementById('calendar-stack');
+    if (!stack) return;
+    stack.innerHTML = CALENDAR_MONTHS.map((m, i) => `
+      <div class="cal" aria-labelledby="cal-${m.month}">
+        <div class="cal-head">
+          <h2 class="cal-h" id="cal-${m.month}">${m.name}</h2>
+          <button type="button" class="circle-btn green share-month" data-month="${i}" aria-label="Share ${m.name} calendar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
+          </button>
+        </div>
+        <div class="cal-grid">${dowRow()}${calendarCells(m, i)}</div>
+      </div>`).join('');
+    stack.querySelectorAll('.share-month').forEach(btn => {
+      btn.addEventListener('click', () => openShare(+btn.dataset.month));
+    });
+  }
+  renderCalendar();
+
+  function setSharePage(page) {
+    sharePage = Math.max(0, Math.min(1, page));
+    const track = document.getElementById('share-track');
+    if (track) track.style.transform = `translateX(${-sharePage * 100}%)`;
+    document.querySelectorAll('#share-dots i').forEach((dot, i) => dot.classList.toggle('on', i === sharePage));
+    document.getElementById('share-card-photos')?.setAttribute('aria-selected', sharePage === 0 ? 'true' : 'false');
+    document.getElementById('share-card-dots')?.setAttribute('aria-selected', sharePage === 1 ? 'true' : 'false');
+    const cap = document.getElementById('share-caption');
+    if (cap) {
+      const sp = shareSpeciesOnly && currentSpecies ? currentSpecies.name : null;
+      if (sharePage === 0) {
+        cap.textContent = sp ? `${sp} · photo calendar` : 'All species · photo calendar';
+      } else {
+        cap.textContent = sp ? `${sp} · activity` : 'Species activity · green days';
+      }
+    }
+  }
+
+  function openShare(monthIndex, species = null) {
+    shareReturnScreen = current === 's-species-calendar' ? 's-species-calendar' : 's-calendar';
+    shareMonthIndex = monthIndex;
+    shareSpeciesOnly = !!species;
+    if (species) currentSpecies = species;
+    const m = CALENDAR_MONTHS[monthIndex];
+    const photos = document.getElementById('share-card-photos');
+    const dots = document.getElementById('share-card-dots');
+    const spName = shareSpeciesOnly && currentSpecies ? currentSpecies.name : null;
+    if (photos) {
+      photos.innerHTML = `<h2 class="cal-h">${m.name}</h2>
+        <div class="cal-grid">${dowRow()}${calendarCells(m, monthIndex, { mode: 'photos', speciesName: spName, navigate: false })}</div>
+        ${shareBrand()}`;
+    }
+    if (dots) {
+      dots.innerHTML = `<h2 class="cal-h">${m.name}</h2>
+        <div class="cal-grid">${dowRow()}${calendarCells(m, monthIndex, { mode: 'dots', speciesName: spName || 'House Finch', navigate: false })}</div>
+        ${shareBrand()}`;
+    }
+    setSharePage(0);
+    go('s-share');
+  }
+  document.getElementById('share-close')?.addEventListener('click', () => {
+    if (shareReturnScreen === 's-species-calendar') openSpeciesCalendar();
+    else go('s-calendar');
+  });
+  document.getElementById('share-send')?.addEventListener('click', () => {
+    const m = CALENDAR_MONTHS[shareMonthIndex];
+    const speciesName = currentSpecies?.name;
+    openShareSheet({
+      title: `Share ${speciesName ? speciesName + ' ' : ''}${m.name} calendar`,
+      subtitle: sharePage === 0 ? 'Photo calendar from Merle' : 'Listening activity from Merle',
+      image: speciesName ? birdImg(speciesName) : birdImg('House Finch')
+    });
+  });
+
+  // Horizontal swipe on share cards
+  (function setupShareSwipe() {
+    const wrap = document.getElementById('share-track-wrap');
+    if (!wrap) return;
+    let x0 = 0, y0 = 0, dx = 0, axis = null;
+    wrap.addEventListener('touchstart', e => {
+      const t = e.changedTouches[0];
+      x0 = t.clientX; y0 = t.clientY; dx = 0; axis = null;
+    }, { passive: true });
+    wrap.addEventListener('touchmove', e => {
+      const t = e.changedTouches[0];
+      const adx = t.clientX - x0, ady = t.clientY - y0;
+      if (!axis) axis = Math.abs(adx) > Math.abs(ady) ? 'x' : 'y';
+      if (axis === 'x') dx = adx;
+    }, { passive: true });
+    wrap.addEventListener('touchend', () => {
+      if (axis === 'x' && Math.abs(dx) > 40) setSharePage(sharePage + (dx < 0 ? 1 : -1));
+    });
+  })();
+
+  // Facilitator menu
+  const facil = document.getElementById('facil');
+  if (facil) {
+    Object.entries(LABELS).forEach(([id, label]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.dataset.go = id;
+      if (id === current) b.setAttribute('aria-current', 'true');
+      facil.appendChild(b);
+    });
+  }
+
+  // ── Outings + identified birds data ──
+  const OUTINGS = [
+    { month: 'July', day: 22, weekday: 'Wed', title: 'Wednesday Morning at Seward Park', meta: '5:04 PM · Seattle, WA', birds: 3, extra: 0, place: 'seward' },
+    { month: 'July', day: 21, weekday: 'Tue', title: 'Dawn chorus at Arboretum', meta: '5:48 AM · Seattle, WA', birds: 5, extra: 2, place: 'seward' },
+    { month: 'July', day: 19, weekday: 'Sun', title: 'Family walk · Discovery Park', meta: '10:20 AM · Seattle, WA', birds: 4, extra: 1, place: 'seward' },
+    { month: 'July', day: 17, weekday: 'Fri', title: 'Lunch break · Ravenna Park', meta: '12:35 PM · Seattle, WA', birds: 2, extra: 0, place: 'udistrict' },
+    { month: 'July', day: 14, weekday: 'Tue', title: 'Union Bay evening', meta: '7:12 PM · Seattle, WA', birds: 2, extra: 0, place: 'udistrict' },
+    { month: 'July', day: 12, weekday: 'Sun', title: 'Green Lake loop', meta: '8:05 AM · Seattle, WA', birds: 3, extra: 0, place: 'udistrict' },
+    { month: 'July', day: 8, weekday: 'Wed', title: 'After work · Magnuson', meta: '6:40 PM · Seattle, WA', birds: 4, extra: 1, place: 'seward' },
+    { month: 'July', day: 4, weekday: 'Sat', title: 'Fourth of July birds', meta: '9:15 AM · Seattle, WA', birds: 3, extra: 0, place: 'seward' },
+    { month: 'July', day: 1, weekday: 'Wed', title: 'Month open · Seward south', meta: '6:10 AM · Seattle, WA', birds: 5, extra: 3, place: 'seward' },
+    { month: 'June', day: 28, weekday: 'Sat', title: 'Saturday at Marymoor', meta: '7:30 AM · Redmond, WA', birds: 4, extra: 1, place: 'redmond' },
+    { month: 'June', day: 25, weekday: 'Wed', title: 'U District campus birds', meta: '1:05 PM · Seattle, WA', birds: 2, extra: 0, place: 'udistrict' },
+    { month: 'June', day: 22, weekday: 'Sun', title: 'Seward Park loop', meta: '8:40 AM · Seattle, WA', birds: 3, extra: 2, place: 'seward' },
+    { month: 'June', day: 18, weekday: 'Wed', title: 'Wetlands · Juanita Bay', meta: '6:55 AM · Kirkland, WA', birds: 5, extra: 2, place: 'redmond' },
+    { month: 'June', day: 15, weekday: 'Sun', title: 'Father’s Day birding', meta: '9:00 AM · Bellevue, WA', birds: 3, extra: 0, place: 'redmond' },
+    { month: 'June', day: 11, weekday: 'Wed', title: 'Carkeek shoreline', meta: '7:20 AM · Seattle, WA', birds: 4, extra: 1, place: 'seward' },
+    { month: 'June', day: 8, weekday: 'Sun', title: 'Rainy morning · Lincoln Park', meta: '8:15 AM · Seattle, WA', birds: 2, extra: 0, place: 'seward' },
+    { month: 'June', day: 3, weekday: 'Tue', title: 'Golden Gardens dusk', meta: '7:50 PM · Seattle, WA', birds: 3, extra: 0, place: 'seward' },
+    { month: 'May', day: 30, weekday: 'Fri', title: 'Migration push · Montlake', meta: '6:25 AM · Seattle, WA', birds: 6, extra: 3, place: 'udistrict' },
+    { month: 'May', day: 24, weekday: 'Sat', title: 'Washington Park Arboretum', meta: '10:10 AM · Seattle, WA', birds: 4, extra: 1, place: 'seward' },
+    { month: 'May', day: 18, weekday: 'Sun', title: 'Seward with Lucy & Joe', meta: '7:05 AM · Seattle, WA', birds: 5, extra: 2, place: 'seward' },
+    { month: 'May', day: 11, weekday: 'Sun', title: 'Mother’s Day chorus', meta: '5:55 AM · Seattle, WA', birds: 4, extra: 0, place: 'seward' },
+    { month: 'May', day: 4, weekday: 'Sun', title: 'First warblers of May', meta: '6:40 AM · Redmond, WA', birds: 3, extra: 1, place: 'redmond' }
+  ];
+
+  const SPECIES = [
+    { name: 'House Finch', n: 16 },
+    { name: 'Spotted Towhee', n: 12 },
+    { name: 'American Robin', n: 11 },
+    { name: 'Black-capped Chickadee', n: 9 },
+    { name: 'Song Sparrow', n: 8 },
+    { name: 'Steller’s Jay', n: 7 },
+    { name: 'Anna’s Hummingbird', n: 6 },
+    { name: 'Northern Flicker', n: 5 },
+    { name: 'Lazuli Bunting', n: 4 },
+    { name: 'Merlin', n: 3 },
+    { name: 'Bald Eagle', n: 3 },
+    { name: 'Mallard', n: 8 },
+    { name: 'Canada Goose', n: 6 },
+    { name: 'Red-winged Blackbird', n: 5 },
+    { name: 'Dark-eyed Junco', n: 4 },
+    { name: 'Cedar Waxwing', n: 3 },
+    { name: 'Common Raven', n: 2 },
+    { name: 'Great Blue Heron', n: 2 }
+  ].map(s => ({ ...s, image: birdImg(s.name), ...(SPECIES_META[s.name] || {}) }));
+
+  function thumbStack(count, extra, seed = 0) {
+    const show = Math.min(count, 4);
+    let html = '';
+    for (let i = 0; i < show; i++) {
+      const name = SPECIES[(seed + i) % SPECIES.length].name;
+      html += `<img class="thumb sm" src="${birdImg(name)}" alt="">`;
+    }
+    const more = extra || Math.max(0, count - show);
+    if (more) html += `<span class="more">+ ${more} species</span>`;
+    return html;
+  }
+
+  function spectroRow(labelDay, labelWeek, dur, audio, aria) {
+    return `<div class="spectro-row">
+      <span class="sess-date"><span class="d">${labelDay}</span><span class="w">${labelWeek}</span></span>
+      <span class="spectro-wrap">
+        <button type="button" class="spectro" data-audio="${audio}" data-dur="${dur}" aria-label="${aria}">
+          <span class="tex" aria-hidden="true"></span><span class="played" aria-hidden="true"></span><span class="ph-line" aria-hidden="true"></span><span class="sp-play" aria-hidden="true"></span><span class="dur" aria-hidden="true">${dur}</span>
+        </button>
+        <span class="sp-share" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span>
+      </span>
+    </div>`;
+  }
+
+  function openSpecies(species) {
+    currentSpecies = species;
+    LABELS['s-species-detail'] = species.name;
+    document.getElementById('sp-sub').textContent = species.name;
+    document.getElementById('sp-close').setAttribute('aria-label', `Close ${species.name} history`);
+    document.getElementById('species-mix-title').textContent = `Your ${species.name} Mix`;
+    document.getElementById('species-mix').setAttribute('aria-label', `Play your ${species.name} mix`);
+    document.getElementById('species-row-name').textContent = species.name;
+    const img = document.getElementById('species-row-img');
+    img.src = species.image;
+    img.alt = species.name;
+
+    // Compact monthly listening summary; the calendar opens as its own sheet.
+    const cal = document.getElementById('species-cal');
+    cal.innerHTML = `
+      <div class="species-month-summary">
+        <div class="copy">
+          <div class="headline">You’ve heard ${species.name} ${species.n} times this month.</div>
+          <div class="meta">See when you heard it</div>
+        </div>
+        <button type="button" class="circle-btn" id="open-species-calendar" aria-label="Open ${species.name} listening calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        </button>
+      </div>`;
+    document.getElementById('open-species-calendar').addEventListener('click', openSpeciesCalendar);
+
+    // Sample recordings by month
+    const audio = species.name.includes('Robin') ? 'birds/american-robin.mp3' : 'birds/house-finch.mp3';
+    const rec = document.getElementById('species-recordings');
+    const juneDays = Object.keys(speciesDaysFor(species.name, CALENDAR_MONTHS[3])).slice(0, 3).map(Number);
+    const mayDays = Object.keys(speciesDaysFor(species.name, CALENDAR_MONTHS[2])).slice(0, 2).map(Number);
+    const week = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    function rowsFor(monthIdx, days) {
+      return days.map(d => {
+        const dt = new Date(2026, CALENDAR_MONTHS[monthIdx].month, d);
+        return spectroRow(d, week[dt.getDay()].slice(0, 3), `0:${20 + (d % 40)}`, audio,
+          `Play ${species.name} recording from ${CALENDAR_MONTHS[monthIdx].name} ${d}`);
+      }).join('<div style="border-bottom:1px solid var(--line)"></div>');
+    }
+    rec.innerHTML = `
+      <div class="month-row"><h2 class="month">June</h2><span class="month-count">${juneDays.length} recordings</span></div>
+      ${rowsFor(3, juneDays)}
+      <div class="month-row" style="margin-top:32px"><h2 class="month">May</h2><span class="month-count">${mayDays.length} recordings</span></div>
+      ${rowsFor(2, mayDays)}`;
+    enhanceShareAffordances(rec);
+    go('s-species-detail');
+  }
+
+  function openSpeciesCalendar() {
+    const species = currentSpecies || SPECIES[0];
+    document.getElementById('sp-cal-sub').textContent = species.name;
+    document.getElementById('sp-cal-close').setAttribute('aria-label', `Close ${species.name} calendar`);
+    const months = CALENDAR_MONTHS.slice(-2);
+    const firstIndex = CALENDAR_MONTHS.length - months.length;
+    const stack = document.getElementById('species-calendar-stack');
+    stack.innerHTML = months.map((m, i) => `
+      <div class="cal">
+        <div class="cal-head">
+          <h2 class="cal-h">${m.name}</h2>
+          <button type="button" class="circle-btn green" data-share-species="${firstIndex + i}" aria-label="Share ${species.name} ${m.name}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
+          </button>
+        </div>
+        <div class="cal-grid">${dowRow()}${calendarCells(m, firstIndex + i, { mode: 'dots', speciesName: species.name, navigate: false })}</div>
+      </div>`).join('');
+    stack.querySelectorAll('[data-share-species]').forEach(btn => {
+      btn.addEventListener('click', () => openShare(+btn.dataset.shareSpecies, species));
+    });
+    go('s-species-calendar');
+  }
+  document.getElementById('sp-cal-close').addEventListener('click', () => {
+    if (currentSpecies) openSpecies(currentSpecies);
+    else go('s-history-species');
+  });
+
+  function openSpeciesInfo() {
+    const s = currentSpecies || SPECIES[0];
+    LABELS['s-species-info'] = s.name + ' details';
+    document.getElementById('sp-info-sub').textContent = s.name;
+    document.getElementById('sp-info-name').textContent = `${s.name} details`;
+    document.getElementById('sp-info-sci').textContent = s.sci || '';
+    go('s-species-info');
+  }
+  document.getElementById('species-info-btn')?.addEventListener('click', openSpeciesInfo);
+
+  function renderOutings() {
+    const root = document.getElementById('outings-root');
+    if (!root) return;
+    const months = [];
+    OUTINGS.forEach(o => { if (!months.includes(o.month)) months.push(o.month); });
+    root.innerHTML = months.map(month => {
+      const items = OUTINGS.filter(o => o.month === month);
+      return `<h2 class="month group">${month}</h2>
+        <ul class="list">${items.map((o, idx) => `
+          <li>
+            <button type="button" class="sess-row" data-go="s-session">
+              <span class="sess-date"><span class="d">${o.day}</span><span class="w">${o.weekday}</span></span>
+              <span class="sess-body">
+                <span class="titles">
+                  <span class="nm">${o.title}</span>
+                  <span class="meta">${o.meta} · ${o.birds + (o.extra || 0)} Birds</span>
+                </span>
+                <span class="thumbs" aria-hidden="true">${thumbStack(o.birds, o.extra, idx)}</span>
+                <span class="sr-only">${o.birds + (o.extra || 0)} species</span>
+              </span>
+            </button>
+          </li>`).join('')}</ul>`;
+    }).join('');
+  }
+
+  function renderSpecies() {
+    const ul = document.getElementById('species-list');
+    if (!ul) return;
+    ul.innerHTML = SPECIES.map((s, i) => `
+      <li>
+        <button type="button" class="row species" data-species="${i}">
+          <span class="grow"><span class="nm">${s.name}</span><span class="meta">${s.n} recordings</span></span>
+          <img class="thumb" src="${s.image}" alt="">
+        </button>
+      </li>`).join('');
+    ul.querySelectorAll('[data-species]').forEach(btn => {
+      btn.addEventListener('click', () => openSpecies(SPECIES[+btn.dataset.species]));
+    });
+  }
+  renderOutings();
+  renderSpecies();
+
+  // Session / save rows that deep-link to House Finch (first species)
+  document.querySelectorAll('[data-go="s-species-detail"]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      openSpecies(SPECIES[0]);
+    });
+  });
+
+  function backToSpeciesRecordings() {
+    if (currentSpecies) openSpecies(currentSpecies);
+    else openSpecies(SPECIES[0]);
+  }
+  document.getElementById('sp-info-close')?.addEventListener('click', e => {
+    e.preventDefault();
+    backToSpeciesRecordings();
+  });
+  document.getElementById('sp-info-back')?.addEventListener('click', e => {
+    e.preventDefault();
+    backToSpeciesRecordings();
+  });
+
+  // ── Places + MapLibre ──
+  const PLACES = [
+    { id: 'seward', name: 'Seward Park', city: 'Seattle', sessions: 8, species: 16, lng: -122.255, lat: 47.555, speciesIdx: [0,1,2,3,4,5] },
+    { id: 'udistrict', name: 'University District', city: 'Seattle', sessions: 3, species: 9, lng: -122.313, lat: 47.661, speciesIdx: [2,3,6,9] },
+    { id: 'redmond', name: 'Marymoor Park', city: 'Redmond', sessions: 2, species: 7, lng: -122.112, lat: 47.662, speciesIdx: [1,7,11,12,13] }
+  ];
+  let mapInst = null;
+  let mapReady = false;
+  const pinEls = {};
+
+  function mapStyle() {
+    const key = (window.JJ_CONFIG && window.JJ_CONFIG.maptiler) || '';
+    if (key) {
+      return `https://api.maptiler.com/maps/streets-v2/style.json?key=${encodeURIComponent(key)}`;
+    }
+    return {
+      version: 8,
+      sources: {
+        osm: {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap'
+        }
+      },
+      layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
+    };
+  }
+
+  function setLocSheetExpanded(on) {
+    const sheet = document.getElementById('loc-sheet');
+    const btn = document.getElementById('loc-sheet-expand');
+    if (!sheet) return;
+    sheet.classList.toggle('expanded', !!on);
+    if (btn) {
+      btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+      btn.textContent = on ? 'Collapse' : 'Expand';
+    }
+  }
+
+  function showLocSheet() {
+    document.getElementById('loc-sheet')?.classList.remove('hidden-by-peek');
+  }
+
+  function hideLocSheetForPeek() {
+    const sheet = document.getElementById('loc-sheet');
+    if (!sheet) return;
+    sheet.classList.add('hidden-by-peek');
+    setLocSheetExpanded(false);
+  }
+
+  function hidePeek() {
+    const peek = document.getElementById('loc-peek');
+    if (!peek) return;
+    peek.classList.remove('on');
+    peek.setAttribute('aria-hidden', 'true');
+    Object.values(pinEls).forEach(el => el.classList.remove('on'));
+    showLocSheet();
+  }
+
+  function selectPlace(place, { openPeek = true } = {}) {
+    currentPlace = place;
+    Object.entries(pinEls).forEach(([id, el]) => el.classList.toggle('on', id === place.id));
+    if (mapInst) mapInst.flyTo({ center: [place.lng, place.lat], zoom: 12, essential: true });
+    announce(place.name + ', ' + place.city + '. ' + place.species + ' species.');
+    if (!openPeek) return;
+    const peek = document.getElementById('loc-peek');
+    document.getElementById('peek-title').textContent = place.name;
+    document.getElementById('peek-sub').textContent = `${place.city} · ${place.species} species`;
+    document.getElementById('peek-thumbs').innerHTML = (place.speciesIdx || [0,1,2,3]).slice(0, 6)
+      .map(i => `<img class="thumb sm" src="${SPECIES[i].image}" alt="">`).join('');
+    hideLocSheetForPeek();
+    peek.classList.add('on');
+    peek.setAttribute('aria-hidden', 'false');
+  }
+
+  function openLocationDetail(place) {
+    currentPlace = place || currentPlace || PLACES[0];
+    const p = currentPlace;
+    LABELS['s-location-detail'] = p.name;
+    document.getElementById('loc-sub').textContent = `${p.name}, ${p.city}`;
+    document.getElementById('loc-close').setAttribute('aria-label', `Close ${p.name} history`);
+    document.getElementById('park-mix-title').textContent = `Your ${p.name} Mix`;
+    document.getElementById('park-mix').setAttribute('aria-label', `Play your ${p.name} mix`);
+    document.getElementById('loc-species-count').textContent = `${p.species} species`;
+    document.getElementById('loc-thumbs').innerHTML = (p.speciesIdx || [0,1,2,3,4,5]).slice(0, 6)
+      .map(i => `<img class="thumb sm" src="${SPECIES[i].image}" alt="">`).join('');
+    const shared = PEOPLE.filter(x => sharedIds.has(x.id));
+    document.getElementById('loc-shared-avatars').innerHTML = shared.map(x => personAvatar(x)).join('');
+    document.getElementById('loc-shared-names').textContent = shared.map(x => x.name).join(', ');
+    const sessions = OUTINGS.filter(o => o.place === p.id).slice(0, 4);
+    document.getElementById('loc-sessions').innerHTML = sessions.map((o, idx) => `
+      <li>
+        <button type="button" class="sess-row" data-go="s-session">
+          <span class="sess-date"><span class="d">${o.day}</span><span class="w">${o.weekday}</span></span>
+          <span class="sess-body">
+            <span class="titles">
+              <span class="nm">${o.title.replace(/ · .*$/, '').replace(/ at .*$/, '')}</span>
+              <span class="meta">${o.meta} · ${o.birds + (o.extra || 0)} Birds</span>
+            </span>
+            <span class="thumbs" aria-hidden="true">${thumbStack(o.birds, o.extra, idx + 2)}</span>
+          </span>
+        </button>
+      </li>`).join('') || '<li><p class="meta">No sessions yet</p></li>';
+    go('s-location-detail');
+  }
+
+  document.getElementById('sheet-view')?.addEventListener('click', () => {
+    if (currentPlace) openLocationDetail(currentPlace);
+  });
+
+  function placeRowHtml(p) {
+    const img = SPECIES[(p.speciesIdx || [0])[0]].image;
+    return `<li>
+      <button type="button" class="row" data-place="${p.id}">
+        <img class="thumb" src="${img}" alt="">
+        <span class="grow">
+          <span class="nm">${p.name}</span>
+          <span class="meta">${p.city} · ${p.sessions} sessions · ${p.species} species</span>
+        </span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>
+    </li>`;
+  }
+
+  function bindPlaceButtons(root) {
+    root.querySelectorAll('[data-place]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const place = PLACES.find(p => p.id === btn.dataset.place);
+        if (!place) return;
+        // From the sheet list: open full detail. Map pins use preview instead.
+        if (btn.closest('#loc-sheet-list')) {
+          selectPlace(place, { openPeek: false });
+          openLocationDetail(place);
+        } else {
+          selectPlace(place);
+          openLocationDetail(place);
+        }
+      });
+    });
+  }
+
+  function renderLocList() {
+    const sheetList = document.getElementById('loc-sheet-list');
+    const ul = document.getElementById('loc-list');
+    if (sheetList) {
+      sheetList.innerHTML = PLACES.map(placeRowHtml).join('');
+      bindPlaceButtons(sheetList);
+    }
+    if (ul) {
+      ul.innerHTML = PLACES.map(p => `
+        <li>
+          <button type="button" data-place="${p.id}">
+            ${p.name}, ${p.city}. ${p.sessions} sessions, ${p.species} species.
+          </button>
+        </li>`).join('');
+      bindPlaceButtons(ul);
+    }
+  }
+  renderLocList();
+
+  document.getElementById('loc-sheet-expand')?.addEventListener('click', () => {
+    const sheet = document.getElementById('loc-sheet');
+    setLocSheetExpanded(!sheet?.classList.contains('expanded'));
+  });
+
+  // Drag grabber to expand / collapse the locations sheet
+  (function setupLocSheetDrag() {
+    const sheet = document.getElementById('loc-sheet');
+    const grab = document.getElementById('loc-sheet-grabber');
+    if (!sheet || !grab) return;
+    let y0 = 0, dragging = false;
+    const start = (y) => { y0 = y; dragging = true; };
+    const end = (y) => {
+      if (!dragging) return;
+      dragging = false;
+      const dy = y - y0;
+      if (dy < -40) setLocSheetExpanded(true);
+      else if (dy > 40) setLocSheetExpanded(false);
+    };
+    grab.addEventListener('touchstart', e => start(e.changedTouches[0].clientY), { passive: true });
+    grab.addEventListener('touchend', e => end(e.changedTouches[0].clientY));
+    grab.addEventListener('mousedown', e => {
+      start(e.clientY);
+      const up = ev => { end(ev.clientY); window.removeEventListener('mouseup', up); };
+      window.addEventListener('mouseup', up);
+    });
+  })();
+
+  // Swipe peek down to dismiss back to locations list
+  (function setupPeekSwipe() {
+    const peek = document.getElementById('loc-peek');
+    if (!peek) return;
+    let y0 = 0, dy = 0;
+    peek.addEventListener('touchstart', e => {
+      y0 = e.changedTouches[0].clientY; dy = 0;
+    }, { passive: true });
+    peek.addEventListener('touchmove', e => {
+      dy = Math.max(0, e.changedTouches[0].clientY - y0);
+      peek.style.transform = `translateY(${dy}px)`;
+    }, { passive: true });
+    peek.addEventListener('touchend', () => {
+      peek.style.transform = '';
+      if (dy > 80) hidePeek();
+    });
+  })();
+
+  function ensureMap() {
+    if (mapReady || typeof maplibregl === 'undefined') return;
+    const el = document.getElementById('map-el');
+    if (!el) return;
+    mapInst = new maplibregl.Map({
+      container: el,
+      style: mapStyle(),
+      center: [-122.25, 47.60],
+      zoom: 10,
+      attributionControl: true
+    });
+    mapInst.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+    el.querySelector('.maplibregl-ctrl-top-right')?.setAttribute('aria-hidden', 'true');
+
+    mapInst.on('click', () => hidePeek());
+
+    PLACES.forEach(place => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'map-pin-el';
+      btn.setAttribute('aria-label', `${place.name}, ${place.city}. ${place.species} species. Double-tap to open card.`);
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23 4.9c-.8.4-1.6.6-2.5.8a4.3 4.3 0 0 0 1.9-2.4c-.8.5-1.8.9-2.7 1.1a4.3 4.3 0 0 0-7.4 3.9A12.2 12.2 0 0 1 3.4 3.7a4.3 4.3 0 0 0 1.3 5.7c-.7 0-1.4-.2-2-.5v.1a4.3 4.3 0 0 0 3.5 4.2c-.6.2-1.3.2-1.9.1a4.3 4.3 0 0 0 4 3A8.7 8.7 0 0 1 2 18.1a12.2 12.2 0 0 0 6.6 1.9c7.9 0 12.3-6.6 12.3-12.3v-.6c.8-.6 1.6-1.4 2.1-2.2z"/></svg>';
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        selectPlace(place);
+      });
+      pinEls[place.id] = btn;
+      new maplibregl.Marker({ element: btn, anchor: 'center' })
+        .setLngLat([place.lng, place.lat])
+        .addTo(mapInst);
+    });
+    mapInst.on('load', () => {
+      mapReady = true;
+      el.querySelector('canvas')?.setAttribute('aria-hidden', 'true');
+    });
+  }
+
+  // ── Audio: local birds/ first; optional Xeno-canto when key set.
+  //    Macaulay Library has no public redistributable API for prototypes. ──
+  const AUDIO = {
+    'house-finch': { local: 'birds/house-finch.mp3', query: 'Haemorhous mexicanus' },
+    'american-robin': { local: 'birds/american-robin.mp3', query: 'Turdus migratorius' },
+    'chorus': { local: 'Formal birding.mp4', query: null }
+  };
+  const audioCache = {};
+
+  async function resolveAudio(key) {
+    if (audioCache[key]) return audioCache[key];
+    const spec = AUDIO[key] || { local: key };
+    const xc = window.JJ_CONFIG && window.JJ_CONFIG.xenocanto;
+    if (xc && spec.query) {
+      try {
+        const url = `https://xeno-canto.org/api/2/recordings?query=${encodeURIComponent(spec.query + ' q:A')}&page=1`;
+        // Note: API v2 is public; v3 needs key — try v2 first for prototypes
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          const rec = (data.recordings || []).find(r => r.file);
+          if (rec) {
+            audioCache[key] = {
+              src: rec.file.startsWith('http') ? rec.file : 'https:' + rec.file,
+              credit: `${rec.sp} · ${rec.rec} · XC${rec.id} · ${rec.lic}`
+            };
+            return audioCache[key];
+          }
+        }
+      } catch (_) { /* fall through */ }
+    }
+    audioCache[key] = { src: spec.local, credit: 'Local prototype audio' };
+    return audioCache[key];
+  }
+
+  function audioKeyFromPath(path) { return audioKeyFromPathEarly(path); }
+  window.__resolveAudio = resolveAudio;
+
+  // Escape closes modal / peek
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !shareSheet.hidden) {
+      e.preventDefault();
+      closeShareSheet();
+      return;
+    }
+    if (e.key === 'Escape' && !modal.hidden) {
+      e.preventDefault();
+      closeModal();
+    }
+    if (e.key === 'Escape' && current === 's-history-location') hidePeek();
+  });
+
+  // Sheet screens: swipe down to dismiss, slight up bounce
+  (function setupSheetSwipe() {
+    const BACK = {
+      's-calendar': 's-history-date',
+      's-share': 's-calendar',
+      's-session': 's-history-date',
+      's-species-detail': 's-history-species',
+      's-species-calendar': 's-species-detail',
+      's-species-info': 's-species-detail',
+      's-location-detail': 's-history-location',
+      's-save': 's-identify',
+      's-activity': 's-identify'
+    };
+    document.querySelectorAll('.screen.sheet, .screen.share-dark').forEach(scr => {
+      let y0 = 0, dy = 0, active = false, startedOnGrabber = false;
+      const onStart = (y, target) => {
+        if (scr.scrollTop > 8) return;
+        startedOnGrabber = !!(target.closest && target.closest('.grabber, .toolbar, .share-top'));
+        y0 = y; dy = 0; active = true;
+        scr.classList.add('dragging');
+      };
+      const onMove = (y) => {
+        if (!active) return;
+        dy = y - y0;
+        if (dy > 0) scr.style.transform = `translateY(${dy}px)`;
+        else if (startedOnGrabber) scr.style.transform = `translateY(${dy * 0.25}px)`;
+      };
+      const onEnd = () => {
+        if (!active) return;
+        active = false;
+        scr.classList.remove('dragging');
+        if (dy > 110) {
+          scr.classList.add('dismissing');
+          const back = scr.id === 's-activity'
+            ? (activityReturn || 's-identify')
+            : (BACK[scr.id] || 's-history-species');
+          setTimeout(() => {
+            scr.style.transform = '';
+            scr.classList.remove('dismissing');
+            go(back);
+          }, 220);
+        } else {
+          scr.style.transform = '';
+        }
+        dy = 0;
+      };
+      scr.addEventListener('touchstart', e => onStart(e.changedTouches[0].clientY, e.target), { passive: true });
+      scr.addEventListener('touchmove', e => onMove(e.changedTouches[0].clientY), { passive: true });
+      scr.addEventListener('touchend', onEnd);
+      // Mouse drag for desktop testing
+      scr.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        onStart(e.clientY, e.target);
+        const move = ev => onMove(ev.clientY);
+        const up = () => { onEnd(); window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
+        window.addEventListener('mousemove', move);
+        window.addEventListener('mouseup', up);
+      });
+    });
+  })();
+
+  // Pair leftover bird.jpg placeholders with species images
+  document.querySelectorAll('img[src="bird.jpg"]').forEach((img, index) => {
+    const s = SPECIES[index % SPECIES.length];
+    img.src = s.image;
+    if (!img.alt) img.alt = s.name;
+  });
+
+  // VoiceOver simulator stubbed off for sighted testing
+  window.__voSim = { live() {}, refresh() {} };
+
+  // Init: unhide pattern — screens use both .on and hidden
+  screens.forEach(s => { s.hidden = !s.classList.contains('on'); });
+  mountNotifBells();
+  renderActivity();
+  go('s-identify', { silent: true });
+})();
+</script>
+</body>
+</html>
