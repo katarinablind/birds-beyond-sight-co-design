@@ -392,9 +392,12 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
 .grpchat-av{color:#fff}
 .grpchat-hdr{border-bottom:none;margin-bottom:6px}
 .frec{border-bottom:none}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;white-space:nowrap}
 </style>
 </head>
 <body>
+<div class="sr-only" aria-live="polite" id="live"></div>
 
 <!-- Icon sprite (line icons, inherit currentColor) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -414,7 +417,7 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
 </defs></svg>
 
 <div class="page-header">
-  <div class="page-title">Jiu Jiu — Concept Prototypes</div>
+  <h1 class="page-title">Jiu Jiu — Concept Prototypes</h1>
   <div class="page-sub">Audio-first social sharing for birding — bringing blind and low-vision perspectives to the wider birding community by using the attention economy for good.</div>
 </div>
 
@@ -454,7 +457,7 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
           <div class="card-title">Morning at the marsh</div>
           <div class="card-meta">Today, 7:23 AM · Union Bay</div>
         </div>
-        <div class="play-circle" style="width:34px;height:34px" data-file="birds/house-finch.mp3" data-wf="wf-d1"></div>
+        <button type="button" class="play-circle" style="width:34px;height:34px" data-file="birds/house-finch.mp3" data-wf="wf-d1" aria-label="Play bird recording"></button>
       </div>
       <div class="waveform" id="wf-d1" style="margin-top:10px"></div>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
@@ -470,7 +473,7 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
           <div class="card-title">Evening walk — crow calls</div>
           <div class="card-meta">Yesterday, 5:48 PM · Montlake Fill</div>
         </div>
-        <div class="play-circle" style="width:34px;height:34px" data-file="birds/common-crow.mp3" data-wf="wf-d2"></div>
+        <button type="button" class="play-circle" style="width:34px;height:34px" data-file="birds/common-crow.mp3" data-wf="wf-d2" aria-label="Play bird recording"></button>
       </div>
       <div class="waveform" id="wf-d2" style="margin-top:10px"></div>
       <div style="display:flex;gap:6px;margin-top:8px">
@@ -511,17 +514,17 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
     <div class="card"><div class="card-row">
       <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
       <div style="flex:1"><div class="card-title">House Finch</div><div class="card-meta">Heard 4 times</div></div>
-      <div class="play-circle" style="width:30px;height:30px" data-file="birds/house-finch.mp3"></div></div>
+      <button type="button" class="play-circle" style="width:30px;height:30px" data-file="birds/house-finch.mp3" aria-label="Play bird recording"></button></div>
     </div>
     <div class="card"><div class="card-row">
       <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
       <div style="flex:1"><div class="card-title">Dark-eyed Junco</div><div class="card-meta">Heard 2 times</div></div>
-      <div class="play-circle" style="width:30px;height:30px" data-file="birds/dark-eyed-junco.mp3"></div></div>
+      <button type="button" class="play-circle" style="width:30px;height:30px" data-file="birds/dark-eyed-junco.mp3" aria-label="Play bird recording"></button></div>
     </div>
     <div class="card"><div class="card-row">
       <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
       <div style="flex:1"><div class="card-title">American Robin</div><div class="card-meta">Heard 1 time · New!</div></div>
-      <div class="play-circle" style="width:30px;height:30px" data-file="birds/american-robin.mp3"></div></div>
+      <button type="button" class="play-circle" style="width:30px;height:30px" data-file="birds/american-robin.mp3" aria-label="Play bird recording"></button></div>
     </div>
 
     <button class="pill filled" style="align-self:center;padding:11px 26px;margin-top:14px">Share this recap</button>
@@ -542,26 +545,26 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
       <div style="font-size:.78rem;font-weight:700;color:var(--green);width:18px">1</div>
       <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
       <div style="flex:1"><div class="card-title">House Finch</div><div class="card-meta">Heard 12 times · 0:34</div></div>
-      <div class="play-circle" style="width:30px;height:30px" data-file="birds/house-finch.mp3"></div></div>
+      <button type="button" class="play-circle" style="width:30px;height:30px" data-file="birds/house-finch.mp3" aria-label="Play bird recording"></button></div>
     </div>
     <div class="card"><div class="card-row">
       <div style="font-size:.78rem;font-weight:700;color:var(--green);width:18px">2</div>
       <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
       <div style="flex:1"><div class="card-title">Dark-eyed Junco</div><div class="card-meta">Heard 8 times · 0:22</div></div>
-      <div class="play-circle" style="width:30px;height:30px" data-file="birds/dark-eyed-junco.mp3"></div></div>
+      <button type="button" class="play-circle" style="width:30px;height:30px" data-file="birds/dark-eyed-junco.mp3" aria-label="Play bird recording"></button></div>
     </div>
     <div class="card"><div class="card-row">
       <div style="font-size:.78rem;font-weight:700;color:var(--green);width:18px">3</div>
       <div class="card-icon" style="background:var(--green-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
       <div style="flex:1"><div class="card-title">American Crow</div><div class="card-meta">Heard 6 times · 0:18</div></div>
-      <div class="play-circle" style="width:30px;height:30px" data-file="birds/common-crow.mp3"></div></div>
+      <button type="button" class="play-circle" style="width:30px;height:30px" data-file="birds/common-crow.mp3" aria-label="Play bird recording"></button></div>
     </div>
 
     <div class="section-label" style="margin-top:14px">Old friends</div>
     <div class="card" style="opacity:.75"><div class="card-row">
       <div class="card-icon" style="background:var(--gray-light)"><svg class="ico"><use href="#i-bird"/></svg></div>
       <div style="flex:1"><div class="card-title">Mallard Duck</div><div class="card-meta">Last heard 3 weeks ago</div></div>
-      <div class="play-circle gray" style="width:30px;height:30px" data-file="birds/mallard-duck.mp3"></div></div>
+      <button type="button" class="play-circle gray" style="width:30px;height:30px" data-file="birds/mallard-duck.mp3" aria-label="Play bird recording"></button></div>
     </div>
 
     <div class="bottom-nav">
@@ -595,13 +598,13 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
       <div class="vs-row">
         <div class="vs-card" style="background:var(--green-light);border-color:var(--green-mid)">
           <div class="vs-label" style="color:var(--green)">Yours</div>
-          <div class="play-circle" style="width:34px;height:34px;margin:0 auto" data-file="birds/house-finch.mp3"></div>
+          <button type="button" class="play-circle" style="width:34px;height:34px;margin:0 auto" data-file="birds/house-finch.mp3" aria-label="Play bird recording"></button>
           <div style="font-size:.52rem;color:var(--gray);margin-top:8px">Field · 0:12</div>
         </div>
         <div class="vs-divider">vs</div>
         <div class="vs-card">
           <div class="vs-label">Reference</div>
-          <div class="play-circle" style="width:34px;height:34px;margin:0 auto" data-file="birds/house-finch.mp3"></div>
+          <button type="button" class="play-circle" style="width:34px;height:34px;margin:0 auto" data-file="birds/house-finch.mp3" aria-label="Play bird recording"></button>
           <div style="font-size:.52rem;color:var(--gray);margin-top:8px">Clean · library</div>
         </div>
       </div>
@@ -672,12 +675,12 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
     <div class="card"><div class="card-row">
       <div style="width:30px;height:30px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:.56rem;color:#fff;font-weight:700">S</div>
       <div style="flex:1"><div class="card-title">Sarah · American Robin</div><div class="card-meta">Union Bay · 15 min ago</div></div>
-      <div class="play-circle" style="width:30px;height:30px" data-file="birds/american-robin.mp3"></div></div>
+      <button type="button" class="play-circle" style="width:30px;height:30px" data-file="birds/american-robin.mp3" aria-label="Play bird recording"></button></div>
     </div>
     <div class="card"><div class="card-row">
       <div style="width:30px;height:30px;border-radius:50%;background:var(--brown);display:flex;align-items:center;justify-content:center;font-size:.56rem;color:#fff;font-weight:700">M</div>
       <div style="flex:1"><div class="card-title">Marcus · House Finch</div><div class="card-meta">Montlake Fill · 1 hr ago</div></div>
-      <div class="play-circle" style="width:30px;height:30px" data-file="birds/house-finch.mp3"></div></div>
+      <button type="button" class="play-circle" style="width:30px;height:30px" data-file="birds/house-finch.mp3" aria-label="Play bird recording"></button></div>
     </div>
 
     <div class="bottom-nav">
@@ -773,7 +776,7 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
     <div class="card"><div class="card-row">
       <div class="card-icon" style="background:var(--green-light);color:var(--green)"><svg class="ico"><use href="#i-mic"/></svg></div>
       <div style="flex:1"><div class="card-title">House Finch warble</div><div class="card-meta">Your best recording</div></div>
-      <div class="play-circle" style="width:30px;height:30px" data-file="birds/house-finch.mp3"></div></div>
+      <button type="button" class="play-circle" style="width:30px;height:30px" data-file="birds/house-finch.mp3" aria-label="Play bird recording"></button></div>
     </div>
 
     <div class="section-label" style="margin-top:14px">Badges earned by listening</div>
@@ -866,12 +869,12 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
     <div class="card"><div class="card-row">
       <div style="font-size:.7rem;font-weight:700;color:var(--gray);width:18px">2</div>
       <div style="flex:1"><div class="card-title">Marsh Voices</div><div class="card-meta">Blackbird, Mallard · 6 min</div></div>
-      <div class="play-circle" style="width:26px;height:26px" data-file="birds/red-wing-blackbird.mp3"></div></div>
+      <button type="button" class="play-circle" style="width:26px;height:26px" data-file="birds/red-wing-blackbird.mp3" aria-label="Play bird recording"></button></div>
     </div>
     <div class="card"><div class="card-row">
       <div style="font-size:.7rem;font-weight:700;color:var(--gray);width:18px">3</div>
       <div style="flex:1"><div class="card-title">The Crow Network</div><div class="card-meta">American Crow · 5 min</div></div>
-      <div class="play-circle" style="width:26px;height:26px" data-file="birds/common-crow.mp3"></div></div>
+      <button type="button" class="play-circle" style="width:26px;height:26px" data-file="birds/common-crow.mp3" aria-label="Play bird recording"></button></div>
     </div>
   </div>
 
@@ -902,7 +905,7 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
       <div style="font-size:.82rem;font-weight:700;color:var(--black)" id="shuffleName">House Finch</div>
       <div style="font-size:.58rem;color:var(--gray);font-family:var(--font-sub);margin-top:2px">Random pick from your week</div>
       <div class="waveform" id="wf-shuffle" style="justify-content:center;margin:10px 0"></div>
-      <div class="play-circle" style="margin:0 auto" id="shufflePlay" data-file="birds/house-finch.mp3" data-wf="wf-shuffle"></div>
+      <button type="button" class="play-circle" style="margin:0 auto" id="shufflePlay" data-file="birds/house-finch.mp3" data-wf="wf-shuffle" aria-label="Play bird recording"></button>
     </div>
   </div>
 
@@ -914,20 +917,20 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
     <div class="card" style="padding:16px">
       <div style="font-size:.72rem;font-weight:600;margin-bottom:2px">House Finch</div>
       <div style="font-size:.56rem;color:var(--gray);margin-bottom:8px">Suburban edges · open canopy</div>
-      <canvas class="sonograph" id="sono1" width="335" height="120"></canvas>
-      <div class="play-circle" style="width:32px;height:32px;margin:10px auto 0" data-file="birds/house-finch.mp3"></div>
+      <canvas class="sonograph" id="sono1" width="335" height="120" aria-hidden="true"></canvas>
+      <button type="button" class="play-circle" style="width:32px;height:32px;margin:10px auto 0" data-file="birds/house-finch.mp3" aria-label="Play bird recording"></button>
     </div>
     <div class="card" style="padding:16px">
       <div style="font-size:.72rem;font-weight:600;margin-bottom:2px">Red-winged Blackbird</div>
       <div style="font-size:.56rem;color:var(--gray);margin-bottom:8px">Marsh · cattails · water edge</div>
-      <canvas class="sonograph" id="sono2" width="335" height="120"></canvas>
-      <div class="play-circle" style="width:32px;height:32px;margin:10px auto 0" data-file="birds/red-wing-blackbird.mp3"></div>
+      <canvas class="sonograph" id="sono2" width="335" height="120" aria-hidden="true"></canvas>
+      <button type="button" class="play-circle" style="width:32px;height:32px;margin:10px auto 0" data-file="birds/red-wing-blackbird.mp3" aria-label="Play bird recording"></button>
     </div>
     <div class="card" style="padding:16px">
       <div style="font-size:.72rem;font-weight:600;margin-bottom:2px">Dark-eyed Junco</div>
       <div style="font-size:.56rem;color:var(--gray);margin-bottom:8px">Forest floor · dense understory</div>
-      <canvas class="sonograph" id="sono3" width="335" height="120"></canvas>
-      <div class="play-circle" style="width:32px;height:32px;margin:10px auto 0" data-file="birds/dark-eyed-junco.mp3"></div>
+      <canvas class="sonograph" id="sono3" width="335" height="120" aria-hidden="true"></canvas>
+      <button type="button" class="play-circle" style="width:32px;height:32px;margin:10px auto 0" data-file="birds/dark-eyed-junco.mp3" aria-label="Play bird recording"></button>
     </div>
   </div>
 
@@ -989,17 +992,17 @@ body.embed .wf-key.wf-illus{outline:2.5px solid #2f7d22;outline-offset:2px;
     <div class="card"><div class="card-row">
       <div style="width:30px;height:30px;border-radius:50%;background:#4a90c8;display:flex;align-items:center;justify-content:center;font-size:.56rem;color:#fff;font-weight:700;flex-shrink:0">M</div>
       <div style="flex:1"><div class="card-title">Maya · Red-winged Blackbird</div><div class="card-meta">Union Bay Wetlands · 12 min ago</div></div>
-      <div class="play-circle" style="width:30px;height:30px" data-file="birds/red-wing-blackbird.mp3"></div>
+      <button type="button" class="play-circle" style="width:30px;height:30px" data-file="birds/red-wing-blackbird.mp3" aria-label="Play bird recording"></button>
     </div></div>
     <div class="card"><div class="card-row">
       <div style="width:30px;height:30px;border-radius:50%;background:#c87840;display:flex;align-items:center;justify-content:center;font-size:.56rem;color:#fff;font-weight:700;flex-shrink:0">K</div>
       <div style="flex:1"><div class="card-title">Kira · American Robin</div><div class="card-meta">Montlake Fill · 28 min ago</div></div>
-      <div class="play-circle" style="width:30px;height:30px" data-file="birds/american-robin.mp3"></div>
+      <button type="button" class="play-circle" style="width:30px;height:30px" data-file="birds/american-robin.mp3" aria-label="Play bird recording"></button>
     </div></div>
     <div class="card"><div class="card-row">
       <div style="width:30px;height:30px;border-radius:50%;background:#5a7a30;display:flex;align-items:center;justify-content:center;font-size:.56rem;color:#fff;font-weight:700;flex-shrink:0">J</div>
       <div style="flex:1"><div class="card-title">James · Dark-eyed Junco</div><div class="card-meta">UW Campus · 1 hr ago</div></div>
-      <div class="play-circle" style="width:30px;height:30px" data-file="birds/dark-eyed-junco.mp3"></div>
+      <button type="button" class="play-circle" style="width:30px;height:30px" data-file="birds/dark-eyed-junco.mp3" aria-label="Play bird recording"></button>
     </div></div>
 
     <!-- Detail panel — positioned relative to .screen, slides up over content -->
@@ -1508,7 +1511,7 @@ function openFriend(key){
         <div class="frec-bird">${r.bird}</div>
         <div class="frec-meta"><svg class="ico"><use href="#i-pin"/></svg> ${r.loc} · ${r.time}</div>
       </div>
-      <div class="play-circle" style="width:28px;height:28px;flex-shrink:0" data-file="${r.file}"></div>
+      <button type="button" class="play-circle" style="width:28px;height:28px;flex-shrink:0" data-file="${r.file}" aria-label="Play bird recording"></button>
     </div>`).join('');
   document.getElementById('fdrecs14').querySelectorAll('.play-circle[data-file]').forEach(btn=>{
     btn.onclick=()=>playFile(btn.dataset.file,btn,null);
@@ -1616,5 +1619,30 @@ function applyLvScale(scale){
   }
 })();
 </script>
+
+<script>
+(function enhancePrototypeA11y(){
+  document.querySelectorAll('.play, .back, .tap, [data-go], .s-close, .s-icon').forEach(el=>{
+    if(el.tagName==='BUTTON'||el.tagName==='A'||el.tagName==='INPUT') return;
+    if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
+    if(!el.getAttribute('role')) el.setAttribute('role','button');
+    if(!el.getAttribute('aria-label')){
+      if(el.classList.contains('play')) el.setAttribute('aria-label','Play bird recording');
+      else if(el.classList.contains('back')||el.classList.contains('s-close')) el.setAttribute('aria-label','Close');
+      else if((el.textContent||'').trim()) {}
+      else el.setAttribute('aria-label','Activate');
+    }
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter' && e.key!==' ') return;
+    const t=e.target;
+    if(!t||t.tagName==='BUTTON'||t.tagName==='A'||t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable) return;
+    if(t.getAttribute('role')==='button'||t.classList.contains('play')||t.classList.contains('back')||t.classList.contains('tap')){
+      e.preventDefault(); t.click();
+    }
+  });
+})();
+</script>
+
 </body>
 </html>

@@ -221,16 +221,20 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .sessions-empty{text-align:center;padding:32px 0;color:var(--gray);font-size:.78rem;
   font-family:var(--font-sub)}
 
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;white-space:nowrap}
 </style>
 </head>
 <body>
+<header><h1 class="sr-only">Bird Audio Composition</h1></header>
+<div class="sr-only" aria-live="polite" id="live"></div>
 
 <!-- Save dialog modal -->
 <div class="modal-overlay" id="saveModal">
   <div class="modal-box">
     <div class="modal-title">Name your session</div>
     <div class="modal-sub">Give this composition a name so you can find it later.</div>
-    <input class="modal-input" id="saveNameInput" placeholder="e.g. Robin + Junco morning mix" maxlength="80">
+    <input class="modal-input" id="saveNameInput" placeholder="e.g. Robin + Junco morning mix" maxlength="80" aria-label="Composition name">
     <div class="modal-actions">
       <button class="modal-btn cancel" onclick="closeSaveDialog()">Cancel</button>
       <button class="modal-btn primary" onclick="confirmSave()">Save</button>
@@ -260,7 +264,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <button class="header-btn" onclick="exportJSON()">Export JSON</button>
     <button class="header-btn" onclick="triggerImportJSON()">Load JSON</button>
     <button class="header-btn" onclick="showSessionsPanel()">Sessions</button>
-    <input type="file" id="jsonImport" accept=".json" style="display:none" onchange="importJSON(event)">
+    <input type="file" id="jsonImport" accept=".json" style="display:none" onchange="importJSON(event)" aria-label="Import composition JSON file">
   </div>
 </header>
 
@@ -319,7 +323,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
           <div class="sub-label">Narration volume</div>
           <div class="slider-row">
             <span class="slider-label">Quiet</span>
-            <input type="range" min="10" max="100" value="80" id="narrVolSlider" oninput="setNarrVol(this.value)">
+            <input type="range" min="10" max="100" value="80" id="narrVolSlider" oninput="setNarrVol(this.value)" aria-label="Narration volume">
             <span class="slider-label" style="text-align:right">Loud</span>
             <span class="slider-val" id="narrVolVal">80</span>
           </div>
@@ -350,7 +354,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       <div class="step-q">How would you include your own reflection?</div>
       <div class="step-sub">Type what you'd want to say or hear. Spoken aloud in the composition.</div>
       <textarea class="reflection-area" id="reflectionText"
-        placeholder='e.g. "This bird reminds me of mornings at my grandmother&#39;s garden..."'></textarea>
+        placeholder='e.g. "This bird reminds me of mornings at my grandmother&#39;s garden..."' aria-label="Reflection notes"></textarea>
       <div class="opts" style="margin-top:8px">
         <button class="opt on" data-refwhen="before" onclick="setRefWhen(this)">Before the birds</button>
         <button class="opt" data-refwhen="after" onclick="setRefWhen(this)">After the birds</button>
@@ -379,7 +383,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       <div class="step-sub">Add natural ambience — a sense of place.</div>
       <div class="slider-row">
         <span class="slider-label">None</span>
-        <input type="range" min="0" max="100" value="30" id="envSlider" oninput="setEnv(this.value)">
+        <input type="range" min="0" max="100" value="30" id="envSlider" oninput="setEnv(this.value)" aria-label="Environment volume">
         <span class="slider-label" style="text-align:right">Immersive</span>
         <span class="slider-val" id="envVal">30</span>
       </div>
@@ -1226,5 +1230,30 @@ document.querySelectorAll('.modal-overlay').forEach(m=>{
   m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
 });
 </script>
+
+<script>
+(function enhancePrototypeA11y(){
+  document.querySelectorAll('.play, .back, .tap, [data-go], .s-close, .s-icon').forEach(el=>{
+    if(el.tagName==='BUTTON'||el.tagName==='A'||el.tagName==='INPUT') return;
+    if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
+    if(!el.getAttribute('role')) el.setAttribute('role','button');
+    if(!el.getAttribute('aria-label')){
+      if(el.classList.contains('play')) el.setAttribute('aria-label','Play bird recording');
+      else if(el.classList.contains('back')||el.classList.contains('s-close')) el.setAttribute('aria-label','Close');
+      else if((el.textContent||'').trim()) {}
+      else el.setAttribute('aria-label','Activate');
+    }
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter' && e.key!==' ') return;
+    const t=e.target;
+    if(!t||t.tagName==='BUTTON'||t.tagName==='A'||t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable) return;
+    if(t.getAttribute('role')==='button'||t.classList.contains('play')||t.classList.contains('back')||t.classList.contains('tap')){
+      e.preventDefault(); t.click();
+    }
+  });
+})();
+</script>
+
 </body>
 </html>

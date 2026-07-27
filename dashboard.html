@@ -92,9 +92,14 @@ svg.scatter{width:100%;height:auto;display:block;overflow:hidden}
 #tip.on{opacity:1}
 #tip .t-cat{font-weight:700;margin-bottom:2px}
 #tip .t-meta{font-family:var(--font-sub);color:#cfcfcf}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;white-space:nowrap}
 </style>
 </head>
 <body>
+<main>
+<header><h1 class="sr-only">Jiu Jiu · Ideation Analytics</h1></header>
+<div class="sr-only" aria-live="polite" id="live"></div>
 
 <div class="head">
   <div>
@@ -124,8 +129,8 @@ svg.scatter{width:100%;height:auto;display:block;overflow:hidden}
     <div class="card-h" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
       <span><span id="yName">Mindfulness</span> × <span id="xName">Audio focus</span></span>
       <div class="axis-pick">
-        <span>Y</span><select id="ySel" onchange="setAxis('y',this.value)"></select>
-        <span>X</span><select id="xSel" onchange="setAxis('x',this.value)"></select>
+        <span>Y</span><select id="ySel" aria-label="Y axis" onchange="setAxis('y',this.value)" aria-label="y Sel"></select>
+        <span>X</span><select id="xSel" aria-label="X axis" onchange="setAxis('x',this.value)" aria-label="x Sel"></select>
       </div>
     </div>
     <div class="card-sub">Each dot is one idea, coloured by category. Pick the two axes to compare any dimensions.</div>
@@ -332,5 +337,31 @@ window.addEventListener('scroll',hideTip,true);
 initAxisSelects();
 renderAll();
 </script>
+
+<script>
+(function enhancePrototypeA11y(){
+  document.querySelectorAll('.play, .back, .tap, [data-go], .s-close, .s-icon').forEach(el=>{
+    if(el.tagName==='BUTTON'||el.tagName==='A'||el.tagName==='INPUT') return;
+    if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
+    if(!el.getAttribute('role')) el.setAttribute('role','button');
+    if(!el.getAttribute('aria-label')){
+      if(el.classList.contains('play')) el.setAttribute('aria-label','Play bird recording');
+      else if(el.classList.contains('back')||el.classList.contains('s-close')) el.setAttribute('aria-label','Close');
+      else if((el.textContent||'').trim()) {}
+      else el.setAttribute('aria-label','Activate');
+    }
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter' && e.key!==' ') return;
+    const t=e.target;
+    if(!t||t.tagName==='BUTTON'||t.tagName==='A'||t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable) return;
+    if(t.getAttribute('role')==='button'||t.classList.contains('play')||t.classList.contains('back')||t.classList.contains('tap')){
+      e.preventDefault(); t.click();
+    }
+  });
+})();
+</script>
+
+</main>
 </body>
 </html>

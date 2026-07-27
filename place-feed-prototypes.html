@@ -112,12 +112,15 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
 .seg button.on{background:var(--ink);color:#fff}
 .list-row{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);align-items:center}
 .habit{font-size:.56rem;border-left:2px solid var(--ink);padding-left:8px;margin-top:6px;color:#444;line-height:1.35}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;white-space:nowrap}
 </style>
 </head>
 <body>
+<div class="sr-only" aria-live="polite" id="live"></div>
 
 <div class="page-head">
-  <div class="page-title">Place over time × small feed — 5 concepts</div>
+  <h1 class="page-title">Place over time × small feed — 5 concepts</h1>
   <div class="page-sub">Lo-fi explorations for common-place history (shared + old audio) and a Letterboxd / Goodreads–style listen feed. No color, structure only.</div>
 </div>
 
@@ -136,10 +139,10 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
 <div class="row on" id="c1">
   <div class="phone-wrap">
     <div class="phone-label">Screen A — Place over time</div>
-    <div class="phone">
+    <main class="phone">
       <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
       <div class="screen">
-        <div class="scr-top"><span class="back">‹</span><div class="scr-title">Union Bay</div></div>
+        <div class="scr-top"><span class="back">‹</span><h2 class="scr-title">Union Bay</h2></div>
         <div class="scr-sub">Your place · 14 listens · 3 shared</div>
         <div class="pill-row">
           <span class="chip on">All</span>
@@ -149,7 +152,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
         </div>
         <div class="card mint">
           <div class="row-flex">
-            <div class="play"></div>
+            <button type="button" class="play" aria-label="Play bird recording"></button>
             <div class="grow">
               <div class="nm">Place mix · this year</div>
               <div class="meta">8 clips · 2:14 · auto from your listens</div>
@@ -161,7 +164,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
           <div class="t-item shared">
             <div class="card soft" style="margin:0">
               <div class="row-flex">
-                <div class="play sm"></div>
+                <button type="button" class="play sm" aria-label="Play bird recording"></button>
                 <div class="grow">
                   <div class="nm">Saturday morning</div>
                   <div class="meta">Jul 12 · 4 birds · 0:42</div>
@@ -177,7 +180,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
           <div class="t-item">
             <div class="card soft" style="margin:0">
               <div class="row-flex">
-                <div class="play sm"></div>
+                <button type="button" class="play sm" aria-label="Play bird recording"></button>
                 <div class="grow">
                   <div class="nm">Bus wait · song sparrow</div>
                   <div class="meta">Jun 3 · 1 bird · 0:18 · just you</div>
@@ -188,7 +191,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
           <div class="t-item shared">
             <div class="card soft" style="margin:0">
               <div class="row-flex">
-                <div class="play sm"></div>
+                <button type="button" class="play sm" aria-label="Play bird recording"></button>
                 <div class="grow">
                   <div class="nm">Dawn chorus</div>
                   <div class="meta">May 2 · 6 birds · with Maya</div>
@@ -200,7 +203,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
           <div class="t-item">
             <div class="card soft" style="margin:0">
               <div class="row-flex">
-                <div class="play sm"></div>
+                <button type="button" class="play sm" aria-label="Play bird recording"></button>
                 <div class="grow">
                   <div class="nm">Last year · same week</div>
                   <div class="meta">Jul 2025 · resurfaced</div>
@@ -224,11 +227,11 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
     <div class="phone">
       <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
       <div class="screen">
-        <div class="scr-top"><span class="back">‹</span><div class="scr-title">Saturday morning</div></div>
+        <div class="scr-top"><span class="back">‹</span><h2 class="scr-title">Saturday morning</h2></div>
         <div class="scr-sub">Union Bay · Jul 12 · shared</div>
         <div class="card">
           <div class="row-flex">
-            <div class="play"></div>
+            <button type="button" class="play" aria-label="Play bird recording"></button>
             <div class="wave"><i style="height:40%"></i><i style="height:70%"></i><i style="height:55%"></i><i style="height:90%"></i><i style="height:45%"></i><i style="height:75%"></i><i style="height:50%"></i><i style="height:65%"></i></div>
           </div>
           <div class="meta" style="margin-top:8px">0:42 · 4 birds</div>
@@ -246,12 +249,12 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
         <div class="list-row">
           <img class="thumb" src="bird.jpg" alt="">
           <div class="grow"><div class="nm">Red-winged Blackbird</div><div class="meta">might be the reed one</div></div>
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
         </div>
         <div class="list-row">
           <img class="thumb" src="bird.jpg" alt="">
           <div class="grow"><div class="nm">Song Sparrow</div><div class="meta">0:08 clip</div></div>
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
         </div>
         <div class="eyebrow">Also at Union Bay</div>
         <div class="card mint">
@@ -277,7 +280,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
     <div class="phone">
       <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
       <div class="screen">
-        <div class="scr-top"><span class="back">‹</span><div class="scr-title">Backyard</div></div>
+        <div class="scr-top"><span class="back">‹</span><h2 class="scr-title">Backyard</h2></div>
         <div class="scr-sub">Everyday place · how it sounds over the year</div>
         <div class="season">
           <div class="cell"><div class="lab">Winter</div><div class="ct">3</div><div class="tiny">listens</div></div>
@@ -287,7 +290,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
         </div>
         <div class="card">
           <div class="row-flex">
-            <div class="play"></div>
+            <button type="button" class="play" aria-label="Play bird recording"></button>
             <div class="grow">
               <div class="nm">Summer soundscape</div>
               <div class="meta">Mix of your clips + 1 from Phoebe</div>
@@ -305,12 +308,12 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
         <div class="list-row">
           <img class="avatar lg" src="person.jpg" alt="">
           <div class="grow"><div class="nm">Phoebe shared a clip</div><div class="meta">Jul 8 · feeder bath</div></div>
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
         </div>
         <div class="list-row">
           <img class="avatar lg" src="person.jpg" alt="">
           <div class="grow"><div class="nm">You → Sara</div><div class="meta">Jun 22 · “morning maple”</div></div>
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
         </div>
         <div class="eyebrow">Old recordings</div>
         <div class="card mint">
@@ -332,7 +335,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
     <div class="phone">
       <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
       <div class="screen">
-        <div class="scr-top"><span class="back">‹</span><div class="scr-title">Summer · Backyard</div></div>
+        <div class="scr-top"><span class="back">‹</span><h2 class="scr-title">Summer · Backyard</h2></div>
         <div class="seg">
           <button class="on">Audio</button>
           <button>Shared</button>
@@ -341,29 +344,29 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
         <div class="card">
           <div class="nm">Season mix</div>
           <div class="mix-block">
-            <div class="play sm"></div>
+            <button type="button" class="play sm" aria-label="Play bird recording"></button>
             <div class="wave"><i style="height:30%"></i><i style="height:80%"></i><i style="height:50%"></i><i style="height:95%"></i><i style="height:40%"></i><i style="height:70%"></i><i style="height:55%"></i></div>
           </div>
           <div class="meta" style="margin-top:6px">Yours + Phoebe’s · 2:01</div>
         </div>
         <div class="eyebrow">Clips in this mix</div>
         <div class="list-row">
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
           <div class="grow"><div class="nm">Jul 14 · you</div><div class="meta">0:22 · House Finch</div></div>
           <span class="chip">mine</span>
         </div>
         <div class="list-row">
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
           <div class="grow"><div class="nm">Jul 8 · Phoebe</div><div class="meta">0:15 · shared with you</div></div>
           <span class="chip">shared</span>
         </div>
         <div class="list-row">
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
           <div class="grow"><div class="nm">Jun 22 · you → Sara</div><div class="meta">0:31 · maple chatter</div></div>
           <span class="chip">shared</span>
         </div>
         <div class="list-row">
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
           <div class="grow"><div class="nm">Jul 2025 · you</div><div class="meta">old · same season</div></div>
           <span class="chip">past</span>
         </div>
@@ -386,7 +389,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
     <div class="phone">
       <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
       <div class="screen">
-        <div class="scr-top"><div class="scr-title">Listens</div><span class="chip">Friends</span></div>
+        <div class="scr-top"><h2 class="scr-title">Listens</h2><span class="chip">Friends</span></div>
         <div class="scr-sub">Small diary · share is optional · audio first</div>
         <div class="seg">
           <button class="on">Friends</button>
@@ -406,7 +409,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
               <div class="stars">■■■□□</div>
               <div class="quote">“look at this bird — bathing in a puddle”</div>
               <div class="mix-block">
-                <div class="play sm"></div>
+                <button type="button" class="play sm" aria-label="Play bird recording"></button>
                 <div class="wave"><i style="height:45%"></i><i style="height:70%"></i><i style="height:35%"></i><i style="height:90%"></i><i style="height:50%"></i></div>
                 <span class="tiny">0:18</span>
               </div>
@@ -426,7 +429,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
               <div class="nm" style="margin-top:8px">Saturday morning</div>
               <div class="stars">■■■■□</div>
               <div class="mix-block">
-                <div class="play sm"></div>
+                <button type="button" class="play sm" aria-label="Play bird recording"></button>
                 <div class="wave"><i style="height:60%"></i><i style="height:40%"></i><i style="height:85%"></i><i style="height:55%"></i><i style="height:70%"></i></div>
                 <span class="tiny">0:42</span>
               </div>
@@ -445,7 +448,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
               <div class="nm" style="margin-top:8px">Dawn chorus</div>
               <div class="meta">No note · audio only</div>
               <div class="mix-block">
-                <div class="play sm"></div>
+                <button type="button" class="play sm" aria-label="Play bird recording"></button>
                 <div class="wave"><i style="height:50%"></i><i style="height:75%"></i><i style="height:40%"></i><i style="height:60%"></i></div>
                 <span class="tiny">1:05</span>
               </div>
@@ -467,7 +470,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
     <div class="phone">
       <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
       <div class="screen">
-        <div class="scr-top"><div class="scr-title">Your listens</div></div>
+        <div class="scr-top"><h2 class="scr-title">Your listens</h2></div>
         <div class="scr-sub">Like a reading log — date, place, short line, audio</div>
         <div class="card mint">
           <div class="nm">This month</div>
@@ -479,7 +482,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
             <div class="nm">Bus stop sparrow</div>
             <div class="meta">Incidental · not shared</div>
           </div>
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
         </div>
         <div class="list-row">
           <div class="diary-date">12<br><span class="tiny">Jul</span></div>
@@ -487,7 +490,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
             <div class="nm">Saturday morning</div>
             <div class="meta">Union Bay · ★★★★ · +Phoebe</div>
           </div>
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
         </div>
         <div class="list-row">
           <div class="diary-date">22<br><span class="tiny">Jun</span></div>
@@ -496,7 +499,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
             <div class="meta">Backyard · shared → Sara</div>
             <div class="habit">Habit note: late morning chatter</div>
           </div>
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
         </div>
         <div class="list-row">
           <div class="diary-date">02<br><span class="tiny">May</span></div>
@@ -504,7 +507,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
             <div class="nm">Dawn chorus</div>
             <div class="meta">Union Bay · with Maya</div>
           </div>
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
         </div>
         <div class="eyebrow">Low-commit learn</div>
         <div class="card soft">
@@ -530,7 +533,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
     <div class="phone">
       <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
       <div class="screen">
-        <div class="scr-top"><div class="scr-title">Past audio</div></div>
+        <div class="scr-top"><h2 class="scr-title">Past audio</h2></div>
         <div class="scr-sub">Shelf of mixes · open one → hear + who it’s for</div>
         <div class="eyebrow">For you · resurfaced</div>
         <div class="card">
@@ -540,7 +543,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
               <div class="nm">May mix</div>
               <div class="meta">6 clips · Union Bay + backyard</div>
             </div>
-            <div class="play"></div>
+            <button type="button" class="play" aria-label="Play bird recording"></button>
           </div>
         </div>
         <div class="card">
@@ -550,7 +553,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
               <div class="nm">Last year · this week</div>
               <div class="meta">3 clips · quieter than now</div>
             </div>
-            <div class="play"></div>
+            <button type="button" class="play" aria-label="Play bird recording"></button>
           </div>
         </div>
         <div class="card">
@@ -560,7 +563,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
               <div class="nm">Shared with you</div>
               <div class="meta">Phoebe · Robin bath · Jul 8</div>
             </div>
-            <div class="play"></div>
+            <button type="button" class="play" aria-label="Play bird recording"></button>
           </div>
         </div>
         <div class="eyebrow">Activity on your shelf</div>
@@ -591,7 +594,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
     <div class="phone">
       <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
       <div class="screen">
-        <div class="scr-top"><span class="back">‹</span><div class="scr-title">May mix</div></div>
+        <div class="scr-top"><span class="back">‹</span><h2 class="scr-title">May mix</h2></div>
         <div class="hero-place" style="height:90px">
           <div class="shade"></div>
           <div class="inner">
@@ -601,7 +604,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
         </div>
         <div class="card">
           <div class="row-flex">
-            <div class="play"></div>
+            <button type="button" class="play" aria-label="Play bird recording"></button>
             <div class="grow">
               <div class="nm">Play full mix</div>
               <div class="meta">Learning loop · or reminisce</div>
@@ -612,17 +615,17 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
         <div class="list-row">
           <span class="tiny" style="width:16px">1</span>
           <div class="grow"><div class="nm">Union Bay dawn</div><div class="meta">you · May 2 · with Maya</div></div>
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
         </div>
         <div class="list-row">
           <span class="tiny" style="width:16px">2</span>
           <div class="grow"><div class="nm">Backyard feeder</div><div class="meta">you · May 11</div></div>
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
         </div>
         <div class="list-row">
           <span class="tiny" style="width:16px">3</span>
           <div class="grow"><div class="nm">Phoebe · same feeder</div><div class="meta">shared into your mix</div></div>
-          <div class="play sm"></div>
+          <button type="button" class="play sm" aria-label="Play bird recording"></button>
         </div>
         <div class="eyebrow">Learn bite</div>
         <div class="card soft">
@@ -652,7 +655,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
         <div class="hero-place">
           <div class="shade"></div>
           <div class="inner">
-            <div class="scr-title" style="padding:0">Union Bay</div>
+            <h2 class="scr-title" style="padding:0">Union Bay</h2>
             <div class="meta">Common place · you + 3 friends have audio here</div>
           </div>
         </div>
@@ -666,7 +669,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
         </div>
         <div class="card mint">
           <div class="row-flex">
-            <div class="play"></div>
+            <button type="button" class="play" aria-label="Play bird recording"></button>
             <div class="grow">
               <div class="nm">Place mix · everyone’s shares</div>
               <div class="meta">Only what was shared to the place · not private notes</div>
@@ -681,7 +684,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
               <div class="nm">Phoebe · Jul 12</div>
               <div class="meta">Shared Saturday morning with you</div>
               <div class="mix-block">
-                <div class="play sm"></div>
+                <button type="button" class="play sm" aria-label="Play bird recording"></button>
                 <div class="wave"><i style="height:50%"></i><i style="height:80%"></i><i style="height:40%"></i><i style="height:70%"></i></div>
               </div>
             </div>
@@ -704,7 +707,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
               <div class="nm">Maya · May 2</div>
               <div class="meta">Dawn chorus · co-listen</div>
               <div class="mix-block">
-                <div class="play sm"></div>
+                <button type="button" class="play sm" aria-label="Play bird recording"></button>
                 <div class="wave"><i style="height:60%"></i><i style="height:45%"></i><i style="height:85%"></i><i style="height:55%"></i></div>
               </div>
             </div>
@@ -730,7 +733,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
     <div class="phone">
       <div class="statusbar"><span>9:41</span><div class="notch"></div><span>●●</span></div>
       <div class="screen">
-        <div class="scr-top"><div class="scr-title">Around you</div></div>
+        <div class="scr-top"><h2 class="scr-title">Around you</h2></div>
         <div class="scr-sub">Not a public network — friends’ shared listens, tagged by place</div>
         <div class="pill-row">
           <span class="chip on">Friends</span>
@@ -747,7 +750,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
               <div class="meta">Shared · 6h ago</div>
               <div class="nm" style="margin-top:6px;font-weight:600;font-size:.7rem">Robin bath</div>
               <div class="mix-block">
-                <div class="play sm"></div>
+                <button type="button" class="play sm" aria-label="Play bird recording"></button>
                 <div class="wave"><i style="height:40%"></i><i style="height:75%"></i><i style="height:55%"></i><i style="height:90%"></i><i style="height:45%"></i></div>
               </div>
               <div class="meta" style="margin-top:6px">Open place · save clip · reply audio</div>
@@ -763,7 +766,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
               <div class="meta">Past audio resurfaced</div>
               <div class="nm" style="margin-top:6px;font-weight:600;font-size:.7rem">Union Bay · last July</div>
               <div class="mix-block">
-                <div class="play sm"></div>
+                <button type="button" class="play sm" aria-label="Play bird recording"></button>
                 <div class="wave"><i style="height:55%"></i><i style="height:35%"></i><i style="height:70%"></i><i style="height:50%"></i></div>
               </div>
               <div class="meta" style="margin-top:6px">Compare with this week at the same place</div>
@@ -778,7 +781,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);
               <div class="nm">You → Sara @ Union Bay</div>
               <div class="meta">She listened · left no note</div>
               <div class="mix-block">
-                <div class="play sm"></div>
+                <button type="button" class="play sm" aria-label="Play bird recording"></button>
                 <div class="wave"><i style="height:65%"></i><i style="height:45%"></i><i style="height:80%"></i><i style="height:40%"></i></div>
               </div>
             </div>
@@ -820,5 +823,31 @@ picker.addEventListener('click', e => {
   note.innerHTML = notes[b.dataset.c];
 });
 </script>
+
+</main>
+<script>
+(function enhancePrototypeA11y(){
+  document.querySelectorAll('.play, .back, .tap, [data-go], .s-close, .s-icon').forEach(el=>{
+    if(el.tagName==='BUTTON'||el.tagName==='A'||el.tagName==='INPUT') return;
+    if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
+    if(!el.getAttribute('role')) el.setAttribute('role','button');
+    if(!el.getAttribute('aria-label')){
+      if(el.classList.contains('play')) el.setAttribute('aria-label','Play bird recording');
+      else if(el.classList.contains('back')||el.classList.contains('s-close')) el.setAttribute('aria-label','Close');
+      else if((el.textContent||'').trim()) {}
+      else el.setAttribute('aria-label','Activate');
+    }
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter' && e.key!==' ') return;
+    const t=e.target;
+    if(!t||t.tagName==='BUTTON'||t.tagName==='A'||t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable) return;
+    if(t.getAttribute('role')==='button'||t.classList.contains('play')||t.classList.contains('back')||t.classList.contains('tap')){
+      e.preventDefault(); t.click();
+    }
+  });
+})();
+</script>
+
 </body>
 </html>

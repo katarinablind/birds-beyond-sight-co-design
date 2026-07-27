@@ -309,9 +309,12 @@ body{background:var(--bg);font-family:var(--font);-webkit-font-smoothing:antiali
   .header{flex-direction:column;align-items:flex-start}
   .tabs{margin-left:0}
 }
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;white-space:nowrap}
 </style>
 </head>
 <body>
+<div class="sr-only" aria-live="polite" id="live"></div>
 
 <!-- Header: left-aligned, tabs inline -->
 <div class="header">
@@ -367,7 +370,7 @@ body{background:var(--bg);font-family:var(--font);-webkit-font-smoothing:antiali
       <div class="strip-sep"></div>
       <div class="inline-slider">
         <span style="font-size:9px;color:var(--tdd);font-weight:500">Pause</span>
-        <input type="range" min="0" max="8" step="0.5" value="2" id="pauseSlider" oninput="setPause(this.value)">
+        <input type="range" min="0" max="8" step="0.5" value="2" id="pauseSlider" oninput="setPause(this.value)" aria-label="pause Slider">
         <span class="inline-slider-val" id="pauseVal">2s</span>
       </div>
     </div>
@@ -383,7 +386,7 @@ body{background:var(--bg);font-family:var(--font);-webkit-font-smoothing:antiali
       </div>
       <div class="strip-sep"></div>
       <span style="font-size:9px;color:var(--tdd);font-weight:500">Narration</span>
-      <select class="narr-select" id="narrStyle" onchange="setNarration(this.value)">
+      <select class="narr-select" id="narrStyle" onchange="setNarration(this.value)" aria-label="narr Style">
         <option value="direct">Direct</option>
         <option value="field-guide">Field guide</option>
         <option value="field-tour">Field tour</option>
@@ -452,7 +455,7 @@ body{background:var(--bg);font-family:var(--font);-webkit-font-smoothing:antiali
           <div class="fader-ch" id="fieldNoiseCh" style="display:none">
             <div class="fader-ch-label">Noise</div>
             <div class="led amber" id="ledNoise"></div>
-            <div class="v-fader"><input type="range" min="0" max="100" value="75" id="noiseSlider" oninput="setNoiseLevel(this.value)"></div>
+            <div class="v-fader"><input type="range" min="0" max="100" value="75" id="noiseSlider" oninput="setNoiseLevel(this.value)" aria-label="noise Slider"></div>
             <div class="fader-ch-val" id="noiseVal">75</div>
           </div>
 
@@ -512,7 +515,7 @@ body{background:var(--bg);font-family:var(--font);-webkit-font-smoothing:antiali
         <textarea id="reelTextArea" placeholder="Type text to be spoken aloud (e.g. participant reflections, journal entries, transitions...)"
           style="width:100%;height:54px;resize:vertical;background:var(--groove);border:1px solid rgba(255,255,255,.06);
           border-radius:8px;padding:8px 10px;color:var(--td);font-family:var(--font);font-size:10px;
-          line-height:1.5;outline:none"></textarea>
+          line-height:1.5;outline:none" aria-label="reel Text Area"></textarea>
         <div style="display:flex;gap:4px;margin-top:4px;justify-content:flex-end">
           <button class="c-btn" onclick="cancelTextInput()" style="font-size:8px;padding:3px 10px">Cancel</button>
           <button class="c-btn on" onclick="addTextToReel()" style="font-size:8px;padding:3px 10px">Add to reel</button>
@@ -531,7 +534,7 @@ body{background:var(--bg);font-family:var(--font);-webkit-font-smoothing:antiali
       </div>
       <div class="strip-sep"></div>
       <span style="font-size:8px;color:var(--tdd2);font-weight:600">Narration</span>
-      <select class="narr-select" id="reelNarrationSel" onchange="state.narration=this.value">
+      <select class="narr-select" id="reelNarrationSel" onchange="state.narration=this.value" aria-label="reel Narration Sel">
         <option value="direct">Direct</option>
         <option value="field-guide">Field guide</option>
         <option value="field-tour">Field tour</option>
@@ -566,7 +569,7 @@ body{background:var(--bg);font-family:var(--font);-webkit-font-smoothing:antiali
       <div class="strip-sep"></div>
       <span style="font-size:8px;color:var(--tdd2);font-weight:600">Pause between</span>
       <div class="inline-slider">
-        <input type="range" min="0" max="5" value="2" id="reelPauseSlider" oninput="setReelPause(this.value)">
+        <input type="range" min="0" max="5" value="2" id="reelPauseSlider" oninput="setReelPause(this.value)" aria-label="reel Pause Slider">
         <span class="inline-slider-val" id="reelPauseVal">2s</span>
       </div>
     </div>
@@ -641,7 +644,7 @@ body{background:var(--bg);font-family:var(--font);-webkit-font-smoothing:antiali
 
 <div class="toast" id="toast"></div>
 <audio id="audioMain" loop></audio>
-<input type="file" id="fileInput" accept="audio/*" style="display:none" onchange="handleMnemUpload(this.files)">
+<input type="file" id="fileInput" accept="audio/*" style="display:none" onchange="handleMnemUpload(this.files)" aria-label="file Input">
 
 <script>
 const BIRDS=[
@@ -1405,5 +1408,30 @@ function toast(msg){const el=document.getElementById('toast');el.textContent=msg
 
 buildPicker();buildReelPicker();renderSessions();renderReel();updateMnemTag();updateReelOrderDesc();
 </script>
+
+<script>
+(function enhancePrototypeA11y(){
+  document.querySelectorAll('.play, .back, .tap, [data-go], .s-close, .s-icon').forEach(el=>{
+    if(el.tagName==='BUTTON'||el.tagName==='A'||el.tagName==='INPUT') return;
+    if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
+    if(!el.getAttribute('role')) el.setAttribute('role','button');
+    if(!el.getAttribute('aria-label')){
+      if(el.classList.contains('play')) el.setAttribute('aria-label','Play bird recording');
+      else if(el.classList.contains('back')||el.classList.contains('s-close')) el.setAttribute('aria-label','Close');
+      else if((el.textContent||'').trim()) {}
+      else el.setAttribute('aria-label','Activate');
+    }
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter' && e.key!==' ') return;
+    const t=e.target;
+    if(!t||t.tagName==='BUTTON'||t.tagName==='A'||t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable) return;
+    if(t.getAttribute('role')==='button'||t.classList.contains('play')||t.classList.contains('back')||t.classList.contains('tap')){
+      e.preventDefault(); t.click();
+    }
+  });
+})();
+</script>
+
 </body>
 </html>

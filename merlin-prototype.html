@@ -362,15 +362,26 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 .share-opt .blob{width:52px;height:52px;border-radius:50%;border:1.5px solid var(--line);background:#eee;display:flex;align-items:center;justify-content:center}
 .share-opt .blob .ico{width:20px;height:20px}
 .share-opt span{font-size:.58rem;font-weight:700;color:var(--muted);text-align:center}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;white-space:nowrap}
+.scr-top h1.scr-title{font-size:1.15rem;font-weight:700;letter-spacing:-.01em;flex:1;margin:0}
+button.back,button.play,button.nav-item,button.tap,.scr-actions button{
+  font:inherit;color:inherit;background:transparent;border:none;padding:0;cursor:pointer;
+}
+button.play,button.play.sm{display:inline-flex;align-items:center;justify-content:center}
+.nav-item{appearance:none;-webkit-appearance:none}
 </style>
 </head>
 <body>
 
-<div class="page-head">
-  <div class="page-title">Merlin Companion — lo-fi wireframe</div>
-  <div class="page-sub">Grayscale layout · tap through flow · menu jumps screens</div>
-</div>
-<div class="facil" id="facil"></div>
+<a class="sr-only" href="#main">Skip to app</a>
+<div class="sr-only" aria-live="polite" id="live"></div>
+
+<header class="page-head">
+  <h1 class="page-title">Merlin Companion — lo-fi wireframe</h1>
+  <p class="page-sub">Grayscale layout · tap through flow · menu jumps screens</p>
+</header>
+<nav class="facil" id="facil" aria-label="Facilitator screen jump"></nav>
 
 <!-- icon sprite -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -394,8 +405,8 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
 </defs></svg>
 
-<div class="phone">
-  <div class="statusbar"><div class="notch"></div><span>9:41</span>
+<main class="phone" id="main">
+  <div class="statusbar" aria-hidden="true"><div class="notch"></div><span>9:41</span>
     <span class="icons"><svg class="ico" style="width:17px" viewBox="0 0 24 24"><path d="M2 17h2M6 14h2M10 10h2M14 6h2M18 3h2" stroke-width="3"/></svg>
       <svg class="ico" style="width:16px" viewBox="0 0 24 24"><path d="M2 8a13 13 0 0 1 20 0M5 12a8 8 0 0 1 14 0M8.5 15.5a3.5 3.5 0 0 1 7 0"/></svg>
       <svg class="ico" style="width:22px" viewBox="0 0 26 14"><rect x="1" y="2" width="20" height="10" rx="3"/><rect x="3" y="4" width="15" height="6" rx="1.5" fill="currentColor" stroke="none"/><rect x="23" y="5" width="2" height="4" rx="1" fill="currentColor" stroke="none"/></svg>
@@ -404,13 +415,13 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- ═══════════ 1. DURING BIRDING (Sound ID, Merlin-look) ═══════════ -->
   <div class="screen on" id="s-birding">
-    <div class="scr-top"><div class="scr-title">Sound ID</div>
+    <div class="scr-top"><h1 class="scr-title">Sound ID</h1>
       <div class="scr-actions"><svg class="ico" style="width:18px"><use href="#i-pin"/></svg></div></div>
-    <div class="sono"><canvas id="liveSono" width="330" height="168"></canvas></div>
+    <div class="sono" role="img" aria-label="Live Sound ID spectrogram"><canvas id="liveSono" width="330" height="168" aria-hidden="true"></canvas></div>
     <div class="listening"><span><span class="pulse"></span>Who's singing</span><span>Union Bay</span></div>
-    <div id="detectList"></div>
+    <div id="detectList" aria-live="polite" aria-label="Bird suggestions"></div>
     <div class="stop-wrap">
-      <button class="stop-btn" data-go="s-log-review" aria-label="Stop"><span class="sq"></span></button>
+      <button class="stop-btn" data-go="s-log-review" aria-label="Stop listening and review session"><span class="sq"></span></button>
       <span class="stop-timer" id="liveTimer">00:00</span>
     </div>
   </div>
@@ -419,15 +430,15 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
   <!-- 2a review: birds you ID'd — save or keep recording -->
   <div class="screen" id="s-log-review">
     <div class="scr-top">
-      <span class="back tap" data-back><svg class="ico"><use href="#i-x"/></svg></span>
-      <div class="grow"><div class="scr-title" style="font-size:.95rem">July 14 · Union Bay</div>
+      <button type="button" class="back tap" data-back aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+      <div class="grow"><h1 class="scr-title" style="font-size:.95rem">July 14 · Union Bay</h1>
         <div class="meta" style="margin-top:1px">7:51 AM · 4 birds</div></div>
       <button class="btn ghost sm" data-go="s-log-reflect" style="flex:none">Save</button>
     </div>
 
     <div class="review-sono">
       <canvas id="reviewSono" width="330" height="140"></canvas>
-      <div class="play" data-audio="birds/red-wing-blackbird.mp3"></div>
+      <button type="button" class="play" data-audio="birds/red-wing-blackbird.mp3" aria-label="Play red wing blackbird"></button>
     </div>
     <div class="review-meta">0:42 · tap play to listen back</div>
 
@@ -443,16 +454,16 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- 2b reflect — optional, after save -->
   <div class="screen" id="s-log-reflect">
-    <div class="scr-top"><span class="back tap" data-go="s-log-review"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Reflect</div></div>
+    <div class="scr-top"><button type="button" class="back tap" data-go="s-log-review" aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title">Reflect</h1></div>
     <div class="hint sk-stack"><span class="sk w80"></span><span class="sk s w50"></span></div>
     <div class="eyebrow" style="margin-top:2px">Recording title</div>
-    <div class="input" contenteditable="true" id="recTitle" style="font-weight:700" data-ph="Title…">Union Bay · July 14</div>
+    <div class="input" contenteditable="true" id="recTitle" style="font-weight:700" data-ph="Title…" role="textbox" aria-label="Recording title">Union Bay · July 14</div>
     <div class="card mint" style="margin-top:12px">
       <div class="card-h h-serif" id="reflectQ" style="font-size:.92rem;line-height:1.35">—</div>
       <div class="tap" style="font-size:.62rem;color:var(--green);font-weight:700;margin-top:10px" onclick="shuffleQ()">↻ Shuffle prompt</div>
     </div>
     <div class="eyebrow">Field notes</div>
-    <div class="input lines tall" id="fieldNotes" contenteditable="true" data-ph="Write down your field notes…"></div>
+    <div class="input lines tall" id="fieldNotes" contenteditable="true" data-ph="Write down your field notes…" role="textbox" aria-label="Field notes"></div>
     <div class="kbrow">
       <div class="kbtn tap" onclick="toast('Audio clip attached')"><svg class="ico"><use href="#i-mic"/></svg>Audio</div>
       <div class="kbtn tap" onclick="toast('Photo attached')"><svg class="ico"><use href="#i-photo"/></svg>Photo</div>
@@ -465,7 +476,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- 2c done + share with friends (no extra step) -->
   <div class="screen" id="s-log-done">
-    <div class="scr-top"><div class="scr-title">Saved ✓</div></div>
+    <div class="scr-top"><h1 class="scr-title">Saved ✓</h1></div>
     <div class="card mint"><div class="card-h" id="doneTitle">Union Bay · July 14</div><div class="card-sub">4 birds · 0:42</div></div>
 
     <div id="includeNotesBlock" style="display:none">
@@ -488,7 +499,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- ═══════════ 3. ACTIVITY ═══════════ -->
   <div class="screen" id="s-activity">
-    <div class="scr-top"><div class="scr-title">Activity</div>
+    <div class="scr-top"><h1 class="scr-title">Activity</h1>
       <div class="scr-actions"><svg class="ico" style="width:18px" data-go="s-profile"><use href="#i-gear"/></svg></div></div>
 
     <div class="card soft" style="padding:11px 13px">
@@ -504,13 +515,13 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
     <div class="card"><div class="row">
       <div class="avatar" style="overflow:hidden;padding:0"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
       <div class="grow"><div class="card-h">Remember Steve?</div><div class="card-sub">Red-winged Blackbird · last heard Jan 10</div></div>
-      <div class="play sm" data-audio="birds/red-wing-blackbird.mp3"></div></div></div>
+      <button type="button" class="play sm" data-audio="birds/red-wing-blackbird.mp3" aria-label="Play red wing blackbird"></button></div></div>
 
     <div class="eyebrow">For you</div>
     <div class="mem-grid">
       <div class="mem mint-vis tap" data-go="s-mix">
         <div class="bg"></div><div class="shade"></div>
-        <div class="play sm mint" data-audio="birds/red-wing-blackbird.mp3" onclick="event.stopPropagation()"></div>
+        <button type="button" class="play sm mint" data-audio="birds/red-wing-blackbird.mp3" onclick="event.stopPropagation()" aria-label="Play red wing blackbird"></button>
         <div class="mt">May mix</div>
         <div class="ms">12 tracks · birds of the month</div>
       </div>
@@ -536,7 +547,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- unlogged outings picker (when >1) -->
   <div class="screen" id="s-unlogged">
-    <div class="scr-top"><span class="back tap" data-go="s-activity"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Unlogged</div></div>
+    <div class="scr-top"><button type="button" class="back tap" data-go="s-activity" aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title">Unlogged</h1></div>
     <div class="hint sk-stack"><span class="sk w80"></span><span class="sk s w50"></span></div>
     <div id="unloggedList"></div>
     <button class="btn ghost block" style="margin-top:8px" onclick="skipAllUnlogged()">Don't log any</button>
@@ -544,14 +555,14 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- all past outings -->
   <div class="screen" id="s-outings">
-    <div class="scr-top"><span class="back tap" data-go="s-activity"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Past outings</div></div>
-    <div class="search"><svg class="ico"><use href="#i-search"/></svg><input id="outingSearch" type="search" placeholder="Search place, bird, date…" autocomplete="off"></div>
+    <div class="scr-top"><button type="button" class="back tap" data-go="s-activity" aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title">Past outings</h1></div>
+    <div class="search"><svg class="ico"><use href="#i-search"/></svg><label class="sr-only" for="outingSearch">Search outings</label><input id="outingSearch" type="search" placeholder="Search place, bird, date…" autocomplete="off" aria-label="Search outings"></div>
     <div id="pastList"></div>
   </div>
 
   <!-- mix detail — album -->
   <div class="screen" id="s-mix">
-    <div class="scr-top"><span class="back tap" data-go="s-activity"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">May mix</div>
+    <div class="scr-top"><button type="button" class="back tap" data-go="s-activity" aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title">May mix</h1>
       <div class="scr-actions"><svg class="ico" style="width:18px" data-go="s-share-audio"><use href="#i-share"/></svg></div></div>
     <div class="album">
       <div class="cover"></div><div class="veil"></div>
@@ -559,7 +570,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
         <div class="sk s w25" style="margin-bottom:8px;opacity:.7"></div>
         <div class="title">Birds of May</div>
         <div class="sk-stack" style="margin-top:8px"><span class="sk s w65"></span></div>
-        <div class="actions"><div class="play" data-audio="birds/red-wing-blackbird.mp3"></div>
+        <div class="actions"><button type="button" class="play" data-audio="birds/red-wing-blackbird.mp3" aria-label="Play red wing blackbird"></button>
           <div class="meta" style="color:rgba(255,255,255,.85)">Play mix</div></div>
       </div>
     </div>
@@ -568,7 +579,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- honor your birds -->
   <div class="screen" id="s-honor">
-    <div class="scr-top"><span class="back tap" data-go="s-activity"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Honor your birds</div></div>
+    <div class="scr-top"><button type="button" class="back tap" data-go="s-activity" aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title">Honor your birds</h1></div>
     <div class="album" style="height:160px">
       <div class="cover"></div><div class="veil"></div>
       <div class="body">
@@ -582,7 +593,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- this time last year -->
   <div class="screen" id="s-last-year">
-    <div class="scr-top"><span class="back tap" data-go="s-activity"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Last year</div>
+    <div class="scr-top"><button type="button" class="back tap" data-go="s-activity" aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title">Last year</h1>
       <div class="scr-actions"><svg class="ico" style="width:18px" data-go="s-share-audio"><use href="#i-share"/></svg></div></div>
     <div class="album">
       <div class="cover" style="filter:saturate(.85) brightness(.95)"></div><div class="veil warm"></div>
@@ -590,7 +601,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
         <div class="sk s w25" style="margin-bottom:8px;opacity:.7"></div>
         <div class="title">This time last year</div>
         <div class="sk-stack" style="margin-top:8px"><span class="sk s w65"></span></div>
-        <div class="actions"><div class="play" data-audio="birds/american-robin.mp3"></div>
+        <div class="actions"><button type="button" class="play" data-audio="birds/american-robin.mp3" aria-label="Play american robin"></button>
           <div class="meta" style="color:rgba(255,255,255,.85)">Listen back</div></div>
       </div>
     </div>
@@ -602,7 +613,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- bird astrology -->
   <div class="screen" id="s-astro">
-    <div class="scr-top"><span class="back tap" data-go="s-activity"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Bird astrology</div>
+    <div class="scr-top"><button type="button" class="back tap" data-go="s-activity" aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title">Bird astrology</h1>
       <div class="scr-actions"><svg class="ico" style="width:18px" onclick="toast('Shared chart')"><use href="#i-share"/></svg></div></div>
     <div class="album" style="height:180px">
       <div class="cover"></div><div class="veil cool"></div>
@@ -625,7 +636,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- ═══════════ 4. FRIENDS ═══════════ -->
   <div class="screen" id="s-friends">
-    <div class="scr-top"><div class="scr-title">Friends</div></div>
+    <div class="scr-top"><h1 class="scr-title">Friends</h1></div>
     <div class="hint sk-stack"><span class="sk w80"></span><span class="sk s w50"></span></div>
 
     <div class="sec-head">
@@ -643,15 +654,15 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- create bird friend -->
   <div class="screen" id="s-bird-new">
-    <div class="scr-top"><span class="back tap" data-go="s-friends"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">New bird friend</div></div>
+    <div class="scr-top"><button type="button" class="back tap" data-go="s-friends" aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title">New bird friend</h1></div>
     <div class="bp-hero" style="aspect-ratio:1.35;margin-bottom:12px"><div style="position:absolute;right:10px;bottom:10px;z-index:3;width:32px;height:32px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;filter:none"><svg class="ico" style="width:16px"><use href="#i-plus"/></svg></div></div>
     <div class="eyebrow">Nickname</div>
-    <div class="input" id="newBirdNick" contenteditable="true" data-ph="e.g. Joe"></div>
+    <div class="input" id="newBirdNick" contenteditable="true" data-ph="e.g. Joe" role="textbox" aria-label="Bird nickname"></div>
     <div class="eyebrow">Species</div>
-    <div class="search" style="margin-bottom:8px"><svg class="ico"><use href="#i-search"/></svg><input id="speciesSearch" type="search" placeholder="Search species…" autocomplete="off"></div>
+    <div class="search" style="margin-bottom:8px"><svg class="ico"><use href="#i-search"/></svg><label class="sr-only" for="speciesSearch">Search species</label><input id="speciesSearch" type="search" placeholder="Search species…" autocomplete="off" aria-label="Search species"></div>
     <div class="sp-list" id="speciesList"></div>
     <div class="eyebrow">Usual location</div>
-    <div class="input" id="newBirdLoc" contenteditable="true" data-ph="e.g. Union Bay"></div>
+    <div class="input" id="newBirdLoc" contenteditable="true" data-ph="e.g. Union Bay" role="textbox" aria-label="Where you met this bird"></div>
     <div class="map" style="margin-top:8px"><div class="halo"></div><div class="pin"></div></div>
     <div class="sk s w55" style="margin:8px 0 0"></div>
     <div class="eyebrow">Habits / notes</div>
@@ -661,19 +672,19 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- add human by username -->
   <div class="screen" id="s-human-add">
-    <div class="scr-top"><span class="back tap" data-go="s-friends"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Add friend</div></div>
+    <div class="scr-top"><button type="button" class="back tap" data-go="s-friends" aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title">Add friend</h1></div>
     <div class="hint sk-stack"><span class="sk w70"></span></div>
     <div class="eyebrow">Username</div>
-    <div class="input" id="newHumanUser" contenteditable="true" data-ph="@username"></div>
+    <div class="input" id="newHumanUser" contenteditable="true" data-ph="@username" role="textbox" aria-label="Friend username"></div>
     <button class="btn primary block" style="margin-top:14px" onclick="saveNewHuman()">Add</button>
   </div>
 
   <!-- ═══════════ SETTINGS (was Profile) ═══════════ -->
   <div class="screen" id="s-profile">
-    <div class="scr-top"><div class="scr-title">Settings</div></div>
+    <div class="scr-top"><h1 class="scr-title">Settings</h1></div>
 
     <div class="card soft"><div class="row">
-      <div class="avatar" style="width:52px;height:52px;overflow:hidden;padding:0;flex:none"><img src="person.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+      <div class="avatar" style="width:52px;height:52px;overflow:hidden;padding:0;flex:none"><img src="person.jpg" alt="${n}" style="width:100%;height:100%;object-fit:cover"></div>
       <div class="grow"><div class="nm" style="font-size:.88rem">itskatarinaaa</div><div class="meta">@itskatarinaaa</div></div>
     </div></div>
 
@@ -697,7 +708,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- ═══════════ BIRD PROFILE (view) — breakdown ═══════════ -->
   <div class="screen" id="s-bird-profile">
-    <div class="scr-top"><span class="back tap" data-back><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title" style="font-size:1rem" id="bpName">Steve</div>
+    <div class="scr-top"><button type="button" class="back tap" data-back aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title" style="font-size:1rem" id="bpName">Steve</h1>
       <div class="scr-actions">
         <svg class="ico tap" style="width:18px" onclick="openShareSheet()"><use href="#i-share"/></svg>
         <svg class="ico tap" style="width:18px" data-go="s-bird-edit"><use href="#i-edit"/></svg>
@@ -710,7 +721,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
       <div class="meta" style="margin-top:4px">Last seen · Union Bay · 14× spotted</div>
     </div>
     <div class="rec-chip">
-      <div class="play sm" data-audio="birds/red-wing-blackbird.mp3"></div>
+      <button type="button" class="play sm" data-audio="birds/red-wing-blackbird.mp3" aria-label="Play red wing blackbird"></button>
       <div class="grow"><div class="nm" style="font-size:.7rem">Call</div><div class="meta">Jul 6 · Seattle, WA</div></div>
       <div class="wave" style="width:72px;flex:none">___WAVE___</div>
     </div>
@@ -720,7 +731,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- BIRD PROFILE (edit) -->
   <div class="screen" id="s-bird-edit">
-    <div class="scr-top"><span class="back tap" data-go="s-bird-profile"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Edit profile</div></div>
+    <div class="scr-top"><button type="button" class="back tap" data-go="s-bird-profile" aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title">Edit profile</h1></div>
     <div class="bp-hero" style="aspect-ratio:1.2"><div style="position:absolute;right:10px;bottom:10px;z-index:3;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center"><svg class="ico" style="width:16px"><use href="#i-plus"/></svg></div></div>
     <div class="eyebrow">Name</div><div class="input" contenteditable="true">Steve</div>
     <div class="eyebrow">Habits / behaviors</div><div class="input lines" contenteditable="true" data-ph=""></div>
@@ -730,7 +741,7 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- ═══════════ SHARING — the OUTING (in-app: having the outing for the people) ═══════════ -->
   <div class="screen" id="s-outing">
-    <div class="scr-top"><span class="back tap" data-back><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title" style="font-size:.95rem">Shared outing</div>
+    <div class="scr-top"><button type="button" class="back tap" data-back aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title" style="font-size:.95rem">Shared outing</h1>
       <div class="scr-actions">
         <div class="avatar-stack" id="outingStack"></div>
         <svg class="ico tap" style="width:18px" data-go="s-share-audio"><use href="#i-share"/></svg>
@@ -740,22 +751,22 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
     <div id="outingNotes" style="margin:12px 0 4px;display:none"></div>
 
     <div class="eyebrow">Birds on this outing</div>
-    <div class="card"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+    <div class="card"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="${n}" style="width:100%;height:100%;object-fit:cover"></div>
       <div class="grow"><div class="nm" style="font-size:.74rem">Mallard</div><div class="meta">32× · 1:52 min</div></div>
-      <div class="play sm" data-audio="birds/mallard-duck.mp3"></div></div></div>
-    <div class="card"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+      <button type="button" class="play sm" data-audio="birds/mallard-duck.mp3" aria-label="Play mallard duck"></button></div></div>
+    <div class="card"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="${n}" style="width:100%;height:100%;object-fit:cover"></div>
       <div class="grow"><div class="nm" style="font-size:.74rem">Red-winged Blackbird</div><div class="meta">14× · 0:32</div></div>
-      <div class="play sm" data-audio="birds/red-wing-blackbird.mp3"></div></div></div>
-    <div class="card"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+      <button type="button" class="play sm" data-audio="birds/red-wing-blackbird.mp3" aria-label="Play red wing blackbird"></button></div></div>
+    <div class="card"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="${n}" style="width:100%;height:100%;object-fit:cover"></div>
       <div class="grow"><div class="nm" style="font-size:.74rem">House Finch</div><div class="meta">6× · 0:18</div></div>
-      <div class="play sm" data-audio="birds/house-finch.mp3"></div></div></div>
+      <button type="button" class="play sm" data-audio="birds/house-finch.mp3" aria-label="Play house finch"></button></div></div>
 
     <button class="btn primary block" style="margin-top:14px" data-go="s-activity">Done</button>
   </div>
 
   <!-- share audio (select) -->
   <div class="screen" id="s-share-audio">
-    <div class="scr-top"><span class="back tap" data-go="s-outing"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Share audio</div></div>
+    <div class="scr-top"><button type="button" class="back tap" data-go="s-outing" aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title">Share audio</h1></div>
     <div class="hint sk-stack"><span class="sk w80"></span><span class="sk s w50"></span></div>
     <div class="sgrid" id="shareGrid"></div>
     <button class="btn primary block" id="createBtn" data-go="s-artifact">Create artifact (0)</button>
@@ -763,23 +774,23 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
 
   <!-- artifact -->
   <div class="screen" id="s-artifact">
-    <div class="scr-top"><span class="back tap" data-go="s-share-audio"><svg class="ico"><use href="#i-back"/></svg></span><div class="scr-title">Your artifact</div></div>
+    <div class="scr-top"><button type="button" class="back tap" data-go="s-share-audio" aria-label="Back"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button><h1 class="scr-title">Your artifact</h1></div>
     <div class="artifact">
       <div class="top"><div class="avatar" style="width:30px;height:30px"></div>
         <div class="grow"><div class="nm" style="font-size:.72rem">Red-winged Blackbird</div><div class="sk s w45"></div></div>
         <svg class="ico tap" style="width:17px;color:var(--muted)"><use href="#i-x"/></svg></div>
       <canvas class="artcanvas" id="artSono" width="330" height="150"></canvas>
-      <div class="bot"><svg class="ico tap" style="width:19px"><use href="#i-heart"/></svg><div class="play sm" data-audio="birds/red-wing-blackbird.mp3"></div><span class="grow"></span><svg class="ico tap" style="width:18px" onclick="openShareSheet()"><use href="#i-share"/></svg></div>
+      <div class="bot"><svg class="ico tap" style="width:19px"><use href="#i-heart"/></svg><button type="button" class="play sm" data-audio="birds/red-wing-blackbird.mp3" aria-label="Play red wing blackbird"></button><span class="grow"></span><svg class="ico tap" style="width:18px" onclick="openShareSheet()"><use href="#i-share"/></svg></div>
     </div>
     <button class="btn primary block" data-go="s-outing" onclick="toast('Shared in Merlin')">Share in Merlin</button>
     <button class="btn ghost block" onclick="openShareSheet()">Share outside Merlin</button>
   </div>
 
-  <div class="nav" id="nav">
-    <div class="nav-item on" data-tab="s-birding"><svg class="ico"><use href="#i-sound"/></svg>Identify</div>
-    <div class="nav-item" data-tab="s-activity"><svg class="ico"><use href="#i-grid"/></svg>Activity</div>
-    <div class="nav-item" data-tab="s-friends"><svg class="ico"><use href="#i-people"/></svg>Friends</div>
-    <div class="nav-item" data-tab="s-profile"><svg class="ico"><use href="#i-gear"/></svg>Settings</div>
+  <nav class="nav" id="nav" aria-label="Main">
+    <button type="button" class="nav-item on" data-tab="s-birding" aria-current="page"><svg class="ico" aria-hidden="true"><use href="#i-sound"/></svg>Identify</button>
+    <button type="button" class="nav-item" data-tab="s-activity"><svg class="ico" aria-hidden="true"><use href="#i-grid"/></svg>Activity</button>
+    <button type="button" class="nav-item" data-tab="s-friends"><svg class="ico" aria-hidden="true"><use href="#i-people"/></svg>Friends</button>
+    <button type="button" class="nav-item" data-tab="s-profile"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg>Settings</button>
   </div>
   <div class="home-ind"></div>
 
@@ -796,10 +807,10 @@ body{background:#c8c8c8;font-family:var(--font);color:var(--ink);-webkit-font-sm
         <div class="share-opt" onclick="closeShareSheet();toast('Link copied')"><div class="blob"><svg class="ico"><use href="#i-plus"/></svg></div><span>Copy link</span></div>
       </div>
     </div>
-  </div>
-</div>
+  </nav>
+</main>
 
-<div id="toast" style="position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f1f1c;color:#fff;font-family:var(--font);font-size:.72rem;font-weight:600;padding:10px 16px;border-radius:10px;opacity:0;transition:all .25s;pointer-events:none;z-index:99"></div>
+<div id="toast" role="status" style="position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f1f1c;color:#fff;font-family:var(--font);font-size:.72rem;font-weight:600;padding:10px 16px;border-radius:10px;opacity:0;transition:all .25s;pointer-events:none;z-index:99"></div>
 
 <script>
 // ── which nav tab owns each screen ──
@@ -943,7 +954,7 @@ const REVIEW_BIRDS=[
   ['American Robin','Turdus migratorius',null],
 ];
 document.getElementById('reviewList').innerHTML=REVIEW_BIRDS.map(([n,lat,nick])=>{
-  const maybe=nick?`<div class="maybe-chip"><img src="bird.jpg" alt=""><span>${nick.toLowerCase()}?</span></div>`:'';
+  const maybe=nick?`<div class="maybe-chip"><img src="bird.jpg" alt="" aria-hidden="true"><span>${nick.toLowerCase()}?</span></div>`:'';
   return `<div class="card soft" style="padding:10px 12px"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div>
     <div class="grow"><div class="nm" style="font-size:.76rem">${n}</div><div class="sk s w55"></div></div>${maybe}</div></div>`;
 }).join('');
@@ -1022,12 +1033,12 @@ document.getElementById('outingSearch').addEventListener('input',e=>renderPast(e
 
 // ── mix list ──
 const MIX=[['Red-winged Blackbird','birds/red-wing-blackbird.mp3'],['House Finch','birds/house-finch.mp3'],['American Robin','birds/american-robin.mp3'],['Dark-eyed Junco','birds/dark-eyed-junco.mp3'],['Mallard','birds/mallard-duck.mp3'],['Common Crow','birds/common-crow.mp3']];
-document.getElementById('mixList').innerHTML=MIX.map(([n,f])=>`<div class="card soft"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div><div class="grow"><div class="nm" style="font-size:.74rem">${n}</div><div class="sk s w45"></div></div><div class="play sm" data-audio="${f}"></div></div></div>`).join('');
+document.getElementById('mixList').innerHTML=MIX.map(([n,f])=>`<div class="card soft"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="${n}" style="width:100%;height:100%;object-fit:cover"></div><div class="grow"><div class="nm" style="font-size:.74rem">${n}</div><div class="sk s w45" aria-hidden="true"></div></div><button type="button" class="play sm" data-audio="${f}" aria-label="Play ${n} song"></button></div></div>`).join('');
 
 const HONOR=[['Steve','Red-winged Blackbird','birds/red-wing-blackbird.mp3','42 min'],['Joe','House Finch','birds/house-finch.mp3','28 min'],['Wanda','Dark-eyed Junco','birds/dark-eyed-junco.mp3','21 min'],['Rusty','American Robin','birds/american-robin.mp3','18 min'],['Duck','Mallard','birds/mallard-duck.mp3','14 min'],['Karl','Common Crow','birds/common-crow.mp3','11 min']];
-document.getElementById('honorList').innerHTML=HONOR.map(([nick,sp,f,t],i)=>`<div class="honor-row tap" data-go="s-bird-profile"><span class="honor-rank">${i+1}</span><div class="thumb" style="width:48px;height:48px;border-radius:12px"><img src="bird.jpg" alt=""></div><div class="grow"><div class="nm" style="font-size:.78rem">${nick}</div><div class="sk s w55"></div></div><div class="play sm" data-audio="${f}" onclick="event.stopPropagation()"></div></div>`).join('');
+document.getElementById('honorList').innerHTML=HONOR.map(([nick,sp,f,t],i)=>`<button type="button" class="honor-row tap" data-go="s-bird-profile" aria-label="${nick}, ${sp}"><span class="honor-rank" aria-hidden="true">${i+1}</span><div class="thumb" style="width:48px;height:48px;border-radius:12px"><img src="bird.jpg" alt="${sp}"></div><div class="grow"><div class="nm" style="font-size:.78rem">${nick}</div><div class="sk s w55" aria-hidden="true"></div></div><span class="play sm" data-audio="${f}" role="button" tabindex="0" aria-label="Play ${nick} recording" onclick="event.stopPropagation()"></span></button>`).join('');
 
-document.getElementById('lastYearList').innerHTML=[['American Robin','birds/american-robin.mp3'],['Dark-eyed Junco','birds/dark-eyed-junco.mp3'],['House Finch','birds/house-finch.mp3']].map(([n,f])=>`<div class="card soft"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="" style="width:100%;height:100%;object-fit:cover"></div><div class="grow"><div class="nm" style="font-size:.74rem">${n}</div><div class="sk s w50"></div></div><div class="play sm" data-audio="${f}"></div></div></div>`).join('');
+document.getElementById('lastYearList').innerHTML=[['American Robin','birds/american-robin.mp3'],['Dark-eyed Junco','birds/dark-eyed-junco.mp3'],['House Finch','birds/house-finch.mp3']].map(([n,f])=>`<div class="card soft"><div class="row"><div class="thumb sm" style="overflow:hidden"><img src="bird.jpg" alt="${n}" style="width:100%;height:100%;object-fit:cover"></div><div class="grow"><div class="nm" style="font-size:.74rem">${n}</div><div class="sk s w50" aria-hidden="true"></div></div><button type="button" class="play sm" data-audio="${f}" aria-label="Play ${n} song"></button></div></div>`).join('');
 
 // ── friends grids (birds / humans separated) ──
 let BIRD_FRIENDS=[{name:'Joe'},{name:'Steve'},{name:'Wanda'}];
@@ -1035,7 +1046,7 @@ let HUMAN_FRIENDS=[{name:'Phoebe'},{name:'Sara'},{name:'Maya'}];
 function renderFriendGrids(){
   const birdEl=document.getElementById('birdFriendsGrid');
   const humanEl=document.getElementById('humanFriendsGrid');
-  if(birdEl)birdEl.innerHTML=BIRD_FRIENDS.map(f=>`<div class="fg-tile tap" onclick="openBirdProfile('${f.name}');showScreen('s-bird-profile')"><div class="av bird"><img src="bird.jpg" alt=""></div><div class="fn">${f.name}</div><div class="sk s w35"></div></div>`).join('');
+  if(birdEl)birdEl.innerHTML=BIRD_FRIENDS.map(f=>`<button type="button" class="fg-tile tap" aria-label="${f.name}" onclick="openBirdProfile('${f.name}');showScreen('s-bird-profile')"><div class="av bird"><img src="bird.jpg" alt="${f.species || f.name}"></div><div class="fn">${f.name}</div><div class="sk s w35" aria-hidden="true"></div></button>`).join('');
   if(humanEl)humanEl.innerHTML=HUMAN_FRIENDS.map(f=>`<div class="fg-tile tap" onclick="toast('${f.name}')"><div class="av human"><img src="person.jpg" alt=""></div><div class="fn">${f.name}</div><div class="sk s w35"></div></div>`).join('');
 }
 function openBirdProfile(name){
@@ -1136,12 +1147,15 @@ function stopLive(){
   liveTimers.forEach(clearTimeout);liveTimers=[];
   if(liveClock){clearInterval(liveClock);liveClock=null;}
 }
+function announce(msg){const live=document.getElementById('live');if(!live)return;live.textContent='';void live.offsetWidth;live.textContent=msg;}
 function addDetection(d){
   const el=document.createElement('div');el.className='card detect'+(d.known?' known':'');
-  const maybe=d.known?`<div class="maybe-chip" onclick="event.stopPropagation();toast('Marked as maybe ${d.nick}')"><img src="${BIRD_PHOTO}" alt=""><span>${d.nick.toLowerCase()}?</span></div>`:'';
-  el.innerHTML=`<div class="row"><div class="thumb" style="overflow:hidden"><img src="${BIRD_PHOTO}" alt="" style="width:100%;height:100%;object-fit:cover"></div>
-    <div class="grow"><div class="nm" style="font-size:.82rem">${d.n}</div><div class="sk s w50"></div></div>${maybe}</div>`;
+  el.setAttribute('role','status');
+  const maybe=d.known?`<button type="button" class="maybe-chip" aria-label="Mark as maybe ${d.nick}" onclick="event.stopPropagation();toast('Marked as maybe ${d.nick}')"><img src="${BIRD_PHOTO}" alt="" aria-hidden="true"><span>${d.nick.toLowerCase()}?</span></button>`:'';
+  el.innerHTML=`<div class="row"><div class="thumb" style="overflow:hidden"><img src="${BIRD_PHOTO}" alt="${d.n}" style="width:100%;height:100%;object-fit:cover"></div>
+    <div class="grow"><div class="nm" style="font-size:.82rem">${d.n}</div><div class="sk s w50" aria-hidden="true"></div></div>${maybe}</div>`;
   const list=document.getElementById('detectList');list.appendChild(el);requestAnimationFrame(()=>el.classList.add('show'));
+  announce(d.known ? `${d.n} detected. Might be ${d.nick}.` : `${d.n} detected.`);
 }
 
 // ── artifact sonogram (static green) ──
@@ -1156,6 +1170,75 @@ function drawArtifact(){
 
 // init
 startLive();
+
+// ── Screen-reader / keyboard affordances ──
+(function enhanceA11y(){
+  function labelPlay(el){
+    if(el.getAttribute('aria-label')) return;
+    const audio=el.getAttribute('data-audio')||'';
+    const name=audio.split('/').pop().replace('.mp3','').replace(/-/g,' ')||'recording';
+    el.setAttribute('aria-label','Play '+name);
+  }
+  document.querySelectorAll('.play').forEach(el=>{
+    if(el.tagName!=='BUTTON' && el.getAttribute('role')!=='button'){
+      el.setAttribute('role','button');
+      el.setAttribute('tabindex','0');
+    }
+    labelPlay(el);
+  });
+  document.querySelectorAll('.tap, [data-go], [data-back], .toggle').forEach(el=>{
+    if(el.tagName==='BUTTON'||el.tagName==='A'||el.tagName==='INPUT') return;
+    if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
+    if(!el.getAttribute('role')) el.setAttribute('role','button');
+    if(!el.getAttribute('aria-label') && !(el.textContent||'').trim()){
+      if(el.hasAttribute('data-back')) el.setAttribute('aria-label','Back');
+      else el.setAttribute('aria-label','Activate');
+    }
+  });
+  document.querySelectorAll('.scr-actions svg').forEach(el=>{
+    el.setAttribute('role','button');
+    el.setAttribute('tabindex','0');
+    if(!el.getAttribute('aria-label')){
+      const u=el.querySelector('use');
+      const href=u?u.getAttribute('href'):'';
+      if((href||'').includes('share')) el.setAttribute('aria-label','Share');
+      else if((href||'').includes('edit')||(href||'').includes('gear')) el.setAttribute('aria-label','Edit');
+      else if((href||'').includes('pin')) el.setAttribute('aria-label','Location');
+      else if((href||'').includes('heart')) el.setAttribute('aria-label','Like');
+      else el.setAttribute('aria-label','Action');
+    }
+  });
+  document.querySelectorAll('[contenteditable]').forEach(el=>{
+    el.setAttribute('role','textbox');
+    if(!el.getAttribute('aria-label')){
+      const prev=el.previousElementSibling;
+      if(prev && prev.classList.contains('eyebrow')) el.setAttribute('aria-label', prev.textContent.trim());
+      else el.setAttribute('aria-label', el.dataset.ph || 'Text field');
+    }
+  });
+  document.querySelectorAll('.sk').forEach(el=>el.setAttribute('aria-hidden','true'));
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter' && e.key!==' ') return;
+    const t=e.target;
+    if(!t || t.tagName==='BUTTON' || t.tagName==='A' || t.tagName==='INPUT' || t.tagName==='TEXTAREA' || t.isContentEditable) return;
+    if(t.getAttribute('role')==='button' || t.classList.contains('tap') || t.classList.contains('play') || t.classList.contains('nav-item') || t.classList.contains('toggle')){
+      e.preventDefault();
+      t.click();
+    }
+  });
+  const _show=showScreen;
+  showScreen=function(id,push=true){
+    _show(id,push);
+    const tab=TAB_OF[id]||id;
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      if(n.dataset.tab===tab) n.setAttribute('aria-current','page');
+      else n.removeAttribute('aria-current');
+    });
+    const title=document.querySelector('.screen.on .scr-title');
+    if(title) announce(title.textContent.trim());
+  };
+})();
+
 </script>
 </body>
 </html>

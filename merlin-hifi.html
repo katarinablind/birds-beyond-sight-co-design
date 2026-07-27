@@ -34,9 +34,81 @@
   --safe-t:env(safe-area-inset-top,0px);
   --safe-b:env(safe-area-inset-bottom,0px);
   --nav-h:68px;
+  --text-scale:1;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{height:100%;-webkit-text-size-adjust:100%}
+html{height:100%;-webkit-text-size-adjust:100%;font-size:calc(16px * var(--text-scale))}
+.textsize-gate{
+  position:fixed;inset:0;z-index:200;background:var(--bg);color:var(--ink);
+  display:flex;flex-direction:column;padding:20px 20px calc(20px + var(--safe-b));
+  font-family:var(--font);font-size:16px;overflow:auto;
+  -webkit-text-size-adjust:100%;
+}
+.textsize-gate[hidden]{display:none!important}
+.textsize-gate h1{font-size:1.5rem;font-weight:700;letter-spacing:-.02em;margin:0 0 8px;flex:none}
+.textsize-gate .lede{color:var(--muted);font-size:.95rem;line-height:1.45;margin:0 0 16px;flex:none}
+.textsize-preview{
+  flex:none;margin:0 0 16px;padding:16px;border:1px solid var(--line);border-radius:14px;
+  background:var(--fill);overflow:hidden;
+}
+.textsize-preview .label{
+  font-size:.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;
+}
+.textsize-preview-card{
+  background:#fff;border-radius:12px;padding:14px 14px 12px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+  transform-origin:top left;
+}
+.textsize-preview-card .ph{
+  font-weight:700;letter-spacing:-.02em;line-height:1.15;margin:0 0 4px;
+  font-size:calc(1.35rem * var(--preview-scale, 1));
+}
+.textsize-preview-card .psub{
+  color:var(--muted);margin:0 0 12px;
+  font-size:calc(.8rem * var(--preview-scale, 1));
+}
+.textsize-preview-card .prow{
+  display:flex;align-items:center;gap:calc(10px * var(--preview-scale, 1));
+  padding:calc(8px * var(--preview-scale, 1)) 0;border-top:1px solid var(--line);
+}
+.textsize-preview-card .pthumb{
+  width:calc(44px * var(--preview-scale, 1));height:calc(32px * var(--preview-scale, 1));
+  border-radius:2px;background:#c8ddd0;flex:none;
+}
+.textsize-preview-card .pnm{
+  font-weight:650;line-height:1.2;
+  font-size:calc(1rem * var(--preview-scale, 1));
+}
+.textsize-preview-card .pmeta{
+  color:var(--muted);margin-top:2px;
+  font-size:calc(.75rem * var(--preview-scale, 1));
+}
+.textsize-preview-card .pbtn{
+  display:block;width:100%;margin-top:calc(12px * var(--preview-scale, 1));
+  padding:calc(10px * var(--preview-scale, 1));border:0;border-radius:999px;
+  background:var(--green);color:#fff;font-weight:700;text-align:center;
+  font-size:calc(.95rem * var(--preview-scale, 1));
+}
+.textsize-options{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;flex:none;
+}
+.textsize-options button{
+  appearance:none;border:2px solid var(--line);border-radius:12px;padding:12px 10px;
+  background:#fff;font:inherit;font-weight:650;text-align:center;cursor:pointer;
+}
+.textsize-options button[aria-pressed="true"]{
+  border-color:var(--green);background:var(--green-soft);color:var(--green-dark);
+}
+.textsize-options .sz{display:block;font-weight:700;font-size:.95rem}
+.textsize-options .hint{display:block;margin-top:3px;font-size:.72rem;font-weight:500;color:var(--muted)}
+.textsize-gate .btn-continue{
+  appearance:none;border:0;border-radius:999px;padding:14px 20px;font:inherit;font-weight:700;
+  background:var(--green);color:#fff;cursor:pointer;flex:none;margin-top:auto;
+}
+.textsize-gate .pct{
+  font-size:.8rem;color:var(--muted);margin:0 0 10px;flex:none;
+}
 body{
   font-family:var(--font);color:var(--ink);background:#cfcfc9;
   min-height:100%;min-height:100dvh;
@@ -69,13 +141,52 @@ a{color:var(--blue);text-decoration:none}
 }
 .facil button[aria-current="true"]{background:var(--green);border-color:var(--green);color:#fff}
 
-/* Desktop: phone only (VO panel hidden for sighted testing) */
+/* Desktop: phone + screen-reader verifier */
 .desk{
   display:flex;align-items:flex-start;justify-content:center;gap:28px;
-  padding:8px 20px 40px;width:100%;max-width:920px;
+  padding:8px 20px 40px;width:100%;max-width:980px;
 }
-.facil-wrap,.vo-panel{display:none!important}
-.app.vo-on [data-vo-hl]{outline:none}
+.vo-panel{
+  width:340px;flex:none;
+  background:#1a1a1c;color:#f2f2f2;border-radius:16px;
+  padding:14px 14px 16px;box-shadow:0 18px 40px rgba(0,0,0,.35);
+  font-size:.8125rem;line-height:1.35;
+  position:sticky;top:16px;max-height:calc(100dvh - 32px);overflow:auto;
+}
+.vo-panel h2{font-size:.7rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9a9aa2;margin:0 0 10px}
+.vo-controls{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.vo-controls button{
+  font-size:.68rem;font-weight:600;padding:7px 10px;border-radius:8px;
+  border:1px solid #3a3a40;background:#2a2a30;color:#e8e8ea;cursor:pointer;
+}
+.vo-controls button.on{background:#009B49;border-color:#009B49;color:#fff}
+.vo-now{
+  background:#111114;border-radius:10px;padding:10px 12px;margin-bottom:10px;
+  border:1px solid #2e2e34;
+}
+.vo-now .role{font-size:.65rem;font-weight:700;color:#8fd9a8;margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em}
+.vo-now .say{font-size:.9rem;font-weight:600;color:#fff;line-height:1.35}
+.vo-log{
+  font-size:.68rem;color:#b0b0b8;max-height:220px;overflow:auto;
+  display:flex;flex-direction:column;gap:4px;margin-bottom:8px;
+  font-variant-numeric:tabular-nums;
+}
+.vo-log div{padding:4px 6px;border-radius:6px;background:#222228}
+.vo-log .ro-item{color:#d7d7de}
+.vo-log .ro-item.hl{background:#2a4a34;color:#c8f0d4}
+.vo-hint{font-size:.65rem;color:#8a8a92;line-height:1.4;margin:0}
+.app.vo-on [data-vo-hl]{outline:3px solid #5CE08A;outline-offset:2px;border-radius:6px}
+/* Facilitator: show participant’s current SR focus even when sim is off */
+.app.session-watch [data-remote-hl]{
+  outline:3px solid #5CE08A;outline-offset:3px;border-radius:8px;
+  box-shadow:0 0 0 6px rgba(92,224,138,.28);
+  position:relative;z-index:2;
+}
+.app.session-watch [data-remote-hl]::after{
+  content:"Their focus";position:absolute;left:0;top:-22px;
+  font-size:10px;font-weight:700;letter-spacing:.02em;color:#0a7a3a;
+  background:#e8fbe9;padding:2px 6px;border-radius:4px;white-space:nowrap;pointer-events:none;
+}
 
 .app{
   width:min(390px,100%);
@@ -89,6 +200,7 @@ a{color:var(--blue);text-decoration:none}
 }
 @media (max-width:640px),(hover:none) and (pointer:coarse){
   body{background:var(--bg);padding:0;align-items:stretch}
+  .facil-wrap,.vo-panel{display:none!important}
   .desk{display:contents;padding:0;max-width:none}
   .app{width:100%;max-width:none;height:100dvh;min-height:100dvh;box-shadow:none}
 }
@@ -132,7 +244,16 @@ a{color:var(--blue);text-decoration:none}
   min-height:44px;margin-bottom:8px;
 }
 .toolbar .t-titles{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.toolbar .t-title{font-size:.9375rem;font-weight:600;letter-spacing:-.01em;line-height:1.2}
+.toolbar .t-title,.toolbar h1.t-title{
+  font-size:.9375rem;font-weight:600;letter-spacing:-.01em;line-height:1.2;
+  margin:0;
+}
+.toolbar h1.t-title{display:block}
+h2.label,h2.save-birds-label,h2.month{
+  font:inherit;font-weight:inherit;letter-spacing:inherit;margin:0;
+}
+h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
+
 .toolbar .t-sub{font-size:.75rem;color:var(--muted);line-height:1.2}
 .close-circle{
   width:32px;height:32px;border-radius:50%;background:var(--fill);
@@ -170,14 +291,15 @@ a{color:var(--blue);text-decoration:none}
 .top.lead > h1{grid-column:1;justify-self:start}
 .top.between > h1,.top.between > .title{grid-column:1;justify-self:start}
 .top.between > .text-btn{grid-column:2;justify-self:end}
-.top .center{
+.top .center,.top h1.center{
   text-align:center;font-size:.8125rem;font-weight:600;line-height:1.25;
-  grid-column:2;min-width:0;overflow:visible;
+  grid-column:2;min-width:0;overflow:visible;margin:0;
 }
-.top .center .sub{font-weight:400;color:var(--muted);font-size:.75rem;margin-top:1px;line-height:1.25}
+.top .center .sub,.top h1.center .sub{font-weight:400;color:var(--muted);font-size:.75rem;margin-top:1px;line-height:1.25;display:block}
 .top > .icon-btn:first-child{grid-column:1;justify-self:start}
 .top > .icon-btn:last-child,
-.top > span[aria-hidden]:last-child{grid-column:3;justify-self:end}
+.top > span[aria-hidden]:last-child,
+.top > .id-header-spacer{grid-column:3;justify-self:end;width:40px;height:1px}
 .top:not(.between):not(.lead) > .text-btn:last-child{grid-column:3;justify-self:end}
 .top.lead > .icon-btn,.top.lead > .circle-btn,.top.lead > .lead-actions{
   grid-column:2;justify-self:end;align-self:center;
@@ -273,6 +395,18 @@ a{color:var(--blue);text-decoration:none}
 .tab[aria-current="page"] .ticon svg{width:17px;height:17px}
 .tab:disabled{opacity:1;cursor:default}
 
+.hist-search{
+  display:flex;align-items:center;gap:8px;
+  background:var(--fill);border-radius:10px;
+  padding:10px 12px;margin:0 0 14px;
+}
+.hist-search svg{width:18px;height:18px;color:var(--muted);flex:none}
+.hist-search input{
+  flex:1;min-width:0;border:none;background:transparent;
+  font-size:.9375rem;outline:none;
+}
+.hist-search-empty{font-size:.875rem;color:var(--muted);padding:12px 0 8px}
+
 /* Segmented control — iOS style: grey track, white selected pill */
 .seg{
   display:flex;gap:4px;margin:12px 0 16px;
@@ -283,7 +417,7 @@ a{color:var(--blue);text-decoration:none}
   font-size:.8125rem;font-weight:500;color:var(--ink);
   letter-spacing:-.08px;min-height:0;
 }
-.seg button[aria-selected="true"]{
+.seg button[aria-selected="true"],.seg button[aria-current="page"]{
   background:#fff;color:var(--ink);font-weight:600;
   box-shadow:0 1px 3px rgba(0,0,0,.08);
 }
@@ -308,6 +442,17 @@ a{color:var(--blue);text-decoration:none}
   font-size:1.125rem;font-weight:600;color:var(--ink);
   letter-spacing:-.01em;margin:8px 0 16px;
 }
+.mix-card-wrap{
+  position:relative;margin-bottom:16px;
+}
+.mix-card-wrap .card.green{margin-bottom:0;padding-right:48px;width:100%}
+.mix-card-wrap > .mix-share{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  z-index:2;width:40px;height:40px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  color:#fff;background:transparent;border:none;padding:0;cursor:pointer;
+}
+.mix-card-wrap > .mix-share:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .card.green{
   background:var(--green);border:none;color:#fff;
   display:flex;align-items:center;gap:12px;
@@ -361,6 +506,13 @@ a{color:var(--blue);text-decoration:none}
 .row.species .grow{order:1}
 .row.bird{gap:16px}
 .row.bird .thumb{width:80px;height:59px;border-radius:2px}
+#s-save .row.bird{
+  cursor:default;pointer-events:none;
+}
+#s-save .clips{pointer-events:auto;padding-left:0;margin-bottom:8px}
+#s-save .list > li{border-bottom:1px solid var(--line)}
+#s-save .list > li:last-child{border-bottom:none}
+#s-save .toggle-row .sub + .sub{margin-top:2px}
 .thumb-wrap{
   position:relative;flex:none;width:80px;height:59px;border-radius:2px;overflow:hidden;
 }
@@ -478,8 +630,10 @@ a{color:var(--blue);text-decoration:none}
 .sp-share{
   flex:none;width:28px;height:28px;color:var(--tertiary);
   display:inline-flex;align-items:center;justify-content:center;
+  border:none;background:transparent;padding:0;cursor:pointer;
 }
 .sp-share svg{width:18px;height:18px}
+.mix-share[role="button"],.sp-share[role="button"],button.mix-share,button.sp-share{cursor:pointer}
 
 /* Identify — Merlin / Cornell Sound ID spectrogram */
 .sono{
@@ -516,6 +670,25 @@ a{color:var(--blue);text-decoration:none}
 }
 #s-identify{padding-bottom:calc(var(--nav-h) + 2px + var(--safe-b))}
 .id-body{flex:1;display:flex;flex-direction:column;min-height:0}
+#s-identify .top{
+  grid-template-columns:40px 1fr 40px;
+}
+#s-identify .top h1.center{
+  grid-column:2;grid-row:1;
+}
+#s-identify .top .icon-btn{
+  grid-column:1;grid-row:1;justify-self:start;
+}
+#s-identify .top .id-header-spacer,
+#s-identify .top .id-header-actions{
+  grid-column:3;grid-row:1;justify-self:end;
+  display:flex;align-items:center;gap:4px;
+}
+#s-identify{position:relative}
+#s-identify .id-save-dock{margin:12px 0 4px}
+#s-identify .id-save-dock .btn{width:100%}
+#s-identify.ready-to-save .fab-mic{opacity:.55}
+#s-identify.ready-to-save #sono-live{opacity:.7}
 .empty-msg{
   text-align:center;padding:28px 12px 8px;
   color:var(--ink);font-size:.9375rem;font-weight:500;line-height:1.4;
@@ -728,7 +901,7 @@ a{color:var(--blue);text-decoration:none}
 .cal-dow{font-size:.8125rem;font-weight:400;color:var(--muted);text-align:center;padding:0 0 2px}
 .cal-cell{
   display:flex;flex-direction:column;align-items:center;gap:5px;
-  background:none;padding:0;width:100%;
+  background:none;padding:0;width:100%;border:0;font:inherit;color:inherit;
 }
 .cal-cell .num{
   font-size:1.125rem;font-weight:600;line-height:1;color:var(--ink);
@@ -814,11 +987,41 @@ a{color:var(--blue);text-decoration:none}
 .species-month-summary{
   display:flex;align-items:center;gap:14px;margin:18px 0 24px;
   padding:16px;background:var(--fill);border-radius:12px;
+  border:0;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
 }
+.species-month-summary:focus-visible{outline:2px solid var(--green);outline-offset:2px}
 .species-month-summary .copy{flex:1;min-width:0}
 .species-month-summary .headline{font-size:1.0625rem;font-weight:650;line-height:1.3}
 .species-month-summary .meta{margin-top:4px}
-.species-month-summary .circle-btn{background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.species-month-summary .circle-btn{
+  background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.08);
+  pointer-events:none;flex-shrink:0;
+}
+.cal-summary{
+  margin:0 0 12px;font-size:.9375rem;line-height:1.4;color:var(--muted);
+}
+.cal-active-list{
+  list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:4px;
+}
+.cal-active-list button{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  width:100%;padding:10px 12px;border:0;border-radius:10px;background:var(--fill);
+  font:inherit;color:inherit;text-align:left;cursor:pointer;
+}
+.cal-active-list button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.cal-active-list .day-label{font-weight:600}
+.cal-active-list .day-meta{font-size:.875rem;color:var(--muted)}
+.cal-grid-wrap[hidden]{display:none!important}
+.cal-browse{
+  margin:0 0 16px;padding:0;border:0;background:none;font:inherit;
+  font-size:.9375rem;font-weight:600;color:var(--green);cursor:pointer;text-decoration:underline;
+}
+#s-save .row.bird h3.nm{
+  margin:0;font-size:1.125rem;font-weight:600;letter-spacing:-.005em;line-height:1.2;
+  display:flex;flex-direction:column;gap:2px;
+}
+#s-save .row.bird h3.nm .meta{font-size:.875rem;font-weight:400;color:var(--muted)}
 
 /* iOS-style share sheet used by every share affordance */
 .share-sheet-root{position:absolute;inset:0;z-index:90;display:flex;align-items:flex-end}
@@ -848,7 +1051,7 @@ a{color:var(--blue);text-decoration:none}
 .share-action{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 16px;font-size:.9375rem;text-align:left}
 .share-action + .share-action{border-top:1px solid var(--line)}
 .share-cancel{margin-top:10px;background:#fff;border-radius:12px;font-weight:650}
-.mix-share[role="button"],.sp-share[role="button"]{cursor:pointer}
+.mix-share[role="button"],.sp-share[role="button"],button.mix-share,button.sp-share{cursor:pointer}
 .cal-cell .dot.green{background:var(--green)}
 
 /* Species info page */
@@ -898,7 +1101,7 @@ a{color:var(--blue);text-decoration:none}
 .loc-peek .peek-row{display:flex;align-items:center;gap:10px;margin-top:10px}
 .loc-peek .btn{margin-top:12px;width:100%}
 
-/* Expandable locations list sheet on the map */
+/* Locations list sheet on the map */
 .loc-sheet{
   position:absolute;left:0;right:0;
   bottom:calc(64px + var(--safe-b));
@@ -906,23 +1109,19 @@ a{color:var(--blue);text-decoration:none}
   background:#fff;border-radius:24px 24px 0 0;
   box-shadow:0 -6px 28px rgba(0,0,0,.12);
   padding:8px var(--pad) 12px;
-  max-height:min(340px, calc(52% + 16px));
-  transition:max-height .28s cubic-bezier(.2,.8,.2,1),transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s;
+  max-height:calc(78% - 8px);
+  transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s;
   display:flex;flex-direction:column;min-height:0;
 }
-.loc-sheet.expanded{max-height:calc(78% - 8px)}
 .loc-sheet.hidden-by-peek{
   transform:translateY(110%);opacity:0;pointer-events:none;
 }
-.loc-sheet .grabber{margin:0 auto 8px;cursor:grab}
+.loc-sheet .grabber{margin:0 auto 8px}
 .loc-sheet-h{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
   margin-bottom:4px;flex:none;
 }
 .loc-sheet-h .sheet-h{margin:0}
-.loc-sheet-h .expand-btn{
-  font-size:.8125rem;font-weight:600;color:var(--green);padding:6px 4px;min-height:36px;
-}
 .loc-sheet-list{
   list-style:none;margin:4px 0 0;padding:0 0 6px;overflow:auto;min-height:0;flex:1;
   -webkit-overflow-scrolling:touch;
@@ -936,6 +1135,45 @@ a{color:var(--blue);text-decoration:none}
 .loc-sheet-list .row .nm{line-height:1.3}
 .loc-sheet-list .meta{font-size:.75rem;line-height:1.4;margin-top:3px}
 .loc-a11y{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.loc-peek-actions{display:flex;gap:8px;margin-top:12px}
+.loc-peek-actions .btn{flex:1;margin-top:0}
+.loc-peek .peek-close{
+  position:absolute;top:10px;right:12px;width:36px;height:36px;border:0;border-radius:50%;
+  background:var(--fill);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  z-index:1;
+}
+.share-privacy{font-size:.8125rem;line-height:1.35;color:var(--muted);margin:4px 0 0}
+.share-edit-who{
+  margin-top:6px;padding:0;border:0;background:none;font:inherit;font-size:.8125rem;
+  font-weight:600;color:var(--green);cursor:pointer;text-decoration:underline;
+}
+.share-edit-who:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.joined-empty,.share-empty{font-size:.8125rem;color:var(--muted)}
+.session-banner{
+  position:absolute;top:0;left:0;right:0;z-index:100;padding:8px 10px;
+  background:#1a1a1a;color:#fff;font-size:.72rem;font-weight:600;line-height:1.35;
+  display:flex;flex-direction:column;gap:6px;
+}
+.session-banner-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.session-banner a,.session-banner button{
+  color:#9fefb0;background:none;border:0;font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;
+  padding:0;
+}
+.session-banner .dot{
+  display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle;
+  background:#666;
+}
+.session-banner .dot.on{background:#3dde7a}
+.session-banner .dot.warn{background:#f0c000}
+.session-banner .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.session-banner .chip{
+  border:1px solid #444;border-radius:999px;padding:4px 10px;text-decoration:none;color:#fff;font-weight:650;
+}
+.session-banner .chip.active{background:#2f6fed;border-color:#2f6fed}
+.session-banner .chip.danger{background:#8b2e2e;border-color:#8b2e2e}
+.app.session-follow #main,.app.session-follow .tabbar{outline:2px dashed rgba(47,111,237,.45);outline-offset:-2px}
+.app.session-drive{outline:3px solid #c45c26;outline-offset:-3px}
+.app.session-watch{padding-top:52px}
 
 .sheet-h{font-size:1.0625rem;font-weight:700;margin-bottom:4px}
 .loc-list{list-style:none;margin:12px 0 0;padding:0}
@@ -966,49 +1204,141 @@ a{color:var(--blue);text-decoration:none}
 </style>
 </head>
 <body>
-<a class="skip" href="#main">Skip to app</a>
+<a class="skip" href="#main">Skip to content</a>
 
-<div class="facil-wrap" aria-hidden="true">
-  <h1>Merle · hi-fi a11y prototype</h1>
-  <p>Desktop: use the VoiceOver simulator on the right. Phone: real VoiceOver/TalkBack in Safari.</p>
-  <div class="facil" id="facil"></div>
+<div id="textsize-gate" class="textsize-gate" hidden>
+  <h1>Text size</h1>
+  <p class="lede">Pick a size that feels comfortable. The preview updates as you choose.</p>
+
+  <div class="textsize-preview" aria-live="polite">
+    <p class="label" id="textsize-preview-label">Preview · 100%</p>
+    <div class="textsize-preview-card" id="textsize-preview-card" style="--preview-scale:1">
+      <p class="ph">9–11am Union Bay</p>
+      <p class="psub">2 birds · ready to save</p>
+      <div class="prow">
+        <span class="pthumb" aria-hidden="true"></span>
+        <span>
+          <span class="pnm">House Finch</span>
+          <span class="pmeta">Likely · just now</span>
+        </span>
+      </div>
+      <div class="prow">
+        <span class="pthumb" aria-hidden="true"></span>
+        <span>
+          <span class="pnm">Spotted Towhee</span>
+          <span class="pmeta">Likely · just now</span>
+        </span>
+      </div>
+      <span class="pbtn" aria-hidden="true">Save</span>
+    </div>
+  </div>
+
+  <p class="pct" id="textsize-current">Selected: Default (100%)</p>
+  <div class="textsize-options" role="group" aria-label="Text size">
+    <button type="button" data-scale="1" aria-pressed="true">
+      <span class="sz">Default</span>
+      <span class="hint">100%</span>
+    </button>
+    <button type="button" data-scale="1.15" aria-pressed="false">
+      <span class="sz">Comfortable</span>
+      <span class="hint">115%</span>
+    </button>
+    <button type="button" data-scale="1.3" aria-pressed="false">
+      <span class="sz">Large</span>
+      <span class="hint">130%</span>
+    </button>
+    <button type="button" data-scale="1.45" aria-pressed="false">
+      <span class="sz">Extra large</span>
+      <span class="hint">145%</span>
+    </button>
+    <button type="button" data-scale="1.6" aria-pressed="false">
+      <span class="sz">Huge</span>
+      <span class="hint">160%</span>
+    </button>
+    <button type="button" data-scale="1.8" aria-pressed="false">
+      <span class="sz">Maximum</span>
+      <span class="hint">180%</span>
+    </button>
+  </div>
+  <button type="button" class="btn-continue" id="textsize-continue">Continue to Merle</button>
 </div>
 
 <div class="desk">
 <div class="app" id="app">
+  <div id="session-banner" class="session-banner" hidden></div>
   <div class="sr-only" aria-live="polite" id="live"></div>
   <div class="toast" id="toast" role="status"></div>
 
+  <!-- Main tabs in DOM before main; sticky at bottom. VO swipe order puts screen content first, then these tabs. -->
+  <nav class="tabbar" id="tabbar" aria-label="Main tabs">
+    <button type="button" class="tab" data-go="s-identify" aria-current="page" aria-label="Identify">
+      <span class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 0 1 5.1.7c0 1.7-2.6 2.1-2.6 3.5"/><path d="M12 17h.01"/></svg></span>
+      Identify
+    </button>
+    <button type="button" class="tab" disabled aria-disabled="true" title="Not in this prototype" aria-label="Explore, unavailable">
+      <span class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+      Explore
+    </button>
+    <button type="button" class="tab" data-go="s-history-date" aria-label="History">
+      <span class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+      History
+    </button>
+    <button type="button" class="tab" disabled aria-disabled="true" title="Not in this prototype" aria-label="Life List, unavailable">
+      <span class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span>
+      Life List
+    </button>
+  </nav>
+
   <main class="stage" id="main">
 
-    <!-- 1. Identify / start a new logging session -->
-    <section class="screen on" id="s-identify" aria-labelledby="id-heading">
+    <!-- 1. Identify — starts with birds already ID'd, ready to Save -->
+    <section class="screen on ready-to-save" id="s-identify" aria-labelledby="id-heading">
       <header class="top">
+        <h1 class="center" id="id-heading" tabindex="-1">
+          9–11am Union Bay
+          <span class="sub" id="id-meta">2 birds · ready to save</span>
+        </h1>
         <button type="button" class="icon-btn" aria-label="Close identify" data-go="s-history-date">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
-        <div class="center" id="id-heading">
-          9–11am Union Bay
-          <div class="sub" id="id-meta">0 birds</div>
-        </div>
-        <div style="display:flex;gap:6px;justify-content:flex-end;align-items:center">
-          <button type="button" class="text-btn save-outline" id="btn-done-top" hidden>Done</button>
-          <button type="button" class="text-btn save-outline" id="btn-save-top" disabled>Save</button>
-        </div>
+        <!-- Bell mounts here; kept after birds+Save in reading order via tabindex/collection order on Identify content first -->
+        <div class="id-header-actions"></div>
       </header>
 
-      <div class="sono" id="sono-live" role="img" aria-label="Live Sound ID spectrogram. Not listening.">
+      <!-- Decorative while not listening — keeps spectrogram visual without jumping the reading order -->
+      <div class="sono" id="sono-live" role="img" aria-hidden="true" aria-label="">
         <canvas id="sonoCanvas" width="390" height="168" aria-hidden="true"></canvas>
       </div>
 
       <div class="id-body">
-        <p class="empty-msg" id="id-empty">
+        <h2 class="sr-only" id="detect-heading">Identified birds</h2>
+        <p class="empty-msg" id="id-empty" hidden>
           No suggestions for Union Bay<br>
           <a href="#" id="why-link">Why isn’t Merlin identifying my bird?</a>
         </p>
-        <ul class="list" id="detect-list" hidden></ul>
+        <ul class="list" id="detect-list" aria-labelledby="detect-heading" aria-live="polite">
+          <li>
+            <button type="button" class="row bird" data-id-bird="house-finch" aria-label="House Finch, likely">
+              <img class="thumb" src="assets/birds/house-finch.jpg" alt="" aria-hidden="true">
+              <span class="grow"><span class="nm">House Finch</span><span class="meta">Likely · just now</span></span>
+              <span class="chev" aria-hidden="true">›</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="row bird" data-id-bird="spotted-towhee" aria-label="Spotted Towhee, likely">
+              <img class="thumb" src="assets/birds/spotted-towhee.jpg" alt="" aria-hidden="true">
+              <span class="grow"><span class="nm">Spotted Towhee</span><span class="meta">Likely · just now</span></span>
+              <span class="chev" aria-hidden="true">›</span>
+            </button>
+          </li>
+        </ul>
+
+        <div class="id-save-dock">
+          <button type="button" class="btn btn-primary" id="btn-save-top">Save session</button>
+        </div>
+
         <div class="mic-wrap">
-          <button type="button" class="fab-mic" id="mic" aria-pressed="false" aria-label="Start listening">
+          <button type="button" class="fab-mic" id="mic" aria-pressed="false" aria-label="Start listening for more birds">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11h-2z"/></svg>
           </button>
         </div>
@@ -1020,7 +1350,7 @@ a{color:var(--blue);text-decoration:none}
       <div class="grabber" aria-hidden="true"></div>
       <header class="toolbar">
         <div class="t-titles">
-          <span class="t-title" id="save-heading">Save Session</span>
+          <h1 class="t-title" id="save-heading" tabindex="-1">Save Session</h1>
         </div>
         <button data-close type="button" class="close-circle" aria-label="Close without saving">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -1037,25 +1367,28 @@ a{color:var(--blue);text-decoration:none}
 
       <div class="section-row" style="border-top:1px solid var(--line)">
         <div class="who-copy">
-          <div class="label" id="who-label">Who joined</div>
-          <div class="sub meta">Share session details</div>
+          <h2 class="label" id="who-label">Who joined</h2>
+          <div class="sub meta">People on this outing with you</div>
         </div>
         <div class="avatar-stack" id="joined-people" role="group" aria-labelledby="who-label"></div>
-        <button type="button" class="add-person" id="add-friends" aria-label="Add friends who joined">+</button>
+        <button type="button" class="add-person" id="add-friends" aria-label="Add friends who joined this outing">+</button>
       </div>
 
-      <div class="toggle-row" style="margin-top:0">
-        <div class="avatar-stack" id="shared-people" aria-label="Shared with Lucy and Joe"></div>
+      <div class="toggle-row" style="margin-top:0" role="group" aria-labelledby="share-label">
+        <div class="avatar-stack" id="shared-people" aria-hidden="true"></div>
         <div class="who-copy" style="flex:1">
-          <div class="label" id="share-label">Share recordings</div>
-          <div class="sub" id="share-location-label">Union Bay</div>
+          <h2 class="label" id="share-label">Share recordings</h2>
+          <div class="sub" id="share-people-names">Lucy and Joe</div>
+          <div class="sub" id="share-location-label">Shared location · Union Bay</div>
+          <p class="share-privacy" id="share-privacy">Audio and place are shared with them. Notes and photos stay private to you.</p>
+          <button type="button" class="share-edit-who" id="edit-share-people">Edit who can hear</button>
         </div>
-        <button type="button" class="switch" id="share-toggle" role="switch" aria-checked="true" aria-labelledby="share-label"></button>
+        <button type="button" class="switch" id="share-toggle" role="switch" aria-checked="true" aria-labelledby="share-label share-people-names" aria-describedby="share-location-label share-privacy"></button>
       </div>
 
       <div class="save-private" id="details-h">
         <div class="month-row" style="margin:0 0 8px">
-          <p class="month" style="margin:0">Details</p>
+          <h2 class="month" style="margin:0">Details</h2>
           <p class="section lock" style="margin:0">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 11V8a5 5 0 0 0-10 0v3a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2zM9 8a3 3 0 0 1 6 0v3H9z"/></svg>
             Only you can see these
@@ -1069,53 +1402,12 @@ a{color:var(--blue);text-decoration:none}
             <span>Add photos</span>
           </button>
         </div>
-        <input type="file" id="photo-input" accept="image/*" multiple hidden>
+        <input type="file" id="photo-input" accept="image/*" multiple hidden aria-label="Choose session photos">
       </div>
 
-      <p class="save-birds-label">Birds</p>
+      <h2 class="save-birds-label">Birds</h2>
       <ul class="list" id="save-species-list" aria-label="Species in this session">
-        <li>
-          <button type="button" class="row bird" data-go="s-species-detail">
-            <img class="thumb" src="assets/birds/house-finch.jpg" alt="">
-            <span class="grow"><span class="nm">House Finch</span><span class="meta">12 detections</span></span>
-            <span class="chev" aria-hidden="true">›</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="row bird">
-            <img class="thumb" src="assets/birds/spotted-towhee.jpg" alt="">
-            <span class="grow"><span class="nm">Spotted Towhee</span><span class="meta">4 detections</span></span>
-            <span class="chev" aria-hidden="true">›</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="row bird">
-            <img class="thumb" src="assets/birds/lazuli-bunting.jpg" alt="">
-            <span class="grow"><span class="nm">Lazuli Bunting</span><span class="meta">3 detections</span></span>
-            <span class="chev" aria-hidden="true">›</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="row bird">
-            <img class="thumb" src="assets/birds/american-robin.jpg" alt="">
-            <span class="grow"><span class="nm">American Robin</span><span class="meta">7 detections</span></span>
-            <span class="chev" aria-hidden="true">›</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="row bird">
-            <img class="thumb" src="assets/birds/black-capped-chickadee.jpg" alt="">
-            <span class="grow"><span class="nm">Black-capped Chickadee</span><span class="meta">2 detections</span></span>
-            <span class="chev" aria-hidden="true">›</span>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="row bird">
-            <img class="thumb" src="assets/birds/song-sparrow.jpg" alt="">
-            <span class="grow"><span class="nm">Song Sparrow</span><span class="meta">6 detections</span></span>
-            <span class="chev" aria-hidden="true">›</span>
-          </button>
-        </li>
+        <!-- filled by renderSaveBirds() — static rows with recordings always open -->
       </ul>
 
       <div class="sticky-cta">
@@ -1132,24 +1424,32 @@ a{color:var(--blue);text-decoration:none}
         </button>
       </header>
 
-      <div class="seg" role="tablist" aria-label="History organization">
-        <button type="button" role="tab" aria-selected="true" id="tab-date" data-go="s-history-date">Date</button>
-        <button type="button" role="tab" aria-selected="false" id="tab-species" data-go="s-history-species">Species</button>
-        <button type="button" role="tab" aria-selected="false" id="tab-location" data-go="s-history-location">Location</button>
+      <div class="seg" role="group" aria-label="History tabs">
+        <button type="button" aria-current="page" data-go="s-history-date" aria-label="Date">Date</button>
+        <button type="button" data-go="s-history-species" aria-label="Species">Species</button>
+        <button type="button" data-go="s-history-location" aria-label="Location">Location</button>
+      </div>
+
+      <div class="hist-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <label class="sr-only" for="outing-search">Search history by place, bird, or date</label>
+        <input type="search" id="outing-search" placeholder="Search place, bird, date…" autocomplete="off" aria-controls="outings-root">
       </div>
 
       <p class="eyebrow" id="summer-label">This time last summer</p>
-      <button type="button" class="card green" id="summer-mix" aria-label="Play Chorus of July 21, 2025. This time last summer.">
-        <span class="play-lg" aria-hidden="true"></span>
-        <span class="grow">
-          <span class="mix-title">Chorus of July 21, 2025</span>
-        </span>
-        <span class="mix-time" id="summer-mix-time" hidden>0:00</span>
-        <span class="mix-share" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
-        </span>
-        <span class="mix-progress" aria-hidden="true"><i id="summer-mix-bar"></i></span>
-      </button>
+      <div class="mix-card-wrap">
+        <button type="button" class="card green" id="summer-mix" aria-label="Play Chorus of July 21, 2025. This time last summer.">
+          <span class="play-lg" aria-hidden="true"></span>
+          <span class="grow">
+            <span class="mix-title">Chorus of July 21, 2025</span>
+          </span>
+          <span class="mix-time" id="summer-mix-time" hidden>0:00</span>
+          <span class="mix-progress" aria-hidden="true"><i id="summer-mix-bar"></i></span>
+        </button>
+        <button type="button" class="mix-share" aria-label="Share Chorus of July 21, 2025">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
+        </button>
+      </div>
 
       <div id="outings-root"></div>
     </section>
@@ -1157,12 +1457,12 @@ a{color:var(--blue);text-decoration:none}
     <!-- History Species — start: identified birds -->
     <section class="screen" id="s-history-species" aria-labelledby="hist-sp-h" hidden>
       <header class="top lead">
-        <h1 id="hist-sp-h">History</h1>
+        <h1 id="hist-sp-h" tabindex="-1">History</h1>
       </header>
-      <div class="seg" role="tablist" aria-label="History organization">
-        <button type="button" role="tab" aria-selected="false" data-go="s-history-date">Date</button>
-        <button type="button" role="tab" aria-selected="true" data-go="s-history-species">Species</button>
-        <button type="button" role="tab" aria-selected="false" data-go="s-history-location">Location</button>
+      <div class="seg" role="group" aria-label="History tabs">
+        <button type="button" data-go="s-history-date" aria-label="Date">Date</button>
+        <button type="button" aria-current="page" data-go="s-history-species" aria-label="Species">Species</button>
+        <button type="button" data-go="s-history-location" aria-label="Location">Location</button>
       </div>
       <ul class="list" id="species-list" aria-label="Identified birds">
         <!-- filled by JS -->
@@ -1172,34 +1472,41 @@ a{color:var(--blue);text-decoration:none}
     <!-- 5. History Location / Map -->
     <section class="screen flush" id="s-history-location" aria-labelledby="hist-loc-h" hidden>
       <div class="pad">
-        <header class="top lead"><h1 id="hist-loc-h">History</h1></header>
-        <div class="seg" role="tablist" aria-label="History organization">
-          <button type="button" role="tab" aria-selected="false" data-go="s-history-date">Date</button>
-          <button type="button" role="tab" aria-selected="false" data-go="s-history-species">Species</button>
-          <button type="button" role="tab" aria-selected="true" data-go="s-history-location">Location</button>
+        <header class="top lead"><h1 id="hist-loc-h" tabindex="-1">History</h1></header>
+        <div class="seg" role="group" aria-label="History tabs">
+          <button type="button" data-go="s-history-date" aria-label="Date">Date</button>
+          <button type="button" data-go="s-history-species" aria-label="Species">Species</button>
+          <button type="button" aria-current="page" data-go="s-history-location" aria-label="Location">Location</button>
         </div>
       </div>
       <div class="map" id="map-wrap">
-        <div id="map-el" class="maplibre-map" role="application" aria-label="Interactive map of recording locations around Seattle. Choose a pin to open a preview, or browse the locations list."></div>
-        <div class="loc-peek" id="loc-peek" role="dialog" aria-labelledby="peek-title" aria-hidden="true">
+        <div id="map-el" class="maplibre-map" aria-hidden="true"></div>
+        <div id="loc-map-status" class="loc-a11y" role="img" tabindex="-1"
+          aria-label="Map of recording locations around Seattle. Pins mark places you’ve recorded. Details are in the locations list below.">
+          Map of recording locations around Seattle. Pins mark places you’ve recorded. Details are in the locations list below.
+        </div>
+        <div class="loc-peek" id="loc-peek" role="dialog" aria-modal="true" aria-labelledby="peek-title" hidden>
+          <button type="button" class="peek-close" id="peek-close" aria-label="Close location preview">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
           <div class="grabber" aria-hidden="true"></div>
-          <div class="peek-title" id="peek-title">Seward Park</div>
+          <h2 class="peek-title" id="peek-title" tabindex="-1">Seward Park</h2>
           <div class="peek-sub" id="peek-sub">Seattle · 16 species</div>
           <div class="peek-row">
             <div class="thumbs nowrap" id="peek-thumbs" aria-hidden="true"></div>
           </div>
-          <button type="button" class="btn btn-primary" id="sheet-view">View All</button>
-        </div>
-        <div class="loc-sheet" id="loc-sheet" aria-label="Locations">
-          <div class="grabber" id="loc-sheet-grabber" aria-hidden="true"></div>
-          <div class="loc-sheet-h">
-            <div class="sheet-h" id="loc-sheet-title">Locations</div>
-            <button type="button" class="expand-btn" id="loc-sheet-expand" aria-expanded="false">Expand</button>
+          <div class="loc-peek-actions">
+            <button type="button" class="btn btn-primary" id="sheet-view">View full history</button>
           </div>
-          <ul class="loc-sheet-list" id="loc-sheet-list"></ul>
+        </div>
+        <div class="loc-sheet" id="loc-sheet" aria-labelledby="loc-sheet-title">
+          <div class="grabber" aria-hidden="true"></div>
+          <div class="loc-sheet-h">
+            <h2 class="sheet-h" id="loc-sheet-title">Locations</h2>
+          </div>
+          <ul class="loc-sheet-list" id="loc-sheet-list" aria-describedby="loc-map-status"></ul>
         </div>
       </div>
-      <ul class="loc-a11y" id="loc-list" aria-label="Recording locations"></ul>
     </section>
 
     <!-- 6. Calendar -->
@@ -1207,7 +1514,7 @@ a{color:var(--blue);text-decoration:none}
       <div class="grabber" aria-hidden="true"></div>
       <header class="toolbar">
         <div class="t-titles">
-          <span class="t-title" id="cal-title">History</span>
+          <h1 class="t-title" id="cal-title" tabindex="-1">Calendar</h1>
           <span class="t-sub">All time</span>
         </div>
         <button data-close type="button" class="close-circle" aria-label="Close calendar">
@@ -1221,7 +1528,7 @@ a{color:var(--blue);text-decoration:none}
     <!-- 6b. Share — swipeable cards (collage / photo calendar / activity) -->
     <section class="screen share-dark" id="s-share" aria-labelledby="share-h" hidden>
       <header class="share-top">
-        <h1 class="share-title" id="share-h">Share</h1>
+        <h1 class="share-title" id="share-h" tabindex="-1">Share</h1>
         <button data-close type="button" class="share-close" id="share-close" aria-label="Close share">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
@@ -1251,11 +1558,11 @@ a{color:var(--blue);text-decoration:none}
         </header>
       </div>
       <div class="hero">
-        <img id="sess-hero" src="assets/birds/canada-goose.jpg" alt="">
+        <img id="sess-hero" src="assets/birds/canada-goose.jpg" alt="Canada Goose with black head and white chinstrap grazing on a lawn">
       </div>
       <div class="pad" style="padding-top:16px">
         <header class="top between" style="margin-bottom:4px;min-height:0">
-          <h1 id="sess-title" style="font-size:1.375rem;font-weight:700;letter-spacing:-.01em;line-height:1.25;white-space:normal;overflow:visible">Session</h1>
+          <h1 id="sess-title" tabindex="-1" style="font-size:1.375rem;font-weight:700;letter-spacing:-.01em;line-height:1.25;white-space:normal;overflow:visible">Session</h1>
           <button type="button" class="pill-btn" data-go="s-save">Edit</button>
         </header>
         <div class="meta-block">
@@ -1276,27 +1583,29 @@ a{color:var(--blue);text-decoration:none}
       <div class="grabber" aria-hidden="true"></div>
       <header class="toolbar">
         <div class="t-titles">
-          <span class="t-title" id="sp-title">History</span>
-          <span class="t-sub" id="sp-sub">House Finch</span>
+          <h1 class="t-title" id="sp-title" tabindex="-1">House Finch</h1>
+          <span class="t-sub" id="sp-sub">Species history</span>
         </div>
         <button data-close type="button" class="close-circle" id="sp-close" aria-label="Close species history">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </header>
 
-      <button type="button" class="card green" id="species-mix" aria-label="Play your species mix">
-        <span class="play-lg" aria-hidden="true"></span>
-        <span class="grow"><span class="mix-title" id="species-mix-title">Your Mix</span></span>
-        <span class="mix-time" id="species-mix-time" hidden>0:00</span>
-        <span class="mix-share" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
-        </span>
-        <span class="mix-progress" aria-hidden="true"><i id="species-mix-bar"></i></span>
-      </button>
+      <div class="mix-card-wrap">
+        <button type="button" class="card green" id="species-mix" aria-label="Play your species mix">
+          <span class="play-lg" aria-hidden="true"></span>
+          <span class="grow"><span class="mix-title" id="species-mix-title">Your Mix</span></span>
+          <span class="mix-time" id="species-mix-time" hidden>0:00</span>
+          <span class="mix-progress" aria-hidden="true"><i id="species-mix-bar"></i></span>
+        </button>
+        <button type="button" class="mix-share" aria-label="Share species mix">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
+        </button>
+      </div>
 
       <button type="button" class="row species" id="species-info-btn" style="padding-top:4px">
         <span class="grow"><span class="nm" id="species-row-name">House Finch</span><span class="meta">Details</span></span>
-        <img class="thumb" id="species-row-img" src="" alt="" style="margin-left:0;order:0;width:107px;height:79px">
+        <img class="thumb" id="species-row-img" src="" alt="Species photo" style="margin-left:0;order:0;width:107px;height:79px">
         <span class="chev" aria-hidden="true" style="order:3">›</span>
       </button>
       <div style="border-bottom:1px solid var(--line)"></div>
@@ -1310,7 +1619,7 @@ a{color:var(--blue);text-decoration:none}
       <div class="grabber" aria-hidden="true"></div>
       <header class="toolbar">
         <div class="t-titles">
-          <span class="t-title" id="sp-cal-title">Listening calendar</span>
+          <h1 class="t-title" id="sp-cal-title" tabindex="-1">Listening calendar</h1>
           <span class="t-sub" id="sp-cal-sub">House Finch</span>
         </div>
         <button data-close type="button" class="close-circle" id="sp-cal-close" aria-label="Close species calendar">
@@ -1325,7 +1634,7 @@ a{color:var(--blue);text-decoration:none}
       <div class="grabber" aria-hidden="true"></div>
       <header class="toolbar">
         <div class="t-titles">
-          <span class="t-title" id="sp-info-h">Details</span>
+          <h1 class="t-title" id="sp-info-h" tabindex="-1">Details</h1>
           <span class="t-sub" id="sp-info-sub">House Finch</span>
         </div>
         <button data-close type="button" class="close-circle" id="sp-info-close" aria-label="Close species details">
@@ -1337,7 +1646,7 @@ a{color:var(--blue);text-decoration:none}
         <p class="meta" id="sp-info-sci" style="margin-bottom:28px">Haemorhous mexicanus</p>
         <button type="button" class="btn btn-primary" id="sp-info-back" style="max-width:220px;margin:0 auto">Back</button>
       </div>
-      <img class="species-info-hero" id="sp-info-hero" src="" alt="" hidden>
+      <img class="species-info-hero" id="sp-info-hero" src="" alt="Species photo" hidden>
       <p class="species-blurb" id="sp-info-blurb" hidden></p>
       <ul class="species-facts" id="sp-info-facts" hidden></ul>
     </section>
@@ -1347,23 +1656,25 @@ a{color:var(--blue);text-decoration:none}
       <div class="grabber" aria-hidden="true"></div>
       <header class="toolbar">
         <div class="t-titles">
-          <span class="t-title" id="loc-title">History</span>
-          <span class="t-sub" id="loc-sub">Seward Park, Seattle</span>
+          <h1 class="t-title" id="loc-title" tabindex="-1">Seward Park</h1>
+          <span class="t-sub" id="loc-sub">Seattle</span>
         </div>
         <button data-close type="button" class="close-circle" id="loc-close" aria-label="Close location history">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </header>
 
-      <button type="button" class="card green" id="park-mix" aria-label="Play your location mix">
-        <span class="play-lg" aria-hidden="true"></span>
-        <span class="grow"><span class="mix-title" id="park-mix-title">Your Mix</span></span>
-        <span class="mix-time" id="park-mix-time" hidden>0:00</span>
-        <span class="mix-share" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
-        </span>
-        <span class="mix-progress" aria-hidden="true"><i id="park-mix-bar"></i></span>
-      </button>
+      <div class="mix-card-wrap">
+        <button type="button" class="card green" id="park-mix" aria-label="Play your location mix">
+          <span class="play-lg" aria-hidden="true"></span>
+          <span class="grow"><span class="mix-title" id="park-mix-title">Your Mix</span></span>
+          <span class="mix-time" id="park-mix-time" hidden>0:00</span>
+          <span class="mix-progress" aria-hidden="true"><i id="park-mix-bar"></i></span>
+        </button>
+        <button type="button" class="mix-share" aria-label="Share location mix">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
+        </button>
+      </div>
 
       <div style="display:flex;align-items:center;gap:8px;padding:0 0 12px;border-bottom:1px solid var(--line)">
         <div class="thumbs nowrap" id="loc-thumbs" aria-hidden="true"></div>
@@ -1376,7 +1687,7 @@ a{color:var(--blue);text-decoration:none}
           <div class="label">Shared location</div>
           <div class="sub meta" id="loc-shared-names">Lucy, Joe</div>
         </div>
-        <button type="button" class="pill-btn">Edit</button>
+        <button type="button" class="pill-btn" id="loc-edit-share">Edit</button>
       </div>
 
       <h2 class="month group">Sessions</h2>
@@ -1388,7 +1699,7 @@ a{color:var(--blue);text-decoration:none}
       <div class="grabber" aria-hidden="true"></div>
       <header class="toolbar">
         <div class="t-titles">
-          <span class="t-title" id="activity-h">Activity</span>
+          <h1 class="t-title" id="activity-h" tabindex="-1">Activity</h1>
           <span class="t-sub">Friends & shared locations</span>
         </div>
         <button data-close type="button" class="close-circle" id="activity-close" aria-label="Close activity">
@@ -1399,25 +1710,6 @@ a{color:var(--blue);text-decoration:none}
     </section>
 
   </main>
-
-  <nav class="tabbar" id="tabbar" aria-label="Main">
-    <button type="button" class="tab" data-go="s-identify" aria-current="page">
-      <span class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 0 1 5.1.7c0 1.7-2.6 2.1-2.6 3.5"/><path d="M12 17h.01"/></svg></span>
-      Identify
-    </button>
-    <button type="button" class="tab" disabled aria-disabled="true" title="Not in this prototype">
-      <span class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
-      Explore
-    </button>
-    <button type="button" class="tab" data-go="s-history-date">
-      <span class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
-      History
-    </button>
-    <button type="button" class="tab" disabled aria-disabled="true" title="Not in this prototype">
-      <span class="ticon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></span>
-      Life List
-    </button>
-  </nav>
 
   <!-- Finish logging modal -->
   <div class="modal-root" id="modal" hidden>
@@ -1433,7 +1725,7 @@ a{color:var(--blue);text-decoration:none}
     <div class="modal-backdrop" id="friend-backdrop"></div>
     <div class="modal friend-modal" role="dialog" aria-modal="true" aria-labelledby="friend-title">
       <h2 id="friend-title">Who joined?</h2>
-      <p>Select friends who were with you at Seward Park.</p>
+      <p id="friend-sub">Select friends who were with you on this outing.</p>
       <ul class="friend-options" id="friend-options"></ul>
       <div class="friend-actions">
         <button type="button" class="btn" id="friend-cancel">Cancel</button>
@@ -1447,9 +1739,9 @@ a{color:var(--blue);text-decoration:none}
     <div class="share-sheet-panel" id="share-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="share-sheet-title">
       <div class="grabber" aria-hidden="true"></div>
       <div class="share-preview">
-        <img id="share-sheet-image" src="assets/birds/house-finch.jpg" alt="">
+        <img id="share-sheet-image" src="assets/birds/house-finch.jpg" alt="Preview of shared bird recording">
         <div class="share-preview-copy">
-          <div class="share-preview-title" id="share-sheet-title">Share recording</div>
+          <h2 class="share-preview-title" id="share-sheet-title">Share recording</h2>
           <div class="share-preview-sub" id="share-sheet-sub">Merle</div>
         </div>
       </div>
@@ -1468,20 +1760,21 @@ a{color:var(--blue);text-decoration:none}
   </div>
 </div>
 
-<aside class="vo-panel" id="vo-panel" aria-label="VoiceOver simulator">
-  <h2>VoiceOver simulator</h2>
+<aside class="vo-panel" id="vo-panel" aria-label="Screen reader verifier">
+  <h2>Screen reader verifier</h2>
   <div class="vo-controls">
     <button type="button" id="vo-toggle" class="on" aria-pressed="true">Sim On</button>
     <button type="button" id="vo-speak" class="on" aria-pressed="true">Speak</button>
-    <button type="button" id="vo-next">Next →</button>
     <button type="button" id="vo-prev">← Prev</button>
+    <button type="button" id="vo-next">Next →</button>
+    <button type="button" id="vo-order">Reading order</button>
   </div>
   <div class="vo-now" aria-live="off">
     <div class="role" id="vo-role">Ready</div>
-    <div class="say" id="vo-say">Click Sim On, then Tab or use Next to move like VoiceOver.</div>
+    <div class="say" id="vo-say">Starts with 2 birds ID’d. Press Reading order, then Next to step through.</div>
   </div>
   <div class="vo-log" id="vo-log"></div>
-  <p class="vo-hint">Approx. of what a screen reader would say — not a replacement for real VoiceOver. Speaks via your browser.</p>
+  <p class="vo-hint">Main tabs are first in order (Identify → Explore → History → Life List). Next/Prev swipes like VoiceOver. Activate a tab with click/Enter. Not a replacement for real VoiceOver/TalkBack.</p>
 </aside>
 </div>
 
@@ -1510,7 +1803,7 @@ a{color:var(--blue);text-decoration:none}
     's-identify': 'Identify and log birds',
     's-history-date': 'History by date',
     's-history-species': 'History by species',
-    's-history-location': 'History by location',
+    's-history-location': 'History by location. Map view of recording places around Seattle, with a locations list',
     's-calendar': 'Calendar',
     's-share': 'Share',
     's-session': 'Past session',
@@ -1526,6 +1819,7 @@ a{color:var(--blue);text-decoration:none}
     live.textContent = '';
     requestAnimationFrame(() => { live.textContent = msg; });
     if (window.__voSim) window.__voSim.live(msg);
+    window.__sessionPush?.({ announce: msg });
   }
 
   function showToast(msg) {
@@ -1537,7 +1831,32 @@ a{color:var(--blue);text-decoration:none}
 
   const shareSheet = document.getElementById('share-sheet');
   const shareSheetPanel = document.getElementById('share-sheet-panel');
+  const mainEl = document.getElementById('main');
   let shareSheetFocus = null;
+  let friendFocus = null;
+
+  /** Sheets live inside main — only inert tabbar. Modals sit outside — inert main + tabbar. */
+  function syncChromeInert() {
+    const friend = document.getElementById('friend-modal');
+    const overlayOpen = !modal.hidden || !shareSheet.hidden || (friend && !friend.hidden);
+    const onRoot = NAV_SCREENS.has(current);
+
+    if (overlayOpen) {
+      mainEl.setAttribute('inert', '');
+      tabbar.setAttribute('inert', '');
+      tabbar.hidden = false; // may still be visible under dim, but not focusable
+    } else {
+      mainEl.removeAttribute('inert');
+      if (onRoot) {
+        tabbar.removeAttribute('inert');
+        tabbar.hidden = false;
+      } else {
+        // Full-screen sheets: remove tab bar from SR + keyboard entirely
+        tabbar.setAttribute('inert', '');
+        tabbar.hidden = true;
+      }
+    }
+  }
 
   function openShareSheet({ title = 'Share recording', subtitle = 'Merle', image = 'assets/birds/house-finch.jpg' } = {}) {
     shareSheetFocus = document.activeElement;
@@ -1546,6 +1865,7 @@ a{color:var(--blue);text-decoration:none}
     document.getElementById('share-sheet-image').src = image;
     shareSheet.hidden = false;
     shareSheetPanel.style.transform = '';
+    syncChromeInert();
     shareSheet.querySelector('.share-app')?.focus();
     announce(`Share sheet. ${title}`);
   }
@@ -1553,6 +1873,7 @@ a{color:var(--blue);text-decoration:none}
   function closeShareSheet() {
     shareSheet.hidden = true;
     shareSheetPanel.style.transform = '';
+    syncChromeInert();
     shareSheetFocus?.focus?.();
   }
 
@@ -1567,14 +1888,16 @@ a{color:var(--blue);text-decoration:none}
     });
   });
 
-  // The share icon is visually embedded in some playable cards. Make it a
-  // separate accessible action and keep its click from starting playback.
+  // Mix share controls are sibling <button>s outside the play card.
+  // Promote any remaining icon-only share spans (e.g. clip rows) too.
   function enhanceShareAffordances(root = document) {
     root.querySelectorAll('.mix-share,.sp-share').forEach(el => {
       el.removeAttribute('aria-hidden');
-      el.setAttribute('role', 'button');
-      el.setAttribute('tabindex', '0');
-      if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', 'Share');
+      if (el.tagName !== 'BUTTON') {
+        el.setAttribute('role', 'button');
+        el.setAttribute('tabindex', '0');
+      }
+      if (!el.getAttribute('aria-label')) el.setAttribute('aria-label', 'Share recording');
     });
   }
   enhanceShareAffordances();
@@ -1582,11 +1905,15 @@ a{color:var(--blue);text-decoration:none}
   function shareContextFor(el) {
     const screen = el.closest('.screen');
     const speciesName = currentSpecies?.name || 'House Finch';
-    if (screen?.id === 's-species-detail' || el.closest('#species-mix')) {
+    if (screen?.id === 's-species-detail' || el.closest('.mix-card-wrap')?.querySelector('#species-mix')) {
       return { title: `Share ${speciesName} mix`, subtitle: 'Your mix from Merle', image: currentSpecies?.image || birdImg(speciesName) };
     }
-    if (el.closest('#summer-mix') || screen?.id === 's-history-date') {
+    if (el.closest('.mix-card-wrap')?.querySelector('#summer-mix') || screen?.id === 's-history-date') {
       return { title: 'Share Chorus of July 21, 2025', subtitle: 'This time last summer', image: birdImg('American Robin') };
+    }
+    if (screen?.id === 's-location-detail' || el.closest('.mix-card-wrap')?.querySelector('#park-mix')) {
+      const place = currentPlace?.name || 'location';
+      return { title: `Share your ${place} mix`, subtitle: 'Your mix from Merle', image: birdImg('Canada Goose') };
     }
     return { title: 'Share bird recording', subtitle: 'Audio from Merle', image: birdImg('House Finch') };
   }
@@ -1653,8 +1980,7 @@ a{color:var(--blue);text-decoration:none}
     });
     current = id;
 
-    // Same pill tab bar on every screen
-    tabbar.hidden = false;
+    // Pill tab bar only on root Identify / History screens (sheets hide it)
     tabbar.classList.add('pill');
     tabbar.querySelectorAll('[data-go]').forEach(tab => {
       if (!tab.closest('#tabbar')) return;
@@ -1665,17 +1991,21 @@ a{color:var(--blue);text-decoration:none}
       if (on) tab.setAttribute('aria-current', 'page');
       else tab.removeAttribute('aria-current');
     });
+    syncChromeInert();
 
-    document.querySelectorAll('.facil button').forEach(b => {
-      b.setAttribute('aria-current', b.dataset.go === id ? 'true' : 'false');
+    // Keep History segment aria-current in sync (tab-like buttons)
+    document.querySelectorAll('.seg[aria-label="History tabs"] [data-go]').forEach(btn => {
+      if (btn.dataset.go === id) btn.setAttribute('aria-current', 'page');
+      else btn.removeAttribute('aria-current');
     });
 
     if (!silent) {
+      // Screen content first (matches visual). Main tabs come last in swipe order.
       announce(LABELS[id] || id);
-      const t = document.querySelector('#' + id + ' h1, #' + id + ' .center');
+      const t = document.querySelector('#' + id + ' h1');
       if (t) {
-        t.setAttribute('tabindex', '-1');
-        t.focus({ preventScroll: true });
+        if (!t.hasAttribute('tabindex')) t.setAttribute('tabindex', '-1');
+        try { t.focus({ preventScroll: true }); } catch (_) {}
       }
     }
     const scr = document.getElementById(id);
@@ -1694,6 +2024,10 @@ a{color:var(--blue);text-decoration:none}
         mapInst?.resize();
         hidePeek();
         showLocSheet();
+        if (!silent) {
+          const mapStatus = document.getElementById('loc-map-status');
+          if (mapStatus && window.__voSim) window.__voSim.refresh();
+        }
       });
     }
     if (id === 's-activity') {
@@ -1702,6 +2036,7 @@ a{color:var(--blue);text-decoration:none}
       renderActivity();
     }
     if (window.__voSim) window.__voSim.refresh();
+    window.__sessionPush?.();
   }
 
   const CLOSE_FALLBACK = {
@@ -1758,11 +2093,13 @@ a{color:var(--blue);text-decoration:none}
   function openModal() {
     lastFocus = document.activeElement;
     modal.hidden = false;
+    syncChromeInert();
     document.getElementById('modal-now').focus();
     announce('Dialog: Add more details to remember your session');
   }
   function closeModal(silent) {
     modal.hidden = true;
+    syncChromeInert();
     if (!silent && lastFocus) lastFocus.focus();
   }
 
@@ -1790,31 +2127,11 @@ a{color:var(--blue);text-decoration:none}
     if (listening) stopListening();
     openModal();
   });
-  document.getElementById('btn-done-top').addEventListener('click', () => {
-    if (listening) stopListening();
-    document.getElementById('btn-done-top').hidden = true;
-    const saveBtn = document.getElementById('btn-save-top');
-    saveBtn.disabled = false;
-    saveBtn.hidden = false;
-    announce('Done identifying. Review birds, then save the session.');
-    showToast('Review birds, then Save');
-  });
   document.getElementById('modal-now').addEventListener('click', () => {
     closeModal(true);
-    const detected = [...document.querySelectorAll('#detect-list .row.bird')];
+    const detected = [...document.querySelectorAll('#detect-list .nm')].map(el => el.textContent.trim()).filter(Boolean);
     if (detected.length) {
-      const list = document.getElementById('save-species-list');
-      list.innerHTML = detected.map(row => {
-        const name = row.querySelector('.nm')?.textContent?.trim() || 'Bird';
-        const img = row.querySelector('img')?.src || birdImg(name);
-        return `<li>
-          <button type="button" class="row bird">
-            <img class="thumb" src="${img}" alt="">
-            <span class="grow"><span class="nm">${name}</span><span class="meta">Likely · just now</span></span>
-            <span class="chev" aria-hidden="true">›</span>
-          </button>
-        </li>`;
-      }).join('');
+      renderSaveBirds(detected.map((name, i) => ({ name, detections: 2 + i })));
     }
     go('s-save');
   });
@@ -1860,11 +2177,12 @@ a{color:var(--blue);text-decoration:none}
   document.getElementById('share-toggle').addEventListener('click', function () {
     const on = this.getAttribute('aria-checked') !== 'true';
     this.setAttribute('aria-checked', on ? 'true' : 'false');
-    document.getElementById('share-location-label').textContent = on
-      ? 'Union Bay'
-      : 'Recordings stay private';
     document.getElementById('s-save').classList.toggle('share-off', !on);
-    announce(on ? 'Share recordings on' : 'Share recordings off. Shared with people hidden.');
+    renderPeople();
+    const names = document.getElementById('share-people-names')?.textContent || 'friends';
+    announce(on
+      ? `Share recordings on with ${names}. Audio and place are shared. Notes and photos stay private.`
+      : 'Share recordings off. Recordings stay private.');
   });
 
   document.getElementById('why-link').addEventListener('click', (e) => {
@@ -1878,65 +2196,86 @@ a{color:var(--blue);text-decoration:none}
   const idEmpty = document.getElementById('id-empty');
   const idMeta = document.getElementById('id-meta');
   const sonoLive = document.getElementById('sono-live');
+  const identifyScreen = document.getElementById('s-identify');
+  const saveTopBtn = document.getElementById('btn-save-top');
+
+  function birdRowHtml(id, name, altLabel) {
+    return `<li>
+      <button type="button" class="row bird" data-id-bird="${id}" aria-label="${altLabel}">
+        <img class="thumb" src="${birdImg(name)}" alt="" aria-hidden="true">
+        <span class="grow"><span class="nm">${name}</span><span class="meta">Likely · just now</span></span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>
+    </li>`;
+  }
+
+  function setReadyToSave(on) {
+    identifyScreen.classList.toggle('ready-to-save', on);
+    const count = detectList.children.length;
+    if (on && count) {
+      idMeta.textContent = `${count} ${count === 1 ? 'bird' : 'birds'} · ready to save`;
+      saveTopBtn.disabled = false;
+      saveTopBtn.hidden = false;
+      sonoLive.setAttribute('aria-hidden', 'true');
+      sonoLive.removeAttribute('aria-label');
+      mic.setAttribute('aria-label', 'Start listening for more birds');
+    } else if (!listening) {
+      idMeta.textContent = count ? `${count} ${count === 1 ? 'bird' : 'birds'}` : '0 birds';
+      saveTopBtn.disabled = !count;
+    }
+  }
 
   function stopListening() {
     listening = false;
     mic.setAttribute('aria-pressed', 'false');
-    mic.setAttribute('aria-label', 'Start listening');
     cancelAnimationFrame(sonoRAF);
     drawSono(false);
     const count = detectList.children.length;
-    idMeta.textContent = `${count} ${count === 1 ? 'bird' : 'birds'}`;
-    sonoLive.setAttribute('aria-label', 'Live Sound ID spectrogram. Not listening.');
+    if (count) setReadyToSave(true);
+    else {
+      mic.setAttribute('aria-label', 'Start listening');
+      idMeta.textContent = '0 birds';
+      sonoLive.setAttribute('aria-hidden', 'true');
+      saveTopBtn.disabled = true;
+    }
   }
 
   mic.addEventListener('click', () => {
     listening = !listening;
     mic.setAttribute('aria-pressed', listening ? 'true' : 'false');
-    mic.setAttribute('aria-label', listening ? 'Stop listening' : 'Start listening');
     if (listening) {
+      identifyScreen.classList.remove('ready-to-save');
       announce('Listening for birds');
       idEmpty.hidden = true;
       detectList.hidden = false;
       detectList.innerHTML = '';
       idMeta.textContent = 'Listening… · 0 birds';
+      sonoLive.removeAttribute('aria-hidden');
+      sonoLive.setAttribute('role', 'img');
       sonoLive.setAttribute('aria-label', 'Live Sound ID spectrogram. Listening.');
-      document.getElementById('btn-done-top').hidden = true;
-      document.getElementById('btn-save-top').disabled = true;
-      document.getElementById('btn-save-top').hidden = false;
+      saveTopBtn.disabled = true;
+      mic.setAttribute('aria-label', 'Stop listening');
       clearInterval(mic._timer);
       setTimeout(() => {
         if (!listening) return;
-        detectList.innerHTML = `
-          <li>
-            <button type="button" class="row bird" data-id-bird="house-finch">
-              <img class="thumb" src="assets/birds/house-finch.jpg" alt="">
-              <span class="grow"><span class="nm">House Finch</span><span class="meta">Likely · just now</span></span>
-              <span class="chev" aria-hidden="true">›</span>
-            </button>
-          </li>
-          <li>
-            <button type="button" class="row bird" data-id-bird="spotted-towhee">
-              <img class="thumb" src="assets/birds/spotted-towhee.jpg" alt="">
-              <span class="grow"><span class="nm">Spotted Towhee</span><span class="meta">Likely · just now</span></span>
-              <span class="chev" aria-hidden="true">›</span>
-            </button>
-          </li>`;
+        detectList.innerHTML = [
+          birdRowHtml('house-finch', 'House Finch', 'House Finch, likely'),
+          birdRowHtml('spotted-towhee', 'Spotted Towhee', 'Spotted Towhee, likely')
+        ].join('');
         idMeta.textContent = 'Listening… · 2 birds';
         sonoLive.setAttribute('aria-label', 'Live Sound ID spectrogram. House Finch and Spotted Towhee detected.');
-        document.getElementById('btn-done-top').hidden = false;
-        document.getElementById('btn-save-top').hidden = true;
-        announce('House Finch and Spotted Towhee detected. Tap Done when finished.');
+        announce('House Finch and Spotted Towhee detected.');
+        // Auto-finish listening so the next action is Save (matches study start state)
+        stopListening();
+        announce('2 birds identified. Save session when ready.');
+        if (window.__voSim) window.__voSim.refresh();
       }, 1800);
       drawSono(true);
     } else {
       clearInterval(mic._timer);
       stopListening();
-      announce('Stopped listening');
-      if (detectList.children.length) {
-        document.getElementById('btn-done-top').hidden = false;
-        document.getElementById('btn-save-top').hidden = true;
-      }
+      announce(detectList.children.length ? 'Stopped listening. Ready to save.' : 'Stopped listening');
+      if (window.__voSim) window.__voSim.refresh();
     }
   });
 
@@ -2250,6 +2589,31 @@ a{color:var(--blue);text-decoration:none}
     return BIRD_BY_NAME[name] || BIRD_IMAGES[0];
   }
 
+  const BIRD_ALT = {
+    'House Finch': 'House Finch — small finch with rosy-red head and breast, streaky brown body',
+    'Spotted Towhee': 'Spotted Towhee — black hood, rufous sides, white wing spots, red eye',
+    'American Robin': 'American Robin — gray-brown thrush with bright orange breast and dark head',
+    'Black-capped Chickadee': 'Black-capped Chickadee — tiny songbird with black cap, white cheeks, and gray back',
+    'Song Sparrow': 'Song Sparrow — streaky brown sparrow with a dark central breast spot',
+    'Steller’s Jay': 'Steller’s Jay — crested jay with deep blue body and black head',
+    'Anna’s Hummingbird': 'Anna’s Hummingbird — compact hummingbird; males show iridescent rose-magenta throat',
+    'Northern Flicker': 'Northern Flicker — large brown woodpecker with spotted breast and black crescent bib',
+    'Lazuli Bunting': 'Lazuli Bunting — male sky-blue above with orange breast band and white belly',
+    'Merlin': 'Merlin — compact dark falcon with streaked underparts and pointed wings',
+    'Bald Eagle': 'Bald Eagle — large raptor with white head and tail, dark brown body, yellow bill',
+    'Mallard': 'Mallard — dabbling duck; male has glossy green head and yellow bill',
+    'Canada Goose': 'Canada Goose — large goose with black head, white chinstrap, and brown body',
+    'Red-winged Blackbird': 'Red-winged Blackbird — glossy black male with scarlet and yellow shoulder patches',
+    'Dark-eyed Junco': 'Dark-eyed Junco — slate-gray sparrow with white belly and pink bill',
+    'Cedar Waxwing': 'Cedar Waxwing — sleek crested bird with silky brown plumage and yellow-tipped tail',
+    'Common Raven': 'Common Raven — large all-black corvid with thick bill and shaggy throat feathers',
+    'Great Blue Heron': 'Great Blue Heron — tall gray wader with long neck, dagger bill, and black crown stripe'
+  };
+
+  function birdAlt(name) {
+    return BIRD_ALT[name] || `${name} bird`;
+  }
+
   const PEOPLE = [
     { id: 'alex', name: 'Alex', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80' },
     { id: 'sam', name: 'Sam', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80' },
@@ -2260,6 +2624,7 @@ a{color:var(--blue);text-decoration:none}
   ];
   const joinedIds = new Set();
   const sharedIds = new Set(['lucy', 'joe']);
+  let friendPickerMode = 'joined'; // 'joined' | 'shared'
   let friendDraft = new Set();
   let currentSpecies = null;
   let currentPlace = null;
@@ -2325,8 +2690,8 @@ a{color:var(--blue);text-decoration:none}
     document.querySelectorAll('.screen.sheet .notif-bell, .screen.share-dark .notif-bell, .toolbar .notif-bell')
       .forEach(b => b.remove());
 
-    // Identify — far right of the Save/Done cluster
-    const idActions = document.querySelector('#s-identify .top > div:last-child');
+    // Identify — far right of the header
+    const idActions = document.querySelector('#s-identify .top .id-header-actions');
     if (idActions && !idActions.querySelector('.notif-bell')) {
       idActions.appendChild(makeNotifBell());
     }
@@ -2393,7 +2758,7 @@ a{color:var(--blue);text-decoration:none}
             <span class="tag">Shared location</span>
             <span class="meta">${item.when}</span>
           </span>
-          <img class="thumb" src="${birdImg(item.bird)}" alt="">
+          <img class="thumb" src="${birdImg(item.bird)}" alt="${birdAlt(item.bird)}">
         </button>
       </li>`;
     }).join('');
@@ -2428,43 +2793,87 @@ a{color:var(--blue);text-decoration:none}
   function renderPeople() {
     const joined = document.getElementById('joined-people');
     const shared = document.getElementById('shared-people');
+    const joinedPeople = PEOPLE.filter(p => joinedIds.has(p.id));
     if (joined) {
-      joined.innerHTML = PEOPLE.filter(p => joinedIds.has(p.id)).map(p => personAvatar(p)).join('');
+      joined.innerHTML = joinedPeople.length
+        ? joinedPeople.map(p => personAvatar(p)).join('')
+        : `<span class="joined-empty">Just you</span>`;
+      joined.setAttribute('aria-label', joinedPeople.length
+        ? joinedPeople.map(p => p.name).join(', ')
+        : 'Just you');
     }
     const sharedPeople = PEOPLE.filter(p => sharedIds.has(p.id));
     if (shared) {
       shared.innerHTML = sharedPeople.map(p => personAvatarWrapped(p)).join('');
-      shared.setAttribute('aria-label', `Shared with ${sharedPeople.map(p => p.name).join(' and ')}`);
+    }
+    const namesEl = document.getElementById('share-people-names');
+    const locEl = document.getElementById('share-location-label');
+    const privacyEl = document.getElementById('share-privacy');
+    const shareOn = document.getElementById('share-toggle')?.getAttribute('aria-checked') === 'true';
+    if (namesEl) {
+      if (!sharedPeople.length) namesEl.textContent = 'No one yet';
+      else if (sharedPeople.length === 1) namesEl.textContent = sharedPeople[0].name;
+      else if (sharedPeople.length === 2) namesEl.textContent = `${sharedPeople[0].name} and ${sharedPeople[1].name}`;
+      else namesEl.textContent = sharedPeople.map(p => p.name).join(', ');
+    }
+    if (locEl) {
+      locEl.textContent = shareOn
+        ? `Shared location · Union Bay`
+        : 'Recordings stay private';
+    }
+    if (privacyEl) {
+      privacyEl.textContent = shareOn
+        ? 'Audio and place are shared with them. Notes and photos stay private to you.'
+        : 'Sharing is off. Audio, place, notes, and photos stay private.';
     }
   }
 
   function renderFriendOptions() {
     const list = document.getElementById('friend-options');
     if (!list) return;
+    const selected = friendPickerMode === 'shared' ? sharedIds : joinedIds;
     list.innerHTML = PEOPLE.map(person => `
       <li>
         <button type="button" class="friend-option" data-friend="${person.id}" aria-pressed="${friendDraft.has(person.id)}">
           ${personAvatar(person)}
-          <span class="grow"><span class="nm">${person.name}</span><span class="meta">${joinedIds.has(person.id) ? 'Already added' : 'Friend'}</span></span>
+          <span class="grow"><span class="nm">${person.name}</span><span class="meta">${selected.has(person.id) ? 'Selected' : 'Friend'}</span></span>
           <span class="check" aria-hidden="true"></span>
         </button>
       </li>`).join('');
   }
 
-  function openFriendPicker() {
-    friendDraft = new Set(joinedIds);
+  function openFriendPicker(mode = 'joined') {
+    friendPickerMode = mode;
+    friendFocus = document.activeElement;
+    friendDraft = new Set(mode === 'shared' ? sharedIds : joinedIds);
+    const title = document.getElementById('friend-title');
+    const sub = document.getElementById('friend-sub');
+    const confirm = document.getElementById('friend-confirm');
+    if (mode === 'shared') {
+      if (title) title.textContent = 'Who can hear recordings?';
+      if (sub) sub.textContent = 'People who can play audio from this outing. Notes and photos stay private.';
+      if (confirm) confirm.textContent = 'Save';
+    } else {
+      if (title) title.textContent = 'Who joined?';
+      if (sub) sub.textContent = 'Select friends who were with you on this outing at Union Bay.';
+      if (confirm) confirm.textContent = 'Add selected';
+    }
     renderFriendOptions();
     const picker = document.getElementById('friend-modal');
     picker.hidden = false;
+    syncChromeInert();
     picker.querySelector('.friend-option')?.focus();
   }
 
   function closeFriendPicker() {
     document.getElementById('friend-modal').hidden = true;
-    document.getElementById('add-friends')?.focus();
+    syncChromeInert();
+    (friendFocus || document.getElementById(friendPickerMode === 'shared' ? 'edit-share-people' : 'add-friends'))?.focus?.();
   }
 
-  document.getElementById('add-friends')?.addEventListener('click', openFriendPicker);
+  document.getElementById('add-friends')?.addEventListener('click', () => openFriendPicker('joined'));
+  document.getElementById('edit-share-people')?.addEventListener('click', () => openFriendPicker('shared'));
+  document.getElementById('loc-edit-share')?.addEventListener('click', () => openFriendPicker('shared'));
   document.getElementById('friend-options')?.addEventListener('click', event => {
     const option = event.target.closest('[data-friend]');
     if (!option) return;
@@ -2475,11 +2884,20 @@ a{color:var(--blue);text-decoration:none}
     document.querySelector(`[data-friend="${id}"]`)?.focus();
   });
   document.getElementById('friend-confirm')?.addEventListener('click', () => {
-    joinedIds.clear();
-    friendDraft.forEach(id => joinedIds.add(id));
-    renderPeople();
-    closeFriendPicker();
-    announce(`${joinedIds.size} people added`);
+    if (friendPickerMode === 'shared') {
+      sharedIds.clear();
+      friendDraft.forEach(id => sharedIds.add(id));
+      renderPeople();
+      closeFriendPicker();
+      const names = document.getElementById('share-people-names')?.textContent || 'No one';
+      announce(`Who can hear updated. ${names}.`);
+    } else {
+      joinedIds.clear();
+      friendDraft.forEach(id => joinedIds.add(id));
+      renderPeople();
+      closeFriendPicker();
+      announce(joinedIds.size ? `${joinedIds.size} people added` : 'Just you on this outing');
+    }
   });
   document.getElementById('friend-cancel')?.addEventListener('click', closeFriendPicker);
   document.getElementById('friend-backdrop')?.addEventListener('click', closeFriendPicker);
@@ -2499,6 +2917,55 @@ a{color:var(--blue);text-decoration:none}
     return DOW.map(d => `<span class="cal-dow" aria-hidden="true">${d}</span>`).join('');
   }
 
+  function activeDaysMap(m, speciesName = null) {
+    return speciesName ? speciesDaysFor(speciesName, m) : m.active;
+  }
+
+  function activeDayNumbers(m, speciesName = null) {
+    return Object.keys(activeDaysMap(m, speciesName)).map(Number).sort((a, b) => a - b);
+  }
+
+  function weekdayName(m, day) {
+    return new Date(m.year, m.month, day).toLocaleDateString('en-US', { weekday: 'long' });
+  }
+
+  function monthSummaryText(m, days, { speciesName = null } = {}) {
+    if (!days.length) {
+      return speciesName
+        ? `No days with ${speciesName} recordings in ${m.name}.`
+        : `No days with recordings in ${m.name}.`;
+    }
+    const list = days.join(', ');
+    return speciesName
+      ? `Heard on ${days.length} day${days.length === 1 ? '' : 's'} in ${m.name}. Days: ${list}.`
+      : `${days.length} day${days.length === 1 ? '' : 's'} with recordings in ${m.name}. Days: ${list}.`;
+  }
+
+  function activeDaysListHtml(m, monthIndex, { speciesName = null, navigate = true } = {}) {
+    const active = activeDaysMap(m, speciesName);
+    const days = activeDayNumbers(m, speciesName);
+    if (!days.length) return '';
+    const goAttr = navigate ? ' data-go="s-history-date"' : '';
+    return `<ul class="cal-active-list" aria-label="Days with recordings in ${m.name}">
+      ${days.map(day => {
+        const recordings = active[day];
+        const wd = weekdayName(m, day);
+        const countLabel = typeof recordings === 'number'
+          ? `${recordings} recording${recordings === 1 ? '' : 's'}`
+          : 'recorded';
+        const label = speciesName
+          ? `${wd}, ${m.name} ${day}, ${speciesName} recorded`
+          : `${wd}, ${m.name} ${day}, ${countLabel}`;
+        return `<li>
+          <button type="button" class="cal-day-btn"${goAttr} aria-label="${label}">
+            <span class="day-label">${wd.slice(0, 3)} ${day}</span>
+            <span class="day-meta">${speciesName ? 'Heard' : countLabel}</span>
+          </button>
+        </li>`;
+      }).join('')}
+    </ul>`;
+  }
+
   function speciesDaysFor(speciesName, monthObj) {
     // Deterministic subset of month.active days for this species
     const days = Object.keys(monthObj.active).map(Number);
@@ -2512,10 +2979,10 @@ a{color:var(--blue);text-decoration:none}
     return keep;
   }
 
-  function calendarCells(m, monthIndex, { mode = 'photos', speciesName = null, navigate = true } = {}) {
+  function calendarCells(m, monthIndex, { mode = 'photos', speciesName = null, navigate = true, decorative = false } = {}) {
     const days = new Date(m.year, m.month + 1, 0).getDate();
     const startPad = (new Date(m.year, m.month, 1).getDay() + 6) % 7;
-    const active = speciesName ? speciesDaysFor(speciesName, m) : m.active;
+    const active = activeDaysMap(m, speciesName);
     let cells = '';
     for (let i = 0; i < startPad; i++) {
       cells += '<span class="cal-cell blank" aria-hidden="true"></span>';
@@ -2525,29 +2992,69 @@ a{color:var(--blue);text-decoration:none}
       const recordings = active[day];
       const isToday = m.year === TODAY.y && m.month === TODAY.m && day === TODAY.d;
       const todayCls = isToday ? ' today' : '';
-      const goAttr = navigate ? ' data-go="s-history-date"' : '';
+      const goAttr = navigate && !decorative ? ' data-go="s-history-date"' : '';
+      const wd = weekdayName(m, day);
       if (recordings) {
-        if (mode === 'dots') {
-          cells += `<button type="button" class="cal-cell has${todayCls}" aria-label="${m.name} ${day}, recorded"${goAttr}>
+        if (decorative) {
+          cells += `<span class="cal-cell has${todayCls}" aria-hidden="true">
+            <span class="num">${day}</span>
+            <span class="slot">${mode === 'dots' ? '<span class="dot green"></span>' : `<img src="${birdImg(speciesName || names[(day + monthIndex) % names.length])}" alt="">`}</span>
+          </span>`;
+        } else if (mode === 'dots') {
+          cells += `<button type="button" class="cal-cell has${todayCls}" aria-label="${wd}, ${m.name} ${day}, recorded"${goAttr}>
             <span class="num" aria-hidden="true">${day}</span>
             <span class="slot"><span class="dot green"></span></span>
           </button>`;
         } else {
           const imgName = speciesName || names[(day + monthIndex) % names.length];
           const image = birdImg(imgName);
-          cells += `<button type="button" class="cal-cell has${todayCls}" aria-label="${m.name} ${day}, ${recordings} recordings"${goAttr}>
+          cells += `<button type="button" class="cal-cell has${todayCls}" aria-label="${wd}, ${m.name} ${day}, ${recordings} recordings"${goAttr}>
             <span class="num" aria-hidden="true">${day}</span>
-            <span class="slot"><img src="${image}" alt=""></span>
+            <span class="slot"><img src="${image}" alt="" aria-hidden="true"></span>
           </button>`;
         }
       } else {
-        cells += `<button type="button" class="cal-cell${todayCls}" disabled aria-label="${m.name} ${day}, no recordings">
-          <span class="num" aria-hidden="true">${day}</span>
+        // Empty days: visual only — skip in reading order
+        cells += `<span class="cal-cell${todayCls}" aria-hidden="true">
+          <span class="num">${day}</span>
           <span class="slot"><span class="dot"></span></span>
-        </button>`;
+        </span>`;
       }
     }
     return cells;
+  }
+
+  function monthBlockHtml(m, monthIndex, {
+    speciesName = null,
+    mode = 'photos',
+    navigate = true,
+    shareAttr = 'data-month',
+    shareLabel = null
+  } = {}) {
+    const days = activeDayNumbers(m, speciesName);
+    const summary = monthSummaryText(m, days, { speciesName });
+    const shareAria = shareLabel || (speciesName
+      ? `Share ${speciesName} ${m.name}`
+      : `Share ${m.name} calendar`);
+    const uid = `${speciesName ? 'sp' : 'all'}-${monthIndex}`;
+    const gridId = `cal-grid-${uid}`;
+    const headId = `cal-h-${uid}`;
+    return `<div class="cal" aria-labelledby="${headId}">
+      <div class="cal-head">
+        <h2 class="cal-h" id="${headId}">${m.name}</h2>
+        <button type="button" class="circle-btn green share-month" ${shareAttr}="${monthIndex}" aria-label="${shareAria}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
+        </button>
+      </div>
+      <p class="cal-summary" role="status">${summary}</p>
+      ${activeDaysListHtml(m, monthIndex, { speciesName, navigate })}
+      <button type="button" class="cal-browse" data-cal-grid="${gridId}" aria-expanded="false" aria-controls="${gridId}">
+        Show full month grid
+      </button>
+      <div class="cal-grid-wrap" id="${gridId}" hidden>
+        <div class="cal-grid" aria-hidden="true">${dowRow()}${calendarCells(m, monthIndex, { mode, speciesName, navigate, decorative: true })}</div>
+      </div>
+    </div>`;
   }
 
   function shareBrand() {
@@ -2557,7 +3064,7 @@ a{color:var(--blue);text-decoration:none}
     </div>`;
   }
 
-  function birdGridCard(title, count, speciesIdx = null, speciesList = null) {
+  function birdGridCard(title, count, speciesIdx = null, speciesList = null, optionLabel = null) {
     const imgs = [];
     for (let i = 0; i < count; i++) {
       if (speciesList?.length) {
@@ -2569,18 +3076,23 @@ a{color:var(--blue);text-decoration:none}
         imgs.push(SPECIES[i % SPECIES.length]);
       }
     }
-    return `<div class="share-card share-collage" role="option">
-      <h2 class="cal-h">${title}</h2>
-      <div class="share-bird-grid cols-4">${imgs.map(s => `<img src="${s.image || birdImg(s.name)}" alt="">`).join('')}</div>
+    const label = optionLabel || `${title}, ${count} species collage`;
+    return `<div class="share-card share-collage" role="option" aria-label="${label}">
+      <h2 class="cal-h" aria-hidden="true">${title}</h2>
+      <div class="share-bird-grid cols-4" aria-hidden="true">${imgs.map(s => `<img src="${s.image || birdImg(s.name)}" alt="">`).join('')}</div>
       ${shareBrand()}
     </div>`;
   }
 
-  function calendarShareCard(monthIndex, { mode = 'photos', speciesName = null } = {}) {
+  function calendarShareCard(monthIndex, { mode = 'photos', speciesName = null, caption = '' } = {}) {
     const m = CALENDAR_MONTHS[monthIndex];
-    return `<div class="share-card" role="option">
-      <h2 class="cal-h">${m.name}</h2>
-      <div class="cal-grid">${dowRow()}${calendarCells(m, monthIndex, { mode, speciesName, navigate: false })}</div>
+    const days = activeDayNumbers(m, speciesName);
+    const summary = monthSummaryText(m, days, { speciesName });
+    const label = `${caption || m.name}. ${summary}`;
+    return `<div class="share-card" role="option" aria-label="${label}">
+      <h2 class="cal-h" aria-hidden="true">${m.name}</h2>
+      <p class="cal-summary" aria-hidden="true">${summary}</p>
+      <div class="cal-grid" aria-hidden="true">${dowRow()}${calendarCells(m, monthIndex, { mode, speciesName, navigate: false, decorative: true })}</div>
       ${shareBrand()}
     </div>`;
   }
@@ -2621,11 +3133,11 @@ a{color:var(--blue);text-decoration:none}
     if (species) currentSpecies = species;
     const spName = shareSpeciesOnly && currentSpecies ? currentSpecies.name : null;
     const returnTo = current === 's-species-calendar' ? 's-species-calendar' : 's-calendar';
-    const cards = calendarShareCard(monthIndex, { mode: 'photos', speciesName: spName })
-      + calendarShareCard(monthIndex, { mode: 'dots', speciesName: spName || 'House Finch' });
     const captions = spName
       ? [`${spName} · photo calendar`, `${spName} · activity`]
       : ['All species · photo calendar', 'Species activity · green days'];
+    const cards = calendarShareCard(monthIndex, { mode: 'photos', speciesName: spName, caption: captions[0] })
+      + calendarShareCard(monthIndex, { mode: 'dots', speciesName: spName || 'House Finch', caption: captions[1] });
     mountShareCards(cards, captions, returnTo);
   }
 
@@ -2652,22 +3164,30 @@ a{color:var(--blue);text-decoration:none}
     mountShareCards(cards, ['Outing · species collage'], 's-session');
   }
 
+  function bindCalBrowse(root) {
+    root?.querySelectorAll('.cal-browse').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const grid = document.getElementById(btn.getAttribute('aria-controls'));
+        if (!grid) return;
+        const open = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+        grid.hidden = open;
+        btn.textContent = open ? 'Show full month grid' : 'Hide full month grid';
+        announce(open ? 'Month grid hidden' : 'Month grid shown. Visual only — use the day list above.');
+      });
+    });
+  }
+
   function renderCalendar() {
     const stack = document.getElementById('calendar-stack');
     if (!stack) return;
-    stack.innerHTML = CALENDAR_MONTHS.map((m, i) => `
-      <div class="cal" aria-labelledby="cal-${m.month}">
-        <div class="cal-head">
-          <h2 class="cal-h" id="cal-${m.month}">${m.name}</h2>
-          <button type="button" class="circle-btn green share-month" data-month="${i}" aria-label="Share ${m.name} calendar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
-          </button>
-        </div>
-        <div class="cal-grid">${dowRow()}${calendarCells(m, i)}</div>
-      </div>`).join('');
+    stack.innerHTML = CALENDAR_MONTHS.map((m, i) =>
+      monthBlockHtml(m, i, { mode: 'photos', navigate: true, shareAttr: 'data-month' })
+    ).join('');
     stack.querySelectorAll('.share-month').forEach(btn => {
       btn.addEventListener('click', () => openShare(+btn.dataset.month));
     });
+    bindCalBrowse(stack);
   }
   renderCalendar();
 
@@ -2731,19 +3251,6 @@ a{color:var(--blue);text-decoration:none}
     });
   })();
 
-  // Facilitator menu
-  const facil = document.getElementById('facil');
-  if (facil) {
-    Object.entries(LABELS).forEach(([id, label]) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = label;
-      b.dataset.go = id;
-      if (id === current) b.setAttribute('aria-current', 'true');
-      facil.appendChild(b);
-    });
-  }
-
   // ── Outings + identified birds data ──
   let OUTINGS = [
     { month: 'July', day: 22, weekday: 'Wed', title: 'Wednesday Morning at Seward Park', meta: '5:04 PM · Seattle, WA', birds: 3, extra: 0, place: 'seward' },
@@ -2796,7 +3303,7 @@ a{color:var(--blue);text-decoration:none}
     let html = '';
     for (let i = 0; i < show; i++) {
       const name = SPECIES[(seed + i) % SPECIES.length].name;
-      html += `<img class="thumb sm" src="${birdImg(name)}" alt="">`;
+      html += `<img class="thumb sm" src="${birdImg(name)}" alt="${birdAlt(name)}">`;
     }
     const more = extra || Math.max(0, count - show);
     if (more) html += `<span class="more">+ ${more} species</span>`;
@@ -2810,7 +3317,7 @@ a{color:var(--blue);text-decoration:none}
         <button type="button" class="spectro" data-audio="${audio}" data-dur="${dur}" aria-label="${aria}">
           <span class="tex" aria-hidden="true"></span><span class="played" aria-hidden="true"></span><span class="ph-line" aria-hidden="true"></span><span class="sp-play" aria-hidden="true"></span><span class="dur" aria-hidden="true">${dur}</span>
         </button>
-        <span class="sp-share" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span>
+        <button type="button" class="sp-share" aria-label="Share this recording"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></button>
       </span>
     </div>`;
   }
@@ -2818,27 +3325,31 @@ a{color:var(--blue);text-decoration:none}
   function openSpecies(species) {
     currentSpecies = species;
     LABELS['s-species-detail'] = species.name;
-    document.getElementById('sp-sub').textContent = species.name;
+    document.getElementById('sp-title').textContent = species.name;
+    document.getElementById('sp-sub').textContent = 'Species history';
     document.getElementById('sp-close').setAttribute('aria-label', `Close ${species.name} history`);
     document.getElementById('species-mix-title').textContent = `Your ${species.name} Mix`;
     document.getElementById('species-mix').setAttribute('aria-label', `Play your ${species.name} mix`);
+    const spShare = document.querySelector('#s-species-detail .mix-share');
+    if (spShare) spShare.setAttribute('aria-label', `Share your ${species.name} mix`);
     document.getElementById('species-row-name').textContent = species.name;
     const img = document.getElementById('species-row-img');
     img.src = species.image;
-    img.alt = species.name;
+    img.alt = birdAlt(species.name);
 
-    // Compact monthly listening summary; the calendar opens as its own sheet.
+    // Compact monthly listening summary — one control includes the count for VO
     const cal = document.getElementById('species-cal');
+    const heardLabel = `You’ve heard ${species.name} ${species.n} times this month. Open listening calendar.`;
     cal.innerHTML = `
-      <div class="species-month-summary">
-        <div class="copy">
-          <div class="headline">You’ve heard ${species.name} ${species.n} times this month.</div>
-          <div class="meta">See when you heard it</div>
-        </div>
-        <button type="button" class="circle-btn" id="open-species-calendar" aria-label="Open ${species.name} listening calendar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-        </button>
-      </div>`;
+      <button type="button" class="species-month-summary" id="open-species-calendar" aria-label="${heardLabel}">
+        <span class="copy" aria-hidden="true">
+          <span class="headline">You’ve heard ${species.name} ${species.n} times this month.</span>
+          <span class="meta">See when you heard it</span>
+        </span>
+        <span class="circle-btn" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        </span>
+      </button>`;
     document.getElementById('open-species-calendar').addEventListener('click', openSpeciesCalendar);
 
     // Sample recordings by month
@@ -2855,11 +3366,12 @@ a{color:var(--blue);text-decoration:none}
       }).join('<div style="border-bottom:1px solid var(--line)"></div>');
     }
     rec.innerHTML = `
-      <div class="month-row"><h2 class="month">June</h2><span class="month-count">${juneDays.length} recordings</span></div>
+      <div class="month-row"><h2 class="month" id="sp-rec-june">June · ${juneDays.length} recordings</h2></div>
       ${rowsFor(3, juneDays)}
-      <div class="month-row" style="margin-top:32px"><h2 class="month">May</h2><span class="month-count">${mayDays.length} recordings</span></div>
+      <div class="month-row" style="margin-top:32px"><h2 class="month" id="sp-rec-may">May · ${mayDays.length} recordings</h2></div>
       ${rowsFor(2, mayDays)}`;
     enhanceShareAffordances(rec);
+    LABELS['s-species-detail'] = `${species.name}. You’ve heard it ${species.n} times this month`;
     go('s-species-detail');
   }
 
@@ -2870,19 +3382,21 @@ a{color:var(--blue);text-decoration:none}
     const months = CALENDAR_MONTHS.slice(-2);
     const firstIndex = CALENDAR_MONTHS.length - months.length;
     const stack = document.getElementById('species-calendar-stack');
-    stack.innerHTML = months.map((m, i) => `
-      <div class="cal">
-        <div class="cal-head">
-          <h2 class="cal-h">${m.name}</h2>
-          <button type="button" class="circle-btn green" data-share-species="${firstIndex + i}" aria-label="Share ${species.name} ${m.name}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
-          </button>
-        </div>
-        <div class="cal-grid">${dowRow()}${calendarCells(m, firstIndex + i, { mode: 'dots', speciesName: species.name, navigate: false })}</div>
-      </div>`).join('');
+    stack.innerHTML = months.map((m, i) =>
+      monthBlockHtml(m, firstIndex + i, {
+        speciesName: species.name,
+        mode: 'dots',
+        navigate: false,
+        shareAttr: 'data-share-species',
+        shareLabel: `Share ${species.name} ${m.name}`
+      })
+    ).join('');
     stack.querySelectorAll('[data-share-species]').forEach(btn => {
       btn.addEventListener('click', () => openShare(+btn.dataset.shareSpecies, species));
     });
+    bindCalBrowse(stack);
+    const days = activeDayNumbers(months[months.length - 1], species.name);
+    LABELS['s-species-calendar'] = `${species.name} listening calendar. ${monthSummaryText(months[months.length - 1], days, { speciesName: species.name })}`;
     go('s-species-calendar');
   }
   // sp-cal-close / sp-info-close use data-close → closeCurrent()
@@ -2897,17 +3411,34 @@ a{color:var(--blue);text-decoration:none}
   }
   document.getElementById('species-info-btn')?.addEventListener('click', openSpeciesInfo);
 
-  function renderOutings() {
+  function renderOutings(query = '') {
     const root = document.getElementById('outings-root');
     if (!root) return;
+    const q = (query || '').trim().toLowerCase();
+    const placeName = (id) => ({
+      seward: 'Seward Park Seattle',
+      udistrict: 'University District Seattle',
+      redmond: 'Marymoor Park Redmond'
+    }[id] || id || '');
+    const matches = (o) => {
+      if (!q) return true;
+      const blob = [
+        o.title, o.meta, o.month, o.day, o.weekday, o.place, placeName(o.place),
+        o.notes || '', String(o.birds || ''), String(o.extra || '')
+      ].join(' ').toLowerCase();
+      return blob.includes(q);
+    };
+    const filtered = OUTINGS.map((o, idx) => ({ o, idx })).filter(({ o }) => matches(o));
+    if (!filtered.length) {
+      root.innerHTML = `<p class="hist-search-empty" role="status">No sessions match “${query.trim()}”.</p>`;
+      return;
+    }
     const months = [];
-    OUTINGS.forEach(o => { if (!months.includes(o.month)) months.push(o.month); });
+    filtered.forEach(({ o }) => { if (!months.includes(o.month)) months.push(o.month); });
     root.innerHTML = months.map(month => {
-      const items = OUTINGS.filter(o => o.month === month);
+      const items = filtered.filter(({ o }) => o.month === month);
       return `<h2 class="month group">${month}</h2>
-        <ul class="list">${items.map((o) => {
-          const idx = OUTINGS.indexOf(o);
-          return `
+        <ul class="list">${items.map(({ o, idx }) => `
           <li>
             <button type="button" class="sess-row" data-outing="${idx}">
               <span class="sess-date"><span class="d">${o.day}</span><span class="w">${o.weekday}</span></span>
@@ -2920,13 +3451,20 @@ a{color:var(--blue);text-decoration:none}
                 <span class="sr-only">${o.birds + (o.extra || 0)} species</span>
               </span>
             </button>
-          </li>`;
-        }).join('')}</ul>`;
+          </li>`).join('')}</ul>`;
     }).join('');
     root.querySelectorAll('[data-outing]').forEach(btn => {
       btn.addEventListener('click', () => openSession(+btn.dataset.outing));
     });
   }
+
+  document.getElementById('outing-search')?.addEventListener('input', (e) => {
+    renderOutings(e.target.value);
+    const n = document.querySelectorAll('#outings-root .sess-row').length;
+    if (e.target.value.trim()) {
+      announce(n ? `${n} session${n === 1 ? '' : 's'} found` : 'No sessions match');
+    }
+  });
 
   const SESSION_NOTES = [
     'The Lazuli buntings hung out at the taller trees behind the west parking lot',
@@ -2965,17 +3503,50 @@ a{color:var(--blue);text-decoration:none}
   function clipRowsHtml(birdName, detections, startExpanded) {
     const audio = birdName.includes('Robin') ? 'birds/american-robin.mp3' : 'birds/house-finch.mp3';
     const durs = [45, 23, 20, 18, 32, 27].slice(0, Math.max(1, Math.min(detections, 5)));
-    return `<div class="clips" ${startExpanded ? '' : 'hidden'}>
+    const clipId = 'clips-' + birdName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    return `<div class="clips" id="${clipId}" ${startExpanded ? '' : 'hidden'}>
       ${durs.map((dur, c) => `
         <div class="spectro-row no-date">
           <span class="spectro-wrap">
             <button type="button" class="spectro" data-audio="${audio}" data-dur="0:${String(dur).padStart(2, '0')}" aria-label="Play ${birdName} clip ${c + 1}, ${dur} seconds">
               <span class="tex" aria-hidden="true"></span><span class="played" aria-hidden="true"></span><span class="ph-line" aria-hidden="true"></span><span class="sp-play" aria-hidden="true"></span><span class="dur" aria-hidden="true">0:${String(dur).padStart(2, '0')}</span>
             </button>
-            <span class="sp-share" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></span>
+            <button type="button" class="sp-share" aria-label="Share ${birdName} recording"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg></button>
           </span>
         </div>`).join('')}
     </div>`;
+  }
+
+  /** Save Session birds: heading per species (name + count), then recordings. */
+  function renderSaveBirds(birds) {
+    const list = document.getElementById('save-species-list');
+    if (!list) return;
+    const items = (birds && birds.length)
+      ? birds
+      : [
+          { name: 'House Finch', detections: 12 },
+          { name: 'Spotted Towhee', detections: 4 },
+          { name: 'Lazuli Bunting', detections: 3 },
+          { name: 'American Robin', detections: 7 },
+          { name: 'Black-capped Chickadee', detections: 2 },
+          { name: 'Song Sparrow', detections: 6 }
+        ];
+    list.innerHTML = items.map(({ name, detections }, i) => {
+      const n = Math.max(1, Math.min(detections || 2, 4));
+      const hid = `save-bird-${i}`;
+      const countLabel = `${detections} detection${detections === 1 ? '' : 's'}`;
+      return `<li>
+        <div class="row bird" role="group" aria-labelledby="${hid}">
+          <img class="thumb" src="${birdImg(name)}" alt="" aria-hidden="true">
+          <h3 class="nm" id="${hid}">
+            <span>${name}</span>
+            <span class="meta">${countLabel}</span>
+          </h3>
+        </div>
+        ${clipRowsHtml(name, n, true)}
+      </li>`;
+    }).join('');
+    enhanceShareAffordances(list);
   }
 
   function bindSessionBirdDropdowns(list) {
@@ -3074,9 +3645,10 @@ a{color:var(--blue);text-decoration:none}
     const list = document.getElementById('sess-birds');
     list.innerHTML = birds.map((b, i) => {
       const expanded = i === 0;
+      const clipId = 'clips-' + b.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       return `<li>
-        <button type="button" class="row bird" data-expand-bird="${b.name}" aria-expanded="${expanded ? 'true' : 'false'}">
-          <img class="thumb" src="${b.image || birdImg(b.name)}" alt="">
+        <button type="button" class="row bird" data-expand-bird="${b.name}" aria-expanded="${expanded ? 'true' : 'false'}" aria-controls="${clipId}">
+          <img class="thumb" src="${b.image || birdImg(b.name)}" alt="${birdAlt(b.name)}">
           <span class="grow"><span class="nm">${b.name}</span><span class="meta">${b.detections} detections</span></span>
           <span class="chev" aria-hidden="true">${expanded ? '▾' : '›'}</span>
         </button>
@@ -3094,7 +3666,7 @@ a{color:var(--blue);text-decoration:none}
       <li>
         <button type="button" class="row species" data-species="${i}">
           <span class="grow"><span class="nm">${s.name}</span><span class="meta">${s.n} recordings</span></span>
-          <img class="thumb" src="${s.image}" alt="">
+          <img class="thumb" src="${s.image}" alt="${birdAlt(s.name)}">
         </button>
       </li>`).join('');
     ul.querySelectorAll('[data-species]').forEach(btn => {
@@ -3151,35 +3723,35 @@ a{color:var(--blue);text-decoration:none}
     };
   }
 
-  function setLocSheetExpanded(on) {
-    const sheet = document.getElementById('loc-sheet');
-    const btn = document.getElementById('loc-sheet-expand');
-    if (!sheet) return;
-    sheet.classList.toggle('expanded', !!on);
-    if (btn) {
-      btn.setAttribute('aria-expanded', on ? 'true' : 'false');
-      btn.textContent = on ? 'Collapse' : 'Expand';
-    }
-  }
+  let peekFocusRestore = null;
 
   function showLocSheet() {
-    document.getElementById('loc-sheet')?.classList.remove('hidden-by-peek');
+    const sheet = document.getElementById('loc-sheet');
+    if (!sheet) return;
+    sheet.classList.remove('hidden-by-peek');
+    sheet.removeAttribute('inert');
+    sheet.removeAttribute('aria-hidden');
   }
 
   function hideLocSheetForPeek() {
     const sheet = document.getElementById('loc-sheet');
     if (!sheet) return;
     sheet.classList.add('hidden-by-peek');
-    setLocSheetExpanded(false);
+    sheet.setAttribute('inert', '');
+    sheet.setAttribute('aria-hidden', 'true');
   }
 
   function hidePeek() {
     const peek = document.getElementById('loc-peek');
-    if (!peek) return;
+    if (!peek || peek.hidden) return;
     peek.classList.remove('on');
-    peek.setAttribute('aria-hidden', 'true');
+    peek.hidden = true;
     Object.values(pinEls).forEach(el => el.classList.remove('on'));
     showLocSheet();
+    const restore = peekFocusRestore;
+    peekFocusRestore = null;
+    try { restore?.focus?.({ preventScroll: true }); } catch (_) {}
+    announce('Location preview closed');
   }
 
   function selectPlace(place, { openPeek = true } = {}) {
@@ -3189,26 +3761,34 @@ a{color:var(--blue);text-decoration:none}
     announce(place.name + ', ' + place.city + '. ' + place.species + ' species.');
     if (!openPeek) return;
     const peek = document.getElementById('loc-peek');
+    peekFocusRestore = document.activeElement;
     document.getElementById('peek-title').textContent = place.name;
     document.getElementById('peek-sub').textContent = `${place.city} · ${place.species} species`;
     document.getElementById('peek-thumbs').innerHTML = (place.speciesIdx || [0,1,2,3]).slice(0, 6)
-      .map(i => `<img class="thumb sm" src="${SPECIES[i].image}" alt="">`).join('');
+      .map(i => `<img class="thumb sm" src="${SPECIES[i].image}" alt="" aria-hidden="true">`).join('');
     hideLocSheetForPeek();
+    peek.hidden = false;
     peek.classList.add('on');
-    peek.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => {
+      document.getElementById('sheet-view')?.focus({ preventScroll: true });
+    });
+    announce(`Preview: ${place.name}. View full history or close.`);
   }
 
   function openLocationDetail(place) {
     currentPlace = place || currentPlace || PLACES[0];
     const p = currentPlace;
     LABELS['s-location-detail'] = p.name;
-    document.getElementById('loc-sub').textContent = `${p.name}, ${p.city}`;
+    document.getElementById('loc-title').textContent = p.name;
+    document.getElementById('loc-sub').textContent = p.city;
     document.getElementById('loc-close').setAttribute('aria-label', `Close ${p.name} history`);
     document.getElementById('park-mix-title').textContent = `Your ${p.name} Mix`;
     document.getElementById('park-mix').setAttribute('aria-label', `Play your ${p.name} mix`);
+    const parkShare = document.querySelector('#s-location-detail .mix-share');
+    if (parkShare) parkShare.setAttribute('aria-label', `Share your ${p.name} mix`);
     document.getElementById('loc-species-count').textContent = `${p.species} species`;
     document.getElementById('loc-thumbs').innerHTML = (p.speciesIdx || [0,1,2,3,4,5]).slice(0, 6)
-      .map(i => `<img class="thumb sm" src="${SPECIES[i].image}" alt="">`).join('');
+      .map(i => `<img class="thumb sm" src="${SPECIES[i].image}" alt="${birdAlt(SPECIES[i].name)}">`).join('');
     const shared = PEOPLE.filter(x => sharedIds.has(x.id));
     document.getElementById('loc-shared-avatars').innerHTML = shared.map(x => personAvatar(x)).join('');
     document.getElementById('loc-shared-names').textContent = shared.map(x => x.name).join(', ');
@@ -3238,12 +3818,14 @@ a{color:var(--blue);text-decoration:none}
   document.getElementById('sheet-view')?.addEventListener('click', () => {
     if (currentPlace) openLocationDetail(currentPlace);
   });
+  document.getElementById('peek-close')?.addEventListener('click', hidePeek);
 
   function placeRowHtml(p) {
-    const img = SPECIES[(p.speciesIdx || [0])[0]].image;
+    const species = SPECIES[(p.speciesIdx || [0])[0]];
+    const img = species.image;
     return `<li>
-      <button type="button" class="row" data-place="${p.id}">
-        <img class="thumb" src="${img}" alt="">
+      <button type="button" class="row" data-place="${p.id}" aria-label="${p.name}, ${p.city}, ${p.sessions} sessions, ${p.species} species">
+        <img class="thumb" src="${img}" alt="" aria-hidden="true">
         <span class="grow">
           <span class="nm">${p.name}</span>
           <span class="meta">${p.city} · ${p.sessions} sessions · ${p.species} species</span>
@@ -3258,64 +3840,20 @@ a{color:var(--blue);text-decoration:none}
       btn.addEventListener('click', () => {
         const place = PLACES.find(p => p.id === btn.dataset.place);
         if (!place) return;
-        // From the sheet list: open full detail. Map pins use preview instead.
-        if (btn.closest('#loc-sheet-list')) {
-          selectPlace(place, { openPeek: false });
-          openLocationDetail(place);
-        } else {
-          selectPlace(place);
-          openLocationDetail(place);
-        }
+        selectPlace(place, { openPeek: false });
+        openLocationDetail(place);
       });
     });
   }
 
   function renderLocList() {
     const sheetList = document.getElementById('loc-sheet-list');
-    const ul = document.getElementById('loc-list');
     if (sheetList) {
       sheetList.innerHTML = PLACES.map(placeRowHtml).join('');
       bindPlaceButtons(sheetList);
     }
-    if (ul) {
-      ul.innerHTML = PLACES.map(p => `
-        <li>
-          <button type="button" data-place="${p.id}">
-            ${p.name}, ${p.city}. ${p.sessions} sessions, ${p.species} species.
-          </button>
-        </li>`).join('');
-      bindPlaceButtons(ul);
-    }
   }
   renderLocList();
-
-  document.getElementById('loc-sheet-expand')?.addEventListener('click', () => {
-    const sheet = document.getElementById('loc-sheet');
-    setLocSheetExpanded(!sheet?.classList.contains('expanded'));
-  });
-
-  // Drag grabber to expand / collapse the locations sheet
-  (function setupLocSheetDrag() {
-    const sheet = document.getElementById('loc-sheet');
-    const grab = document.getElementById('loc-sheet-grabber');
-    if (!sheet || !grab) return;
-    let y0 = 0, dragging = false;
-    const start = (y) => { y0 = y; dragging = true; };
-    const end = (y) => {
-      if (!dragging) return;
-      dragging = false;
-      const dy = y - y0;
-      if (dy < -40) setLocSheetExpanded(true);
-      else if (dy > 40) setLocSheetExpanded(false);
-    };
-    grab.addEventListener('touchstart', e => start(e.changedTouches[0].clientY), { passive: true });
-    grab.addEventListener('touchend', e => end(e.changedTouches[0].clientY));
-    grab.addEventListener('mousedown', e => {
-      start(e.clientY);
-      const up = ev => { end(ev.clientY); window.removeEventListener('mouseup', up); };
-      window.addEventListener('mouseup', up);
-    });
-  })();
 
   // Swipe peek down to dismiss back to locations list
   (function setupPeekSwipe() {
@@ -3355,7 +3893,9 @@ a{color:var(--blue);text-decoration:none}
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'map-pin-el';
-      btn.setAttribute('aria-label', `${place.name}, ${place.city}. ${place.species} species. Double-tap to open card.`);
+      btn.tabIndex = -1;
+      btn.setAttribute('aria-hidden', 'true');
+      btn.setAttribute('aria-label', `${place.name} map pin`);
       btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23 4.9c-.8.4-1.6.6-2.5.8a4.3 4.3 0 0 0 1.9-2.4c-.8.5-1.8.9-2.7 1.1a4.3 4.3 0 0 0-7.4 3.9A12.2 12.2 0 0 1 3.4 3.7a4.3 4.3 0 0 0 1.3 5.7c-.7 0-1.4-.2-2-.5v.1a4.3 4.3 0 0 0 3.5 4.2c-.6.2-1.3.2-1.9.1a4.3 4.3 0 0 0 4 3A8.7 8.7 0 0 1 2 18.1a12.2 12.2 0 0 0 6.6 1.9c7.9 0 12.3-6.6 12.3-12.3v-.6c.8-.6 1.6-1.4 2.1-2.2z"/></svg>';
       btn.addEventListener('click', e => {
         e.stopPropagation();
@@ -3431,7 +3971,7 @@ a{color:var(--blue);text-decoration:none}
     }
     if (current === 's-history-location') {
       const peek = document.getElementById('loc-peek');
-      if (peek?.classList.contains('on')) {
+      if (peek && !peek.hidden) {
         e.preventDefault();
         hidePeek();
         return;
@@ -3497,14 +4037,724 @@ a{color:var(--blue);text-decoration:none}
     if (!img.alt) img.alt = s.name;
   });
 
-  // VoiceOver simulator stubbed off for sighted testing
-  window.__voSim = { live() {}, refresh() {} };
+  // ── Screen reader verifier (desktop) ──
+  (function voSim() {
+    const app = document.getElementById('app');
+    const roleEl = document.getElementById('vo-role');
+    const sayEl = document.getElementById('vo-say');
+    const logEl = document.getElementById('vo-log');
+    const btnToggle = document.getElementById('vo-toggle');
+    const btnSpeak = document.getElementById('vo-speak');
+    const btnNext = document.getElementById('vo-next');
+    const btnPrev = document.getElementById('vo-prev');
+    const btnOrder = document.getElementById('vo-order');
+    if (!btnToggle) {
+      window.__voSim = {
+        live() {},
+        refresh() {},
+        collect: () => [],
+        highlight() {},
+        focusMeta: () => null,
+        findByFocusMeta: () => null,
+        nameOf: () => '',
+        roleOf: () => ''
+      };
+      return;
+    }
+
+    let on = true;
+    let speakOn = true;
+    let idx = -1;
+    let nodes = [];
+    let lastHl = null;
+
+    const FOCUSABLE = 'a[href],button:not([disabled]):not([aria-hidden="true"]),[role="button"],[role="tab"],[role="switch"],[role="option"],[role="status"],input:not([disabled]),textarea,h1,h2,h3,[role="img"][aria-label]';
+
+    function visible(el) {
+      if (!el || el.hidden) return false;
+      if (el.getAttribute('aria-hidden') === 'true') return false;
+      if (el.closest('[hidden],[aria-hidden="true"],[inert]')) return false;
+      if (el.closest('.facil-wrap,.vo-panel,.sr-only')) return false;
+      const scr = el.closest('.screen');
+      if (scr && !scr.classList.contains('on')) return false;
+      if (el.closest('.tabbar') && (tabbar.hidden || tabbar.hasAttribute('inert'))) return false;
+      const st = getComputedStyle(el);
+      return st.display !== 'none' && st.visibility !== 'hidden';
+    }
+
+    function collect() {
+      const friend = document.getElementById('friend-modal');
+      if (!modal.hidden) return [...modal.querySelectorAll(FOCUSABLE)].filter(visible);
+      if (!shareSheet.hidden) return [...shareSheet.querySelectorAll(FOCUSABLE)].filter(visible);
+      if (friend && !friend.hidden) return [...friend.querySelectorAll(FOCUSABLE)].filter(visible);
+
+      // Active screen first, then main tabs (matches visual: content above, tab bar at bottom)
+      const tabs = tabbar && !tabbar.hidden && !tabbar.hasAttribute('inert')
+        ? [...tabbar.querySelectorAll('button')].filter(visible)
+        : [];
+      const screen = document.querySelector('.screen.on');
+      const body = screen ? [...screen.querySelectorAll(FOCUSABLE)].filter(visible) : [];
+      const list = [...body, ...tabs];
+      return list.filter((el, i, arr) => !arr.some((other, j) => j < i && other.contains(el)));
+    }
+
+    function nameOf(el) {
+      const labelled = el.getAttribute('aria-labelledby');
+      if (labelled) {
+        const t = labelled.split(/\s+/).map(id => document.getElementById(id)?.textContent?.trim()).filter(Boolean).join(' ');
+        if (t) return t;
+      }
+      const al = el.getAttribute('aria-label');
+      if (al) return al;
+      if (el.tagName === 'H1' || el.tagName === 'H2') {
+        return (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+      }
+      const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+      if (text) return text.slice(0, 140);
+      if (el.placeholder) return el.placeholder;
+      return el.tagName.toLowerCase();
+    }
+
+    function roleOf(el) {
+      const r = el.getAttribute('role');
+      if (el.tagName === 'H1') return 'Heading level 1';
+      if (el.tagName === 'H2') return 'Heading level 2';
+      if (el.tagName === 'H3') return 'Heading level 3';
+      if (el.getAttribute('role') === 'status') return 'Status';
+      if (el.getAttribute('role') === 'option') {
+        return 'Share card' + (el.getAttribute('aria-selected') === 'true' ? ', selected' : '');
+      }
+      if (r === 'switch') return 'Switch, ' + (el.getAttribute('aria-checked') === 'true' ? 'on' : 'off');
+      if (r === 'tab') return 'Tab' + (el.getAttribute('aria-selected') === 'true' ? ', selected' : '');
+      if (r === 'img') return 'Image';
+      if (el.tagName === 'BUTTON' || r === 'button') {
+        const unavailable = el.disabled || el.getAttribute('aria-disabled') === 'true';
+        if (el.closest('#tabbar')) {
+          if (el.getAttribute('aria-current') === 'page') return 'Tab, selected';
+          return unavailable ? 'Tab, unavailable' : 'Tab';
+        }
+        if (el.getAttribute('aria-pressed') != null) {
+          return 'Button, ' + (el.getAttribute('aria-pressed') === 'true' ? 'pressed' : 'not pressed');
+        }
+        if (el.getAttribute('aria-current') === 'page') return 'Tab, selected';
+        if (unavailable) return 'Button, unavailable';
+        return 'Button';
+      }
+      if (el.tagName === 'A') return 'Link';
+      if (el.tagName === 'TEXTAREA') return 'Text area';
+      if (el.tagName === 'INPUT') return 'Text field';
+      return r || el.tagName.toLowerCase();
+    }
+
+    function speak(text) {
+      if (!speakOn || !window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 1.05;
+      window.speechSynthesis.speak(u);
+    }
+
+    function show(role, say, { speech } = { speech: true }) {
+      roleEl.textContent = role;
+      sayEl.textContent = say;
+      const line = document.createElement('div');
+      line.textContent = role + ' — ' + say;
+      logEl.prepend(line);
+      while (logEl.children.length > 50) logEl.lastChild.remove();
+      if (speech) speak(role + '. ' + say);
+    }
+
+    function highlight(el) {
+      if (lastHl) lastHl.removeAttribute('data-vo-hl');
+      lastHl = el;
+      if (el) {
+        el.setAttribute('data-vo-hl', '1');
+        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+
+    function focusMeta(el) {
+      if (!el || !app.contains(el)) return null;
+      nodes = collect();
+      const index = nodes.indexOf(el);
+      return {
+        index,
+        id: el.id || '',
+        screen: el.closest('.screen')?.id || current,
+        tag: el.tagName,
+        aria: el.getAttribute('aria-label') || '',
+        name: nameOf(el),
+        role: roleOf(el)
+      };
+    }
+
+    function findByFocusMeta(meta) {
+      if (!meta) return null;
+      if (meta.id) {
+        const byId = document.getElementById(meta.id);
+        if (byId) return byId;
+      }
+      nodes = collect();
+      if (typeof meta.index === 'number' && meta.index >= 0 && nodes[meta.index]) {
+        const cand = nodes[meta.index];
+        if (!meta.aria || cand.getAttribute('aria-label') === meta.aria || nameOf(cand) === meta.name) {
+          return cand;
+        }
+      }
+      if (meta.aria) {
+        const hit = nodes.find(el => el.getAttribute('aria-label') === meta.aria);
+        if (hit) return hit;
+      }
+      if (meta.name) {
+        const hit = nodes.find(el => nameOf(el) === meta.name);
+        if (hit) return hit;
+      }
+      return null;
+    }
+
+    function focusAt(i, { speech } = { speech: true }) {
+      nodes = collect();
+      if (!nodes.length) {
+        show('Empty', 'No readable items on this screen', { speech });
+        return;
+      }
+      idx = ((i % nodes.length) + nodes.length) % nodes.length;
+      const el = nodes[idx];
+      highlight(el);
+      try {
+        if (el.matches('button,a,input,textarea,[tabindex]')) el.focus({ preventScroll: true });
+      } catch (_) {}
+      show(roleOf(el), nameOf(el), { speech });
+    }
+
+    function dumpReadingOrder() {
+      nodes = collect();
+      logEl.innerHTML = '';
+      if (!nodes.length) {
+        show('Reading order', 'Nothing readable on this screen', { speech: true });
+        return;
+      }
+      nodes.forEach((el) => {
+        const line = document.createElement('div');
+        line.className = 'ro-item';
+        line.textContent = roleOf(el) + ' — ' + nameOf(el);
+        logEl.appendChild(line);
+      });
+      show('Reading order', 'Stepping through this screen.', { speech: true });
+      focusAt(0, { speech: false });
+    }
+
+    function setOn(v) {
+      on = v;
+      btnToggle.classList.toggle('on', on);
+      btnToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+      btnToggle.textContent = on ? 'Sim On' : 'Sim Off';
+      app.classList.toggle('vo-on', on);
+      if (!on) {
+        highlight(null);
+        window.speechSynthesis?.cancel();
+      } else {
+        show('Simulator', 'On. Reading order, then Next.', { speech: true });
+      }
+    }
+
+    btnToggle.addEventListener('click', () => setOn(!on));
+    btnSpeak.addEventListener('click', () => {
+      speakOn = !speakOn;
+      btnSpeak.classList.toggle('on', speakOn);
+      btnSpeak.setAttribute('aria-pressed', speakOn ? 'true' : 'false');
+      btnSpeak.textContent = speakOn ? 'Speak' : 'Muted';
+      if (!speakOn) window.speechSynthesis?.cancel();
+    });
+    btnNext.addEventListener('click', () => { if (on) focusAt(idx + 1); });
+    btnPrev.addEventListener('click', () => { if (on) focusAt(idx - 1); });
+    btnOrder?.addEventListener('click', () => { if (on) dumpReadingOrder(); });
+
+    document.addEventListener('focusin', (e) => {
+      if (!on) return;
+      if (e.target.closest('.vo-panel,.facil-wrap')) return;
+      if (!app.contains(e.target) && !modal.contains(e.target)) return;
+      nodes = collect();
+      const i = nodes.indexOf(e.target);
+      if (i >= 0) {
+        idx = i;
+        highlight(e.target);
+        show(roleOf(e.target), nameOf(e.target), { speech: true });
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!on) return;
+      if (e.target.closest('.vo-panel')) return;
+      if (e.key === 'ArrowRight' || (e.key === 'Tab' && !e.shiftKey && e.altKey)) {
+        e.preventDefault();
+        focusAt(idx + 1);
+      } else if (e.key === 'ArrowLeft' || (e.key === 'Tab' && e.shiftKey && e.altKey)) {
+        e.preventDefault();
+        focusAt(idx - 1);
+      }
+    });
+
+    window.__voSim = {
+      live(msg) {
+        if (!on) return;
+        show('Announcement', msg, { speech: true });
+      },
+      refresh() { nodes = collect(); },
+      collect,
+      highlight,
+      focusMeta,
+      findByFocusMeta,
+      nameOf,
+      roleOf
+    };
+
+    setOn(true);
+  })();
 
   // Init: unhide pattern — screens use both .on and hidden
   screens.forEach(s => { s.hidden = !s.classList.contains('on'); });
+  document.querySelectorAll('.screen h1').forEach(h => {
+    if (!h.hasAttribute('tabindex')) h.setAttribute('tabindex', '-1');
+  });
   mountNotifBells();
   renderActivity();
   go('s-identify', { silent: true });
+  syncChromeInert();
+  renderSaveBirds();
+
+  // Optional pre-study text size gate (low vision) — ?textsize=1 on main link
+  (function textSizeGate() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('textsize') !== '1') return;
+    if (params.get('role') === 'watch') return;
+    const gate = document.getElementById('textsize-gate');
+    if (!gate) return;
+    const NAMES = {
+      1: 'Default',
+      1.15: 'Comfortable',
+      1.3: 'Large',
+      1.45: 'Extra large',
+      1.6: 'Huge',
+      1.8: 'Maximum'
+    };
+    let scale = 1;
+    const KEY = 'merle-text-scale';
+    try {
+      const saved = parseFloat(localStorage.getItem(KEY) || '');
+      if (saved >= 1 && saved <= 1.8) scale = saved;
+    } catch (_) {}
+
+    function applyScale(v, { speak } = {}) {
+      scale = v;
+      const pct = Math.round(v * 100);
+      const name = NAMES[v] || `${pct}%`;
+      const card = document.getElementById('textsize-preview-card');
+      const lab = document.getElementById('textsize-preview-label');
+      const cur = document.getElementById('textsize-current');
+      if (card) card.style.setProperty('--preview-scale', String(v));
+      if (lab) lab.textContent = `Preview · ${pct}%`;
+      if (cur) cur.textContent = `Selected: ${name} (${pct}%)`;
+      gate.querySelectorAll('[data-scale]').forEach(btn => {
+        const match = Math.abs(parseFloat(btn.dataset.scale) - v) < 0.001;
+        btn.setAttribute('aria-pressed', String(match));
+      });
+      if (speak) announce(`${name}, ${pct} percent. Preview updated.`);
+    }
+
+    applyScale(scale);
+    gate.hidden = false;
+    document.getElementById('app')?.setAttribute('inert', '');
+    gate.querySelectorAll('[data-scale]').forEach(btn => {
+      btn.addEventListener('click', () => applyScale(parseFloat(btn.dataset.scale), { speak: true }));
+    });
+    document.getElementById('textsize-continue')?.addEventListener('click', () => {
+      try { localStorage.setItem(KEY, String(scale)); } catch (_) {}
+      document.documentElement.style.setProperty('--text-scale', String(scale));
+      gate.hidden = true;
+      document.getElementById('app')?.removeAttribute('inert');
+      const pct = Math.round(scale * 100);
+      announce(`Continuing with ${NAMES[scale] || 'custom'} text size, ${pct} percent.`);
+      const start = params.get('start');
+      if (start && document.getElementById(start)) go(start, { silent: true });
+      else announce('Identify. 2 birds ready to save.');
+    });
+  })();
+
+  if (new URLSearchParams(location.search).get('textsize') !== '1'
+    || new URLSearchParams(location.search).get('role') === 'watch') {
+    announce('Identify. 2 birds ready to save.');
+  }
+
+  // ── Study sessions: main participant link + facilitator watch/help ──
+  (function studySession() {
+    const params = new URLSearchParams(location.search);
+    const sessionId = (params.get('session') || params.get('room') || '')
+      .trim().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 32);
+    if (!sessionId) return;
+
+    const role = params.get('role') === 'watch' ? 'watch' : 'participant';
+    // Same-origin when using serve-study.mjs; else optional ?relay= or legacy :8769
+    const relay = (params.get('relay')
+      || (location.protocol.startsWith('http') ? location.origin : `${location.protocol}//${location.hostname}:8767`)
+    ).replace(/\/$/, '');
+    const appEl = document.getElementById('app');
+    const banner = document.getElementById('session-banner');
+
+    if (location.protocol === 'file:') {
+      banner.hidden = false;
+      banner.innerHTML = `<div class="session-banner-row"><span>Open via server for sync: <code>node tools/serve-study.mjs</code> then use study.html</span></div>`;
+      return;
+    }
+    let applying = false;
+    let lastJson = '';
+    let lastPresence = { participant: false, watch: false };
+    // Facilitator: follow = mirror participant; drive = clicks sync to their phone
+    let facilMode = 'follow'; // 'follow' | 'drive'
+    let lastRemoteTs = 0;
+
+    appEl.classList.add(role === 'watch' ? 'session-watch' : 'session-participant');
+
+    let remoteHl = null;
+
+    function clearRemoteHighlight() {
+      if (remoteHl) {
+        remoteHl.removeAttribute('data-remote-hl');
+        remoteHl = null;
+      }
+      document.querySelectorAll('[data-remote-hl]').forEach(el => el.removeAttribute('data-remote-hl'));
+    }
+
+    function showRemoteHighlight(meta) {
+      clearRemoteHighlight();
+      if (!meta || role !== 'watch' || facilMode !== 'follow') return;
+      const el = window.__voSim?.findByFocusMeta?.(meta);
+      if (!el) return;
+      remoteHl = el;
+      el.setAttribute('data-remote-hl', '1');
+      try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (_) {}
+    }
+
+    function snapshot(extra) {
+      const focusEl = document.activeElement;
+      let focus = '';
+      let focusTarget = null;
+      if (focusEl && appEl.contains(focusEl)) {
+        focus = focusEl.getAttribute('aria-label')
+          || (focusEl.innerText || focusEl.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 100);
+        focusTarget = window.__voSim?.focusMeta?.(focusEl) || null;
+      }
+      // Prefer VO highlight target if simulator stepped somewhere
+      const voHl = document.querySelector('[data-vo-hl]');
+      if (voHl && appEl.contains(voHl)) {
+        focusTarget = window.__voSim?.focusMeta?.(voHl) || focusTarget;
+        if (!focus) focus = window.__voSim?.nameOf?.(voHl) || focus;
+      }
+      return {
+        session: sessionId,
+        role,
+        driving: role === 'watch' && facilMode === 'drive',
+        screen: current,
+        label: LABELS[current] || current,
+        announce: (document.getElementById('live')?.textContent || '').trim(),
+        focus,
+        focusTarget,
+        voRole: document.getElementById('vo-role')?.textContent || '',
+        voSay: document.getElementById('vo-say')?.textContent || '',
+        ts: Date.now(),
+        ...extra
+      };
+    }
+
+    function statusLabel() {
+      const p = lastPresence.participant;
+      const w = lastPresence.watch;
+      if (role === 'watch') {
+        if (!p && !w) return { text: 'Waiting for connection…', cls: 'warn' };
+        if (!p) return { text: 'Waiting for participant…', cls: 'warn' };
+        return { text: 'Connected to participant', cls: 'on' };
+      }
+      if (!p && !w) return { text: 'Connecting…', cls: 'warn' };
+      if (w) return { text: 'Facilitator connected', cls: 'on' };
+      return { text: 'Live (facilitator not watching yet)', cls: 'warn' };
+    }
+
+    function bindBannerActions() {
+      banner.querySelector('#session-follow')?.addEventListener('click', () => {
+        facilMode = 'follow';
+        appEl.classList.add('session-follow');
+        appEl.classList.remove('session-drive');
+        showToast('Following participant');
+        renderBanner();
+        push({
+          driving: false,
+          guideAnnounce: 'You are leading again.'
+        });
+      });
+      banner.querySelector('#session-drive')?.addEventListener('click', () => {
+        facilMode = 'drive';
+        appEl.classList.add('session-drive');
+        appEl.classList.remove('session-follow');
+        clearRemoteHighlight();
+        showToast('You can click to guide their screen');
+        renderBanner();
+        push({
+          driving: true,
+          guideAnnounce: 'Facilitator took control. Your screen may move when they act.'
+        });
+      });
+      banner.querySelector('#session-copy-main')?.addEventListener('click', async () => {
+        const url = new URL(location.pathname, location.href);
+        url.searchParams.set('session', sessionId);
+        try { await navigator.clipboard.writeText(url.href); showToast('Main link copied'); }
+        catch { prompt('Main link', url.href); }
+      });
+      banner.querySelector('#session-copy-facil')?.addEventListener('click', async () => {
+        const url = new URL(location.pathname, location.href);
+        url.searchParams.set('session', sessionId);
+        url.searchParams.set('role', 'watch');
+        try { await navigator.clipboard.writeText(url.href); showToast('Facilitator link copied'); }
+        catch { prompt('Facilitator link', url.href); }
+      });
+    }
+
+    function renderBanner(state) {
+      if (!banner) return;
+      // Banner is facilitator-only — keep main session clean for participants
+      if (role !== 'watch') {
+        banner.hidden = true;
+        banner.innerHTML = '';
+        return;
+      }
+      banner.hidden = false;
+      const st = statusLabel();
+      const where = state?.label || LABELS[current] || current;
+      const focus = state?.focus ? ` · ${state.focus}` : '';
+      const modeHint = facilMode === 'drive'
+        ? 'Helping — your clicks update their phone'
+        : 'Following — mirrors their screen (click Take control to help)';
+      banner.innerHTML = `
+        <div class="session-banner-row">
+          <span><i class="dot ${st.cls}"></i><strong>${sessionId}</strong> · ${st.text}</span>
+          <a href="study.html">Hub</a>
+        </div>
+        <div class="session-banner-row">
+          <span>${where}${focus}</span>
+          <span class="actions">
+            <button type="button" class="chip ${facilMode === 'follow' ? 'active' : ''}" id="session-follow">Follow</button>
+            <button type="button" class="chip ${facilMode === 'drive' ? 'active danger' : ''}" id="session-drive">Take control</button>
+          </span>
+        </div>
+        <div class="session-banner-row"><span style="opacity:.8">${modeHint}</span></div>`;
+      appEl.classList.toggle('session-follow', facilMode === 'follow');
+      appEl.classList.toggle('session-drive', facilMode === 'drive');
+      bindBannerActions();
+    }
+
+    let lastGuideMsg = '';
+    function speakGuide(msg) {
+      if (!msg || msg === lastGuideMsg) return;
+      lastGuideMsg = msg;
+      // Direct live region — avoid __sessionPush feedback loop
+      const liveEl = document.getElementById('live');
+      if (liveEl) {
+        liveEl.textContent = '';
+        requestAnimationFrame(() => { liveEl.textContent = msg; });
+      }
+      if (window.__voSim) window.__voSim.live(msg);
+    }
+
+    async function push(extra = {}) {
+      if (applying) return;
+      // Participant always pushes; facilitator only when driving
+      if (role === 'watch' && facilMode !== 'drive') return;
+      const payload = snapshot(extra);
+      const json = JSON.stringify(payload);
+      // Skip no-op keepalives unless there's a guide announcement
+      if (json === lastJson && !extra.guideAnnounce) return;
+      lastJson = json;
+      try {
+        const res = await fetch(`${relay}/r/${encodeURIComponent(sessionId)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: json
+        });
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          if (data.presence) lastPresence = data.presence;
+          renderBanner(payload);
+        } else {
+          renderBanner(payload);
+        }
+      } catch (_) {
+        lastPresence = { participant: role === 'participant', watch: role === 'watch' };
+        renderBanner(payload);
+      }
+    }
+
+    function describeFacilitatorAction(el) {
+      if (!el) return 'Facilitator took an action';
+      const label = (el.getAttribute('aria-label')
+        || (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim()
+        || el.getAttribute('title')
+        || '').slice(0, 90);
+      const dest = el.dataset?.go;
+      if (dest) {
+        return `Facilitator opened ${LABELS[dest] || label || dest}`;
+      }
+      if (el.hasAttribute('data-close') || /close/i.test(label)) {
+        return 'Facilitator closed the current screen';
+      }
+      if (el.getAttribute('role') === 'switch' || el.classList.contains('switch')) {
+        // aria-checked flips on click — read after a tick in caller; here use next state if already flipped
+        const on = el.getAttribute('aria-checked') === 'true';
+        return `Facilitator turned ${label || 'a setting'} ${on ? 'on' : 'off'}`;
+      }
+      if (/^play\b/i.test(label)) {
+        return `Facilitator played ${label.replace(/^play\s+/i, '') || 'audio'}`;
+      }
+      if (/^share\b/i.test(label)) {
+        return `Facilitator shared ${label.replace(/^share\s+/i, '') || 'an item'}`;
+      }
+      if (/expand/i.test(label)) return 'Facilitator expanded a section';
+      if (/collapse/i.test(label)) return 'Facilitator collapsed a section';
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        return `Facilitator edited ${label || 'a text field'}`;
+      }
+      return `Facilitator activated ${label || 'a control'}`;
+    }
+
+    // When driving, announce the action taken (not merely what is focused)
+    document.addEventListener('click', (e) => {
+      if (role !== 'watch' || facilMode !== 'drive' || applying) return;
+      if (e.target.closest('#session-banner,.vo-panel,.facil-wrap')) return;
+      const el = e.target.closest('button,a,[role="button"],[role="switch"],input,textarea,.tab,.sess-row,.row');
+      if (!el || !appEl.contains(el)) return;
+      // After handlers update aria-checked / navigation
+      setTimeout(() => {
+        const msg = describeFacilitatorAction(el);
+        push({ guideAnnounce: msg, driving: true });
+      }, 40);
+    }, true);
+
+    function apply(state) {
+      if (!state) {
+        renderBanner(null);
+        return;
+      }
+      if (state.presence) lastPresence = state.presence;
+
+      // Ignore stale echoes of our own role
+      if (state.role === role && state.ts && state.ts < lastRemoteTs) {
+        renderBanner(state);
+        return;
+      }
+
+      const fromParticipant = state.role === 'participant';
+      const fromFacil = state.role === 'watch';
+      const fromFacilDrive = fromFacil && state.driving;
+
+      // Participant: always speak facilitator guide messages
+      if (role === 'participant' && fromFacil && state.guideAnnounce) {
+        speakGuide(state.guideAnnounce);
+      }
+
+      let shouldApply = false;
+      if (role === 'watch') {
+        shouldApply = facilMode === 'follow' && fromParticipant && !!state.screen;
+      } else {
+        shouldApply = fromFacilDrive && !!state.screen;
+      }
+
+      if (!shouldApply) {
+        if (role === 'watch' && facilMode === 'follow' && fromParticipant) {
+          showRemoteHighlight(state.focusTarget);
+          if (state.announce || state.focus) {
+            const say = document.getElementById('vo-say');
+            const roleEl = document.getElementById('vo-role');
+            if (say) say.textContent = state.focus || state.announce || '';
+            if (roleEl && state.focusTarget?.role) roleEl.textContent = state.focusTarget.role;
+          }
+        }
+        renderBanner(state);
+        return;
+      }
+
+      if (fromParticipant || fromFacilDrive) {
+        lastRemoteTs = Math.max(lastRemoteTs, state.ts || 0);
+      }
+
+      applying = true;
+      try {
+        const prevScreen = current;
+        if (state.screen && state.screen !== current && document.getElementById(state.screen)) {
+          go(state.screen, { silent: true });
+        }
+        if (role === 'watch') {
+          if (state.focusTarget?.role || state.announce || state.focus) {
+            const say = document.getElementById('vo-say');
+            const roleEl = document.getElementById('vo-role');
+            if (roleEl) roleEl.textContent = state.focusTarget?.role || 'Participant';
+            if (say) say.textContent = state.focus || state.focusTarget?.name || state.announce || '';
+          }
+          requestAnimationFrame(() => showRemoteHighlight(state.focusTarget));
+        }
+        if (role === 'participant' && fromFacilDrive && !state.guideAnnounce) {
+          if (state.screen !== prevScreen) {
+            speakGuide(`Facilitator opened ${state.label || state.screen}`);
+          }
+        }
+        renderBanner(state);
+      } finally {
+        applying = false;
+      }
+    }
+
+    window.__sessionPush = () => push();
+
+    // Live stream
+    const es = new EventSource(`${relay}/r/${encodeURIComponent(sessionId)}/stream?role=${role}`);
+    es.onmessage = (ev) => {
+      try { apply(JSON.parse(ev.data)); } catch (_) {}
+    };
+    es.onerror = () => {
+      lastPresence = { participant: false, watch: false };
+      renderBanner(null);
+    };
+
+    if (role === 'participant') {
+      const gate = document.getElementById('textsize-gate');
+      const waitingOnTextSize = params.get('textsize') === '1' && gate && !gate.hidden;
+      if (!waitingOnTextSize) {
+        const start = params.get('start');
+        if (start && document.getElementById(start) && start !== current) {
+          go(start, { silent: true });
+        }
+      }
+    }
+
+    renderBanner(null);
+    push();
+    setInterval(() => {
+      // keepalive presence even when state unchanged
+      fetch(`${relay}/r/${encodeURIComponent(sessionId)}/ping`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role })
+      }).then(r => r.json()).then(d => {
+        if (d.presence) {
+          lastPresence = d.presence;
+          renderBanner(snapshot());
+        }
+      }).catch(() => {});
+      if (role === 'participant' || facilMode === 'drive') push();
+    }, 2500);
+
+    document.addEventListener('focusin', () => {
+      if (!appEl.contains(document.activeElement)) return;
+      if (role === 'participant' || facilMode === 'drive') push();
+    });
+  })();
 })();
 </script>
 </body>

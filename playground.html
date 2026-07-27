@@ -412,9 +412,13 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);
 .gap-hint{color:#5b6b7a}
 .gap-hint b{color:#3f4d59}
 @media(max-width:900px){.proto-sidebar{flex:0 0 240px}}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;white-space:nowrap}
 </style>
 </head>
 <body>
+<header><h1 class="sr-only">Jiu Jiu · Overview</h1></header>
+<div class="sr-only" aria-live="polite" id="live"></div>
 
 <div class="app">
   <nav class="nav-rail" id="navRail" aria-label="Main navigation"></nav>
@@ -427,7 +431,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);
         <div class="mot-filter" id="motFilter"></div>
       </div>
       <div class="viz-stage" id="vizStage">
-        <canvas id="vizCanvas" aria-label="Sharing overview visualization"></canvas>
+        <canvas id="vizCanvas" aria-label="Sharing overview visualization" aria-hidden="true"></canvas>
         <div class="viz-tip" id="vizTip"></div>
       </div>
     </div>
@@ -444,7 +448,7 @@ body{background:var(--bg);font-family:var(--font);color:var(--text);
         <div class="idea-list" id="ideaList"></div>
       </aside>
       <div class="stage-area">
-        <div class="stage">
+        <main class="stage">
           <div class="stage-toolbar">
             <span class="stage-title" id="stageTitle">—</span>
           </div>
@@ -672,7 +676,7 @@ function renderSketchBoard(r,slot){
       <div class="cap">${esc(r.t)}</div></div>`;
   slot.innerHTML=`<div class="sketch-board">${photo}
     <div class="sticky"><div class="sticky-lbl">Note</div>
-      <textarea placeholder="Write a note…" oninput="onStickyInput('${r.id}',this)">${esc(r.note)}</textarea></div>
+      <textarea placeholder="Write a note…" oninput="onStickyInput('${r.id}',this)" aria-label="Write a note…">${esc(r.note)}</textarea></div>
   </div>`;
 }
 
@@ -1784,5 +1788,31 @@ renderCatTabs();renderIdeaList();
 resizeViz();renderOverview();renderFid();renderSkills();renderKit();renderApis();renderA11y();
 selectIdea(1);
 </script>
+
+</main>
+<script>
+(function enhancePrototypeA11y(){
+  document.querySelectorAll('.play, .back, .tap, [data-go], .s-close, .s-icon').forEach(el=>{
+    if(el.tagName==='BUTTON'||el.tagName==='A'||el.tagName==='INPUT') return;
+    if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
+    if(!el.getAttribute('role')) el.setAttribute('role','button');
+    if(!el.getAttribute('aria-label')){
+      if(el.classList.contains('play')) el.setAttribute('aria-label','Play bird recording');
+      else if(el.classList.contains('back')||el.classList.contains('s-close')) el.setAttribute('aria-label','Close');
+      else if((el.textContent||'').trim()) {}
+      else el.setAttribute('aria-label','Activate');
+    }
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter' && e.key!==' ') return;
+    const t=e.target;
+    if(!t||t.tagName==='BUTTON'||t.tagName==='A'||t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable) return;
+    if(t.getAttribute('role')==='button'||t.classList.contains('play')||t.classList.contains('back')||t.classList.contains('tap')){
+      e.preventDefault(); t.click();
+    }
+  });
+})();
+</script>
+
 </body>
 </html>

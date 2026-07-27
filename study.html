@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merle · study session hub</title>
+<style>
+  :root {
+    --bg: #f4f5f2;
+    --ink: #1a1a1a;
+    --muted: #6b6b6b;
+    --line: #e2e2de;
+    --green: #1f7a45;
+    --blue: #2f6fed;
+    --card: #fff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "SF Pro Text", system-ui, sans-serif;
+    background: var(--bg); color: var(--ink); line-height: 1.45;
+    padding: 32px 20px 64px;
+  }
+  main { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 1.75rem; letter-spacing: -.02em; margin: 0 0 8px; }
+  .lede { color: var(--muted); margin: 0 0 28px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px; margin-bottom: 16px;
+  }
+  h2 { font-size: 1rem; margin: 0 0 12px; }
+  label { display: block; font-size: .8rem; font-weight: 600; margin-bottom: 6px; }
+  input, select {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+    font: inherit; margin-bottom: 12px; background: #fff;
+  }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button, .btn {
+    appearance: none; border: 0; border-radius: 999px; padding: 10px 16px;
+    font: inherit; font-weight: 650; cursor: pointer; background: var(--green); color: #fff;
+    text-decoration: none; display: inline-flex; align-items: center;
+  }
+  button.secondary, .btn.secondary { background: #ecece8; color: var(--ink); }
+  button.blue, .btn.blue { background: var(--blue); }
+  .links { display: grid; gap: 12px; margin-top: 12px; }
+  .link-block {
+    border-radius: 12px; padding: 14px; font-size: .85rem; border: 1px solid var(--line);
+  }
+  .link-block.main { background: #eef8f1; border-color: #cfe8d7; }
+  .link-block.facil { background: #eef2fb; border-color: #cfd9f5; }
+  .link-block .tag {
+    display: inline-block; font-size: .7rem; font-weight: 700; letter-spacing: .04em;
+    text-transform: uppercase; margin-bottom: 6px; color: var(--muted);
+  }
+  .link-block.main .tag { color: var(--green); }
+  .link-block.facil .tag { color: var(--blue); }
+  .link-block strong { display: block; font-size: 1rem; margin-bottom: 4px; }
+  .link-block p { margin: 0 0 8px; color: var(--muted); font-size: .82rem; }
+  .link-block code {
+    display: block; word-break: break-all; font-size: .78rem; color: #333;
+    background: rgba(255,255,255,.7); padding: 8px 10px; border-radius: 8px; margin-bottom: 10px;
+  }
+  .steps { margin: 0; padding-left: 1.2em; color: var(--muted); font-size: .9rem; }
+  .steps li { margin-bottom: 8px; }
+  .saved { list-style: none; margin: 0; padding: 0; }
+  .saved li {
+    display: flex; justify-content: space-between; gap: 12px; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--line); font-size: .9rem;
+  }
+  .saved li:last-child { border-bottom: 0; }
+  .muted { color: var(--muted); font-size: .85rem; }
+  .status { font-size: .85rem; margin-top: 8px; }
+  .status.ok { color: var(--green); }
+  .status.bad { color: #a33; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; background: #bbb; }
+  .dot.on { background: var(--green); }
+  pre { background:#f7f7f4;padding:12px;border-radius:10px;overflow:auto;font-size:.85rem;margin:0 0 10px }
+  .warn-box {
+    background: #fff6e8; border: 1px solid #f0d9a8; border-radius: 12px; padding: 12px 14px;
+    margin-bottom: 16px; font-size: .9rem;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Study session hub</h1>
+  <p class="lede">Main link for them. Facilitator link for you — follow their screen, see connection, take control to help.</p>
+
+  <div class="warn-box" id="file-warn" hidden>
+    You’re opening this as a file. Sync won’t work. In Terminal run:<br>
+    <code>node tools/serve-study.mjs</code>
+    then open the URL it prints.
+  </div>
+
+  <div class="card">
+    <h2>1. Start the server (required for sync)</h2>
+    <p class="muted">One command — site + live sync together:</p>
+    <pre>node tools/serve-study.mjs</pre>
+    <p class="status" id="relay-status">Checking…</p>
+  </div>
+
+  <div class="card">
+    <h2>2. Create a session</h2>
+    <label for="name">Participant name or code</label>
+    <input id="name" placeholder="e.g. maya, p3" autocomplete="off">
+    <label for="start">Start screen</label>
+    <select id="start">
+      <option value="s-identify">Identify (default)</option>
+      <option value="s-save">Save Session</option>
+      <option value="s-history-date">History · Date</option>
+      <option value="s-history-species">History · Species</option>
+      <option value="s-history-location">History · Location</option>
+    </select>
+    <label class="check" for="textsize" style="display:flex;gap:10px;align-items:flex-start;font-weight:500;margin:4px 0 14px;cursor:pointer">
+      <input type="checkbox" id="textsize" style="width:auto;margin:3px 0 0">
+      <span>Offer text size choice before start <span class="muted">(recommended for low vision)</span></span>
+    </label>
+    <div class="row">
+      <button type="button" id="create">Create both links</button>
+      <button type="button" class="secondary" id="random">Random code</button>
+    </div>
+    <div class="links" id="links" hidden>
+      <div class="link-block main">
+        <span class="tag">Main link</span>
+        <strong>Participant</strong>
+        <p>Send this to their phone.</p>
+        <code id="p-url"></code>
+        <div class="row">
+          <button type="button" class="secondary" data-copy="p-url">Copy main link</button>
+          <a class="btn secondary" id="p-open" target="_blank" rel="noopener">Open main</a>
+        </div>
+      </div>
+      <div class="link-block facil">
+        <span class="tag">Facilitator link</span>
+        <strong>You</strong>
+        <p>Follow them live. Use Take control to click on their behalf.</p>
+        <code id="w-url"></code>
+        <div class="row">
+          <button type="button" class="secondary" data-copy="w-url">Copy facilitator link</button>
+          <a class="btn blue" id="w-open" target="_blank" rel="noopener">Open facilitator</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li>Run <code>node tools/serve-study.mjs</code> (not a file:// open).</li>
+      <li>Create a session → send <strong>main link</strong> to them (use the LAN URL on phone).</li>
+      <li>Open <strong>facilitator link</strong> on your laptop — wait for “Connected”.</li>
+      <li><strong>Follow</strong> tracks their screen. <strong>Take control</strong> lets you click to move theirs — they hear the action taken.</li>
+      <li>Optional: enable text size choice for low vision before the prototype starts.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Saved sessions</h2>
+    <ul class="saved" id="saved"></ul>
+    <p class="muted" id="saved-empty">No sessions yet.</p>
+  </div>
+</main>
+<script>
+(function () {
+  if (location.protocol === 'file:') {
+    document.getElementById('file-warn').hidden = false;
+  }
+
+  const KEY = 'merle-study-sessions';
+  const nameEl = document.getElementById('name');
+  const startEl = document.getElementById('start');
+  const links = document.getElementById('links');
+  const relayStatus = document.getElementById('relay-status');
+
+  function slug(s) {
+    return String(s || '').trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-|-$/g, '').slice(0, 32);
+  }
+  function load() {
+    try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; }
+  }
+  function save(list) {
+    localStorage.setItem(KEY, JSON.stringify(list.slice(0, 24)));
+  }
+
+  function urlsFor(id) {
+    const base = new URL('merlin-hifi.html', location.href);
+    const p = new URL(base);
+    p.searchParams.set('session', id);
+    const w = new URL(base);
+    w.searchParams.set('session', id);
+    w.searchParams.set('role', 'watch');
+    if (startEl.value && startEl.value !== 's-identify') {
+      p.searchParams.set('start', startEl.value);
+      w.searchParams.set('start', startEl.value);
+    }
+    if (document.getElementById('textsize')?.checked) {
+      p.searchParams.set('textsize', '1');
+    }
+    return { participant: p.href, watch: w.href };
+  }
+
+  function showLinks(id) {
+    const u = urlsFor(id);
+    document.getElementById('p-url').textContent = u.participant;
+    document.getElementById('w-url').textContent = u.watch;
+    document.getElementById('p-open').href = u.participant;
+    document.getElementById('w-open').href = u.watch;
+    links.hidden = false;
+  }
+
+  function renderSaved() {
+    const list = load();
+    const ul = document.getElementById('saved');
+    const empty = document.getElementById('saved-empty');
+    ul.innerHTML = '';
+    empty.hidden = list.length > 0;
+    list.forEach((s) => {
+      const li = document.createElement('li');
+      const u = urlsFor(s.id);
+      li.innerHTML = `<span><strong>${s.id}</strong> <span class="muted">${new Date(s.ts).toLocaleString()}</span></span>`;
+      const actions = document.createElement('div');
+      actions.className = 'row';
+      const main = document.createElement('button');
+      main.type = 'button';
+      main.className = 'secondary';
+      main.textContent = 'Copy main';
+      main.addEventListener('click', () => navigator.clipboard.writeText(u.participant));
+      const watch = document.createElement('a');
+      watch.className = 'btn blue';
+      watch.textContent = 'Facilitator';
+      watch.href = u.watch;
+      watch.target = '_blank';
+      actions.append(main, watch);
+      li.append(actions);
+      ul.append(li);
+    });
+  }
+
+  document.getElementById('create').addEventListener('click', () => {
+    const id = slug(nameEl.value);
+    if (!id) { nameEl.focus(); return; }
+    const list = load().filter((s) => s.id !== id);
+    list.unshift({ id, ts: Date.now(), start: startEl.value, textsize: !!document.getElementById('textsize')?.checked });
+    save(list);
+    showLinks(id);
+    renderSaved();
+  });
+  document.getElementById('random').addEventListener('click', () => {
+    nameEl.value = 'p-' + Math.random().toString(36).slice(2, 7);
+  });
+  document.querySelectorAll('[data-copy]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const text = document.getElementById(btn.dataset.copy)?.textContent || '';
+      try {
+        await navigator.clipboard.writeText(text);
+        const prev = btn.textContent;
+        btn.textContent = 'Copied';
+        setTimeout(() => { btn.textContent = prev; }, 1200);
+      } catch { prompt('Copy', text); }
+    });
+  });
+
+  async function checkRelay() {
+    if (location.protocol === 'file:') {
+      relayStatus.className = 'status bad';
+      relayStatus.textContent = 'Not on server — run node tools/serve-study.mjs';
+      return;
+    }
+    try {
+      const res = await fetch('/api/health', { cache: 'no-store' });
+      if (!res.ok) throw new Error('bad');
+      const data = await res.json();
+      const rooms = (data.rooms || []).map((r) => {
+        const live = r.presence?.participant || r.presence?.watch;
+        return `${r.id}${live ? ' ●' : ''}`;
+      });
+      relayStatus.className = 'status ok';
+      relayStatus.innerHTML = `<span class="dot on"></span>Server ready` +
+        (rooms.length ? ` · ${rooms.join(', ')}` : '');
+    } catch {
+      relayStatus.className = 'status bad';
+      relayStatus.textContent = 'Server missing sync — use: node tools/serve-study.mjs';
+    }
+  }
+
+  renderSaved();
+  checkRelay();
+  setInterval(checkRelay, 4000);
+})();
+</script>
+</body>
+</html>

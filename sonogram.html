@@ -129,9 +129,15 @@ html,body{
   .story{width:100vw;height:100svh;border-radius:0}
   .page-top{display:none}
 }
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;white-space:nowrap}
+
+button.s-close,button.s-icon,button.s-reply{font:inherit;color:inherit;background:transparent;border:none;padding:0;cursor:pointer}
 </style>
 </head>
 <body>
+<header><h1 class="sr-only">Live Sonogram — Birds Beyond Sight</h1></header>
+<div class="sr-only" aria-live="polite" id="live"></div>
 
 <div class="page-top">
   <a href="prototypes.html">← back to prototypes</a>
@@ -140,8 +146,9 @@ html,body{
 <div class="stories">
 
   <!-- ── Story 1: Western Gull ── -->
+  <main>
   <div class="story" id="story-gull">
-    <canvas id="c-gull"></canvas>
+    <canvas id="c-gull" aria-hidden="true"></canvas>
 
     <div class="s-progress">
       <div class="s-bar"><div class="s-fill" style="width:100%"></div></div>
@@ -155,27 +162,27 @@ html,body{
         <span class="s-name">jiu_jiu_birds</span>
         <span class="s-time">now</span>
       </div>
-      <div class="s-close">✕</div>
+      <button type="button" class="s-close" aria-label="Close story">✕</button>
     </div>
 
     <div class="s-bird">
-      <div class="s-bird-name">Western Gull</div>
+      <h1 class="s-bird-name">Western Gull</h1>
       <div class="s-bird-sci">Larus occidentalis</div>
       <div class="s-bird-loc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Elliott Bay, Seattle</div>
     </div>
 
-    <div class="s-sono-label" id="slabel-gull"></div>
+    <div class="s-sono-label" id="slabel-gull" aria-live="polite"></div>
 
     <div class="s-actions">
-      <div class="s-reply">Send message…</div>
-      <div class="s-icon">♡</div>
-      <div class="s-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+      <button type="button" class="s-reply" aria-label="Send message">Send message…</button>
+      <button type="button" class="s-icon" aria-label="Like">♡</button>
+      <button type="button" class="s-icon" aria-label="Send"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
     </div>
   </div>
 
   <!-- ── Story 2: Red-winged Blackbird ── -->
   <div class="story" id="story-blackbird">
-    <canvas id="c-blackbird"></canvas>
+    <canvas id="c-blackbird" aria-hidden="true"></canvas>
 
     <div class="s-progress">
       <div class="s-bar"><div class="s-fill" style="width:100%"></div></div>
@@ -189,7 +196,7 @@ html,body{
         <span class="s-name">jiu_jiu_birds</span>
         <span class="s-time">now</span>
       </div>
-      <div class="s-close">✕</div>
+      <button type="button" class="s-close" aria-label="Close story">✕</button>
     </div>
 
     <div class="s-bird">
@@ -201,14 +208,15 @@ html,body{
     <div class="s-sono-label" id="slabel-bb"></div>
 
     <div class="s-actions">
-      <div class="s-reply">Send message…</div>
-      <div class="s-icon">♡</div>
-      <div class="s-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+      <button type="button" class="s-reply" aria-label="Send message">Send message…</button>
+      <button type="button" class="s-icon" aria-label="Like">♡</button>
+      <button type="button" class="s-icon" aria-label="Send"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
     </div>
   </div>
 
 </div>
 
+</main>
 <script>
 // ─── Noise utilities ──────────────────────────────────────────────────
 function h21(x,y){const n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n);}
@@ -573,5 +581,30 @@ window.addEventListener('resize',()=>{resize();});
 resize();
 requestAnimationFrame(tick);
 </script>
+
+<script>
+(function enhancePrototypeA11y(){
+  document.querySelectorAll('.play, .back, .tap, [data-go], .s-close, .s-icon').forEach(el=>{
+    if(el.tagName==='BUTTON'||el.tagName==='A'||el.tagName==='INPUT') return;
+    if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','0');
+    if(!el.getAttribute('role')) el.setAttribute('role','button');
+    if(!el.getAttribute('aria-label')){
+      if(el.classList.contains('play')) el.setAttribute('aria-label','Play bird recording');
+      else if(el.classList.contains('back')||el.classList.contains('s-close')) el.setAttribute('aria-label','Close');
+      else if((el.textContent||'').trim()) {}
+      else el.setAttribute('aria-label','Activate');
+    }
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Enter' && e.key!==' ') return;
+    const t=e.target;
+    if(!t||t.tagName==='BUTTON'||t.tagName==='A'||t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable) return;
+    if(t.getAttribute('role')==='button'||t.classList.contains('play')||t.classList.contains('back')||t.classList.contains('tap')){
+      e.preventDefault(); t.click();
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
