@@ -459,6 +459,11 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
   border-radius:4px;padding:14px 16px;margin-bottom:16px;
   width:100%;min-height:64px;text-align:left;position:relative;overflow:hidden;
 }
+.card.green .mix-play{
+  flex:none;border:none;background:transparent;padding:0;margin:0;
+  cursor:pointer;color:inherit;border-radius:50%;line-height:0;
+}
+.card.green .mix-play:focus-visible{outline:3px solid #fff;outline-offset:3px}
 .card.green .mix-progress{
   position:absolute;left:0;right:0;bottom:0;height:3px;
   background:rgba(255,255,255,.22);
@@ -480,6 +485,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
 .card.green .play-lg::after{
   content:"";border-left:11px solid var(--green);border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:3px;
 }
+.card.green .mix-play.playing .play-lg::after,
 .card.green.playing .play-lg::after{
   border:none;width:12px;height:12px;margin:0;
   background:linear-gradient(90deg,var(--green) 0 35%,transparent 35% 65%,var(--green) 65%);
@@ -706,7 +712,12 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
   word-break:break-word;resize:none;min-height:2.6em;
 }
 .field:focus{border-color:var(--green);background:#fff}
-.field-hint{font-size:.6875rem;color:var(--muted);margin:4px 0 0;font-weight:500}
+.field-label{
+  display:block;font-size:.6875rem;font-weight:600;color:var(--muted);
+  margin:0 0 6px;letter-spacing:.01em;
+}
+.title-field{margin:0 0 2px}
+input.field{min-height:0;resize:none}
 .meta-block{margin:4px 0 16px}
 .meta-block .meta{margin:0}
 .notes{
@@ -798,19 +809,34 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
   font-size:.8125rem;line-height:1.45;color:var(--ink);margin:12px 0 8px;
 }
 #s-save{
-  padding-bottom:calc(132px + var(--safe-b));
+  padding-bottom:calc(28px + var(--safe-b));
 }
-#s-save .sticky-cta{
-  position:absolute;
-  left:0;right:0;
-  bottom:calc(62px + var(--safe-b));
-  margin:0;
-  padding:14px var(--pad) 10px;
-  background:linear-gradient(180deg,rgba(255,255,255,0),var(--bg) 40%);
-  z-index:6;
-  pointer-events:none;
+#s-save .save-cta{
+  margin:20px 0 8px;
+  padding:0;
 }
-#s-save .sticky-cta .btn{pointer-events:auto}
+#s-save .save-cta .btn{width:100%}
+.bird-play{
+  flex:none;width:40px;height:40px;border-radius:50%;border:none;
+  background:var(--green-soft);color:var(--green-dark);
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.bird-play:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.bird-play .play-sm{
+  width:0;height:0;border-style:solid;
+  border-width:6px 0 6px 10px;
+  border-color:transparent transparent transparent var(--green-dark);
+  margin-left:2px;
+}
+.bird-play.playing .play-sm{
+  width:10px;height:10px;border:none;margin:0;
+  background:linear-gradient(90deg,var(--green-dark) 0 35%,transparent 35% 65%,var(--green-dark) 65%);
+}
+.sess-bird-head{gap:10px;padding:8px 0;min-height:0}
+.sess-bird-head > .grow-btn{
+  flex:1;min-width:0;padding:8px 0;min-height:56px;gap:12px;
+}
+.share-row{align-items:flex-start;padding:14px 0}
 .sess-photos{
   display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px;
 }
@@ -1316,7 +1342,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
           No suggestions for Union Bay<br>
           <a href="#" id="why-link">Why isn’t Merlin identifying my bird?</a>
         </p>
-        <ul class="list" id="detect-list" aria-labelledby="detect-heading" aria-live="polite">
+        <ul class="list" id="detect-list" aria-labelledby="detect-heading">
           <li>
             <button type="button" class="row bird" data-id-bird="house-finch" aria-label="House Finch, likely">
               <img class="thumb" src="assets/birds/house-finch.jpg" alt="" aria-hidden="true">
@@ -1357,9 +1383,10 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
         </button>
       </header>
 
-      <label class="sr-only" for="session-title">Session title</label>
-      <textarea class="field" id="session-title" rows="2">Saturday Morning at Union Bay</textarea>
-      <p class="field-hint">Tap to edit title</p>
+      <div class="title-field">
+        <label class="field-label" for="session-title">Session title</label>
+        <input type="text" class="field" id="session-title" value="Saturday Morning at Union Bay" autocomplete="off" enterkeyhint="done">
+      </div>
 
       <div class="meta-block">
         <p class="meta" id="save-meta">July 25, 2026 · Union Bay, Seattle · 64° F, Clear</p>
@@ -1374,17 +1401,21 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
         <button type="button" class="add-person" id="add-friends" aria-label="Add friends who joined this outing">+</button>
       </div>
 
-      <div class="toggle-row" style="margin-top:0" role="group" aria-labelledby="share-label">
+      <div class="section-row share-row" style="margin-top:0" role="group" aria-labelledby="share-label">
         <div class="avatar-stack" id="shared-people" aria-hidden="true"></div>
         <div class="who-copy" style="flex:1">
-          <h2 class="label" id="share-label">Share recordings</h2>
+          <h2 class="label" id="share-label">Who can hear</h2>
           <div class="sub" id="share-people-names">Lucy and Joe</div>
           <div class="sub" id="share-location-label">Shared location · Union Bay</div>
           <p class="share-privacy" id="share-privacy">Audio and place are shared with them. Notes and photos stay private to you.</p>
           <button type="button" class="share-edit-who" id="edit-share-people">Edit who can hear</button>
         </div>
-        <button type="button" class="switch" id="share-toggle" role="switch" aria-checked="true" aria-labelledby="share-label share-people-names" aria-describedby="share-location-label share-privacy"></button>
       </div>
+
+      <h2 class="save-birds-label">Birds</h2>
+      <ul class="list" id="save-species-list" aria-label="Species in this session">
+        <!-- filled by renderSaveBirds() — static rows with recordings always open -->
+      </ul>
 
       <div class="save-private" id="details-h">
         <div class="month-row" style="margin:0 0 8px">
@@ -1394,8 +1425,6 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
             Only you can see these
           </p>
         </div>
-        <label class="sr-only" for="field-notes">Field notes</label>
-        <textarea class="notes" id="field-notes" placeholder="Add field notes"></textarea>
         <div class="photos" id="session-photos" role="group" aria-label="Session photos">
           <button type="button" class="add-photo-btn" id="add-photo" aria-label="Add photos to this session">
             <span class="plus" aria-hidden="true">+</span>
@@ -1403,14 +1432,11 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
           </button>
         </div>
         <input type="file" id="photo-input" accept="image/*" multiple hidden aria-label="Choose session photos">
+        <label class="field-label" for="field-notes" style="margin-top:12px">Field notes</label>
+        <textarea class="notes" id="field-notes" placeholder="Add field notes"></textarea>
       </div>
 
-      <h2 class="save-birds-label">Birds</h2>
-      <ul class="list" id="save-species-list" aria-label="Species in this session">
-        <!-- filled by renderSaveBirds() — static rows with recordings always open -->
-      </ul>
-
-      <div class="sticky-cta">
+      <div class="save-cta">
         <button type="button" class="btn btn-primary" id="save-session">Save Session</button>
       </div>
     </section>
@@ -1438,14 +1464,16 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
 
       <p class="eyebrow" id="summer-label">This time last summer</p>
       <div class="mix-card-wrap">
-        <button type="button" class="card green" id="summer-mix" aria-label="Play Chorus of July 21, 2025. This time last summer.">
-          <span class="play-lg" aria-hidden="true"></span>
+        <div class="card green" role="group" aria-label="Chorus of July 21, 2025. This time last summer.">
+          <button type="button" class="mix-play" id="summer-mix" aria-label="Play Chorus of July 21, 2025">
+            <span class="play-lg" aria-hidden="true"></span>
+          </button>
           <span class="grow">
             <span class="mix-title">Chorus of July 21, 2025</span>
           </span>
           <span class="mix-time" id="summer-mix-time" hidden>0:00</span>
           <span class="mix-progress" aria-hidden="true"><i id="summer-mix-bar"></i></span>
-        </button>
+        </div>
         <button type="button" class="mix-share" aria-label="Share Chorus of July 21, 2025">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
         </button>
@@ -1592,12 +1620,14 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
       </header>
 
       <div class="mix-card-wrap">
-        <button type="button" class="card green" id="species-mix" aria-label="Play your species mix">
-          <span class="play-lg" aria-hidden="true"></span>
+        <div class="card green" role="group" aria-label="Your species mix">
+          <button type="button" class="mix-play" id="species-mix" aria-label="Play your species mix">
+            <span class="play-lg" aria-hidden="true"></span>
+          </button>
           <span class="grow"><span class="mix-title" id="species-mix-title">Your Mix</span></span>
           <span class="mix-time" id="species-mix-time" hidden>0:00</span>
           <span class="mix-progress" aria-hidden="true"><i id="species-mix-bar"></i></span>
-        </button>
+        </div>
         <button type="button" class="mix-share" aria-label="Share species mix">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
         </button>
@@ -1665,12 +1695,14 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
       </header>
 
       <div class="mix-card-wrap">
-        <button type="button" class="card green" id="park-mix" aria-label="Play your location mix">
-          <span class="play-lg" aria-hidden="true"></span>
+        <div class="card green" role="group" aria-label="Your location mix">
+          <button type="button" class="mix-play" id="park-mix" aria-label="Play your location mix">
+            <span class="play-lg" aria-hidden="true"></span>
+          </button>
           <span class="grow"><span class="mix-title" id="park-mix-title">Your Mix</span></span>
           <span class="mix-time" id="park-mix-time" hidden>0:00</span>
           <span class="mix-progress" aria-hidden="true"><i id="park-mix-bar"></i></span>
-        </button>
+        </div>
         <button type="button" class="mix-share" aria-label="Share location mix">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3v12M8 6l4-3.5L16 6"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>
         </button>
@@ -1800,7 +1832,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     's-species-calendar', 's-species-info', 's-location-detail', 's-activity'
   ]);
   const LABELS = {
-    's-identify': 'Identify and log birds',
+    's-identify': 'Identify',
     's-history-date': 'History by date',
     's-history-species': 'History by species',
     's-history-location': 'History by location. Map view of recording places around Seattle, with a locations list',
@@ -1815,7 +1847,15 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     's-activity': 'Activity'
   };
 
+  // Prefer one channel on iOS VoiceOver: aria-live only (no parallel speechSynthesis).
+  function voSimSpeechAllowed() {
+    const panel = document.getElementById('vo-panel');
+    if (!panel) return false;
+    try { return getComputedStyle(panel).display !== 'none'; } catch (_) { return false; }
+  }
+
   function announce(msg) {
+    if (!msg) return;
     live.textContent = '';
     requestAnimationFrame(() => { live.textContent = msg; });
     if (window.__voSim) window.__voSim.live(msg);
@@ -2000,12 +2040,14 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     });
 
     if (!silent) {
-      // Screen content first (matches visual). Main tabs come last in swipe order.
-      announce(LABELS[id] || id);
+      // Focus the heading so VoiceOver reads it once. Avoid also aria-live-ing the
+      // same label (that double-speaks on iOS). Use announce() only when there is no h1.
       const t = document.querySelector('#' + id + ' h1');
       if (t) {
         if (!t.hasAttribute('tabindex')) t.setAttribute('tabindex', '-1');
         try { t.focus({ preventScroll: true }); } catch (_) {}
+      } else {
+        announce(LABELS[id] || id);
       }
     }
     const scr = document.getElementById(id);
@@ -2174,17 +2216,6 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     if (files.length) announce(`${files.length} photo${files.length > 1 ? 's' : ''} added`);
   });
 
-  document.getElementById('share-toggle').addEventListener('click', function () {
-    const on = this.getAttribute('aria-checked') !== 'true';
-    this.setAttribute('aria-checked', on ? 'true' : 'false');
-    document.getElementById('s-save').classList.toggle('share-off', !on);
-    renderPeople();
-    const names = document.getElementById('share-people-names')?.textContent || 'friends';
-    announce(on
-      ? `Share recordings on with ${names}. Audio and place are shared. Notes and photos stay private.`
-      : 'Share recordings off. Recordings stay private.');
-  });
-
   document.getElementById('why-link').addEventListener('click', (e) => {
     e.preventDefault();
     announce('Help: Merlin needs a clear recording of a bird singing nearby. Move closer or wait for a louder call.');
@@ -2209,19 +2240,68 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     </li>`;
   }
 
+  function identifiedBirdNames() {
+    return [...detectList.querySelectorAll('.nm')].map(el => el.textContent.trim()).filter(Boolean);
+  }
+
+  function formatBirdList(names) {
+    if (!names.length) return '';
+    if (names.length === 1) return names[0];
+    if (names.length === 2) return `${names[0]} and ${names[1]}`;
+    return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+  }
+
+  /** Keep Identify overview (heading + tab + LABELS) naming the birds for VoiceOver. */
+  function syncIdentifyOverview() {
+    const names = identifiedBirdNames();
+    const count = names.length;
+    const place = '9–11am Union Bay';
+    const heading = document.getElementById('id-heading');
+    const idTab = tabbar?.querySelector('[data-go="s-identify"]');
+    const birdsPhrase = formatBirdList(names);
+
+    if (count && identifyScreen.classList.contains('ready-to-save')) {
+      idMeta.textContent = `${count} ${count === 1 ? 'bird' : 'birds'} · ready to save`;
+      const overview = `${place}. ${birdsPhrase} identified. Ready to save.`;
+      if (heading) heading.setAttribute('aria-label', overview);
+      LABELS['s-identify'] = `Identify. ${birdsPhrase} identified.`;
+      if (idTab) idTab.setAttribute('aria-label', `Identify, ${birdsPhrase}`);
+    } else if (count && listening) {
+      idMeta.textContent = `Listening… · ${count} ${count === 1 ? 'bird' : 'birds'}`;
+      if (heading) heading.setAttribute('aria-label', `${place}. Listening. ${birdsPhrase} identified so far.`);
+      LABELS['s-identify'] = `Identify. Listening. ${birdsPhrase} so far.`;
+      if (idTab) idTab.setAttribute('aria-label', 'Identify');
+    } else if (listening) {
+      idMeta.textContent = 'Listening… · 0 birds';
+      if (heading) heading.setAttribute('aria-label', `${place}. Listening for birds.`);
+      LABELS['s-identify'] = 'Identify. Listening for birds.';
+      if (idTab) idTab.setAttribute('aria-label', 'Identify');
+    } else if (count) {
+      idMeta.textContent = `${count} ${count === 1 ? 'bird' : 'birds'}`;
+      if (heading) heading.setAttribute('aria-label', `${place}. ${birdsPhrase} identified.`);
+      LABELS['s-identify'] = `Identify. ${birdsPhrase} identified.`;
+      if (idTab) idTab.setAttribute('aria-label', `Identify, ${birdsPhrase}`);
+    } else {
+      idMeta.textContent = '0 birds';
+      if (heading) heading.setAttribute('aria-label', `${place}. No birds identified yet.`);
+      LABELS['s-identify'] = 'Identify';
+      if (idTab) idTab.setAttribute('aria-label', 'Identify');
+    }
+  }
+
   function setReadyToSave(on) {
     identifyScreen.classList.toggle('ready-to-save', on);
     const count = detectList.children.length;
     if (on && count) {
-      idMeta.textContent = `${count} ${count === 1 ? 'bird' : 'birds'} · ready to save`;
       saveTopBtn.disabled = false;
       saveTopBtn.hidden = false;
       sonoLive.setAttribute('aria-hidden', 'true');
       sonoLive.removeAttribute('aria-label');
       mic.setAttribute('aria-label', 'Start listening for more birds');
+      syncIdentifyOverview();
     } else if (!listening) {
-      idMeta.textContent = count ? `${count} ${count === 1 ? 'bird' : 'birds'}` : '0 birds';
       saveTopBtn.disabled = !count;
+      syncIdentifyOverview();
     }
   }
 
@@ -2234,9 +2314,9 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     if (count) setReadyToSave(true);
     else {
       mic.setAttribute('aria-label', 'Start listening');
-      idMeta.textContent = '0 birds';
       sonoLive.setAttribute('aria-hidden', 'true');
       saveTopBtn.disabled = true;
+      syncIdentifyOverview();
     }
   }
 
@@ -2249,12 +2329,12 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
       idEmpty.hidden = true;
       detectList.hidden = false;
       detectList.innerHTML = '';
-      idMeta.textContent = 'Listening… · 0 birds';
       sonoLive.removeAttribute('aria-hidden');
       sonoLive.setAttribute('role', 'img');
       sonoLive.setAttribute('aria-label', 'Live Sound ID spectrogram. Listening.');
       saveTopBtn.disabled = true;
       mic.setAttribute('aria-label', 'Stop listening');
+      syncIdentifyOverview();
       clearInterval(mic._timer);
       setTimeout(() => {
         if (!listening) return;
@@ -2262,12 +2342,10 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
           birdRowHtml('house-finch', 'House Finch', 'House Finch, likely'),
           birdRowHtml('spotted-towhee', 'Spotted Towhee', 'Spotted Towhee, likely')
         ].join('');
-        idMeta.textContent = 'Listening… · 2 birds';
-        sonoLive.setAttribute('aria-label', 'Live Sound ID spectrogram. House Finch and Spotted Towhee detected.');
-        announce('House Finch and Spotted Towhee detected.');
-        // Auto-finish listening so the next action is Save (matches study start state)
+        // One announcement only — list is not aria-live (avoids VO double-speak)
         stopListening();
-        announce('2 birds identified. Save session when ready.');
+        announce('House Finch and Spotted Towhee identified. Save session when ready.');
+        syncIdentifyOverview();
         if (window.__voSim) window.__voSim.refresh();
       }, 1800);
       drawSono(true);
@@ -2286,8 +2364,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     e.preventDefault();
     detectList.querySelectorAll('[data-id-bird]').forEach(b => b.removeAttribute('aria-current'));
     bird.setAttribute('aria-current', 'true');
-    const name = bird.querySelector('.nm')?.textContent || 'Bird';
-    announce(`${name} selected`);
+    // Skip aria-live here — VoiceOver already speaks the control on activate
   });
 
   // Audio playback (History / session clips — not Identify)
@@ -2306,7 +2383,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
   async function playSrc(pathOrKey, btn) {
     if (audio) {
       audio.pause();
-      document.querySelectorAll('.play-sm.playing, .card.green.playing, .spectro.playing').forEach(el => el.classList.remove('playing'));
+      document.querySelectorAll('.play-sm.playing, .mix-play.playing, .card.green.playing, .spectro.playing, .bird-play.playing').forEach(el => el.classList.remove('playing'));
       if (audio._btn === btn) {
         audio = null;
         resetMixProgress();
@@ -2316,7 +2393,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
       }
       resetSpectroProgress(audio._btn);
     }
-    const isMix = btn && (btn.id === 'summer-mix' || btn.id === 'species-mix' || btn.id === 'park-mix' || pathOrKey === MIX_FILE || pathOrKey === 'chorus');
+    const isMix = btn && (btn.id === 'summer-mix' || btn.id === 'species-mix' || btn.id === 'park-mix' || btn.classList?.contains('mix-play') || pathOrKey === MIX_FILE || pathOrKey === 'chorus');
     let src = isMix ? MIX_FILE : pathOrKey;
     let credit = isMix ? 'Formal birding mix' : '';
     if (!isMix && window.__resolveAudio) {
@@ -2327,6 +2404,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     audio = new Audio(src);
     audio._btn = btn;
     btn.classList.add('playing');
+    btn.closest('.card.green')?.classList.add('playing');
     audio.play().catch(() => announce('Could not play audio'));
     announce(credit ? 'Playing. ' + credit : 'Playing');
     if (isMix) {
@@ -2337,11 +2415,12 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
         }
       });
       trackMixProgress(audio, btn);
-    } else if (btn && btn.classList.contains('spectro')) {
-      trackSpectroProgress(audio, btn);
+    } else if (btn && (btn.classList.contains('spectro') || btn.classList.contains('bird-play'))) {
+      trackSpectroProgress(audio, btn.classList.contains('spectro') ? btn : btn.closest('li')?.querySelector('.spectro'));
     }
     audio.onended = () => {
       btn.classList.remove('playing');
+      btn.closest('.card.green')?.classList.remove('playing');
       resetSpectroProgress(btn);
       audio = null;
       resetMixProgress();
@@ -2809,9 +2888,10 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     const namesEl = document.getElementById('share-people-names');
     const locEl = document.getElementById('share-location-label');
     const privacyEl = document.getElementById('share-privacy');
-    const shareOn = document.getElementById('share-toggle')?.getAttribute('aria-checked') === 'true';
+    const shareOn = sharedPeople.length > 0;
+    document.getElementById('s-save')?.classList.toggle('share-off', !shareOn);
     if (namesEl) {
-      if (!sharedPeople.length) namesEl.textContent = 'No one yet';
+      if (!sharedPeople.length) namesEl.textContent = 'No one yet — only you';
       else if (sharedPeople.length === 1) namesEl.textContent = sharedPeople[0].name;
       else if (sharedPeople.length === 2) namesEl.textContent = `${sharedPeople[0].name} and ${sharedPeople[1].name}`;
       else namesEl.textContent = sharedPeople.map(p => p.name).join(', ');
@@ -2819,12 +2899,12 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     if (locEl) {
       locEl.textContent = shareOn
         ? `Shared location · Union Bay`
-        : 'Recordings stay private';
+        : 'Not shared yet';
     }
     if (privacyEl) {
       privacyEl.textContent = shareOn
         ? 'Audio and place are shared with them. Notes and photos stay private to you.'
-        : 'Sharing is off. Audio, place, notes, and photos stay private.';
+        : 'Choose who can hear with Edit who can hear. Notes and photos stay private.';
     }
   }
 
@@ -3330,6 +3410,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     document.getElementById('sp-close').setAttribute('aria-label', `Close ${species.name} history`);
     document.getElementById('species-mix-title').textContent = `Your ${species.name} Mix`;
     document.getElementById('species-mix').setAttribute('aria-label', `Play your ${species.name} mix`);
+    document.getElementById('species-mix')?.closest('.card.green')?.setAttribute('aria-label', `Your ${species.name} mix`);
     const spShare = document.querySelector('#s-species-detail .mix-share');
     if (spShare) spShare.setAttribute('aria-label', `Share your ${species.name} mix`);
     document.getElementById('species-row-name').textContent = species.name;
@@ -3517,7 +3598,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     </div>`;
   }
 
-  /** Save Session birds: heading per species (name + count), then recordings. */
+  /** Save Session birds: play control + heading per species, then recordings. */
   function renderSaveBirds(birds) {
     const list = document.getElementById('save-species-list');
     if (!list) return;
@@ -3535,8 +3616,12 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
       const n = Math.max(1, Math.min(detections || 2, 4));
       const hid = `save-bird-${i}`;
       const countLabel = `${detections} detection${detections === 1 ? '' : 's'}`;
+      const audio = name.includes('Robin') ? 'birds/american-robin.mp3' : 'birds/house-finch.mp3';
       return `<li>
         <div class="row bird" role="group" aria-labelledby="${hid}">
+          <button type="button" class="bird-play" data-audio="${audio}" aria-label="Play ${name}">
+            <span class="play-sm" aria-hidden="true"></span>
+          </button>
           <img class="thumb" src="${birdImg(name)}" alt="" aria-hidden="true">
           <h3 class="nm" id="${hid}">
             <span>${name}</span>
@@ -3570,7 +3655,8 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     const notes = (document.getElementById('field-notes')?.value || '').trim();
     const photos = [...document.querySelectorAll('#session-photos .photo-slot img')].map(img => img.src);
     const speciesList = [...document.querySelectorAll('#save-species-list li')].map(li => {
-      const name = li.querySelector('.nm')?.textContent?.trim();
+      const name = li.querySelector('.nm > span:not(.meta)')?.textContent?.trim()
+        || li.querySelector('.nm')?.textContent?.trim();
       const meta = li.querySelector('.meta')?.textContent || '';
       const detections = parseInt(meta, 10) || 2;
       const img = li.querySelector('img')?.src || birdImg(name);
@@ -3646,12 +3732,18 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     list.innerHTML = birds.map((b, i) => {
       const expanded = i === 0;
       const clipId = 'clips-' + b.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const audio = b.name.includes('Robin') ? 'birds/american-robin.mp3' : 'birds/house-finch.mp3';
       return `<li>
-        <button type="button" class="row bird" data-expand-bird="${b.name}" aria-expanded="${expanded ? 'true' : 'false'}" aria-controls="${clipId}">
-          <img class="thumb" src="${b.image || birdImg(b.name)}" alt="${birdAlt(b.name)}">
-          <span class="grow"><span class="nm">${b.name}</span><span class="meta">${b.detections} detections</span></span>
-          <span class="chev" aria-hidden="true">${expanded ? '▾' : '›'}</span>
-        </button>
+        <div class="row bird sess-bird-head">
+          <button type="button" class="bird-play" data-audio="${audio}" aria-label="Play ${b.name}">
+            <span class="play-sm" aria-hidden="true"></span>
+          </button>
+          <button type="button" class="row bird grow-btn" data-expand-bird="${b.name}" aria-expanded="${expanded ? 'true' : 'false'}" aria-controls="${clipId}" aria-label="${b.name}, ${b.detections} detections. ${expanded ? 'Collapse' : 'Expand'} recordings">
+            <img class="thumb" src="${b.image || birdImg(b.name)}" alt="" aria-hidden="true">
+            <span class="grow"><span class="nm">${b.name}</span><span class="meta">${b.detections} detections</span></span>
+            <span class="chev" aria-hidden="true">${expanded ? '▾' : '›'}</span>
+          </button>
+        </div>
         ${clipRowsHtml(b.name, b.detections, expanded)}
       </li>`;
     }).join('');
@@ -3784,6 +3876,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     document.getElementById('loc-close').setAttribute('aria-label', `Close ${p.name} history`);
     document.getElementById('park-mix-title').textContent = `Your ${p.name} Mix`;
     document.getElementById('park-mix').setAttribute('aria-label', `Play your ${p.name} mix`);
+    document.getElementById('park-mix')?.closest('.card.green')?.setAttribute('aria-label', `Your ${p.name} mix`);
     const parkShare = document.querySelector('#s-location-detail .mix-share');
     if (parkShare) parkShare.setAttribute('aria-label', `Share your ${p.name} mix`);
     document.getElementById('loc-species-count').textContent = `${p.species} species`;
@@ -4254,7 +4347,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
         highlight(null);
         window.speechSynthesis?.cancel();
       } else {
-        show('Simulator', 'On. Reading order, then Next.', { speech: true });
+        show('Simulator', 'On. Reading order, then Next.', { speech: speakOn && voSimSpeechAllowed() });
       }
     }
 
@@ -4298,7 +4391,8 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     window.__voSim = {
       live(msg) {
         if (!on) return;
-        show('Announcement', msg, { speech: true });
+        // Desktop verifier only — speechSynthesis + VoiceOver double-speaks on iPhone
+        show('Announcement', msg, { speech: speakOn && voSimSpeechAllowed() });
       },
       refresh() { nodes = collect(); },
       collect,
@@ -4309,7 +4403,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
       roleOf
     };
 
-    setOn(true);
+    setOn(voSimSpeechAllowed());
   })();
 
   // Init: unhide pattern — screens use both .on and hidden
@@ -4377,13 +4471,22 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
       announce(`Continuing with ${NAMES[scale] || 'custom'} text size, ${pct} percent.`);
       const start = params.get('start');
       if (start && document.getElementById(start)) go(start, { silent: true });
-      else announce('Identify. 2 birds ready to save.');
+      else {
+        syncIdentifyOverview();
+        requestAnimationFrame(() => {
+          try { document.getElementById('id-heading')?.focus({ preventScroll: true }); } catch (_) {}
+        });
+      }
     });
   })();
 
+  syncIdentifyOverview();
   if (new URLSearchParams(location.search).get('textsize') !== '1'
     || new URLSearchParams(location.search).get('role') === 'watch') {
-    announce('Identify. 2 birds ready to save.');
+    // Focus overview once — do not also aria-live the same summary (VO double-speak)
+    requestAnimationFrame(() => {
+      try { document.getElementById('id-heading')?.focus({ preventScroll: true }); } catch (_) {}
+    });
   }
 
   // ── Study sessions: main participant link + facilitator watch/help ──
@@ -4555,7 +4658,8 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
     function speakGuide(msg) {
       if (!msg || msg === lastGuideMsg) return;
       lastGuideMsg = msg;
-      // Direct live region — avoid __sessionPush feedback loop
+      // Direct live region — avoid __sessionPush feedback loop.
+      // Do not also speechSynthesis on iOS (VoiceOver already reads aria-live).
       const liveEl = document.getElementById('live');
       if (liveEl) {
         liveEl.textContent = '';
