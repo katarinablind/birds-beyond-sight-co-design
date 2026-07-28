@@ -267,18 +267,21 @@
     }
     try {
       const res = await fetch('/api/health', { cache: 'no-store' });
-      if (!res.ok) throw new Error('bad');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       const rooms = (data.rooms || []).map((r) => {
         const live = r.presence?.participant || r.presence?.watch;
         return `${r.id}${live ? ' ●' : ''}`;
       });
       relayStatus.className = 'status ok';
-      relayStatus.innerHTML = `<span class="dot on"></span>Server ready` +
+      relayStatus.innerHTML = `<span class="dot on"></span>Server ready at ${location.origin}` +
         (rooms.length ? ` · ${rooms.join(', ')}` : '');
-    } catch {
+    } catch (err) {
       relayStatus.className = 'status bad';
-      relayStatus.textContent = 'Server missing sync — use: node tools/serve-study.mjs';
+      relayStatus.innerHTML =
+        `Sync not reachable at <code>${location.origin}/api/health</code>. ` +
+        `On Railway set start command to <code>node tools/serve-study.mjs</code> and redeploy. ` +
+        `(${err && err.message ? err.message : 'failed'})`;
     }
   }
 

@@ -135,20 +135,24 @@ async function handleRelay(req, res, url) {
   if (req.method === 'GET' && parts[2] === 'stream') {
     const role = url.searchParams.get('role') === 'watch' ? 'watch' : 'participant';
     room.presence[role] = Date.now();
+    // X-Accel-Buffering / no-transform: keep SSE alive through Railway/nginx proxies
     res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive'
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no'
     });
+    if (typeof res.flushHeaders === 'function') res.flushHeaders();
     res.write(': connected\n\n');
     res.write(`data: ${JSON.stringify(envelope(room))}\n\n`);
     room.clients.add(res);
     const ping = setInterval(() => {
       try {
         room.presence[role] = Date.now();
+        res.write(`: ping\n\n`);
         res.write(`data: ${JSON.stringify(envelope(room))}\n\n`);
       } catch (_) { clearInterval(ping); }
-    }, 3000);
+    }, 2500);
     req.on('close', () => { clearInterval(ping); room.clients.delete(res); });
     return true;
   }
@@ -195,9 +199,14 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+server.keepAliveTimeout = 120000;
+server.headersTimeout = 125000;
+server.requestTimeout = 0;
+
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`\nMerle study server on http://localhost:${PORT}`);
+  console.log(`\nMerle study server on http://0.0.0.0:${PORT}`);
   console.log(`Hub:  http://localhost:${PORT}/study.html`);
+  console.log(`Health: /api/health`);
   for (const u of lanUrls()) console.log(`LAN:  ${u}/study.html`);
   console.log(`\nMain link example:        …/merlin-hifi.html?session=maya`);
   console.log(`Facilitator link example: …/merlin-hifi.html?session=maya&role=watch\n`);
