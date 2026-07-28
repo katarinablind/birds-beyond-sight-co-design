@@ -9,6 +9,16 @@
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="config.local.js" onerror="window.JJ_CONFIG=window.JJ_CONFIG||{}"></script>
+<script>
+// Participant study links: hide desktop Screen Reader Verifier chrome
+(function () {
+  try {
+    var p = new URLSearchParams(location.search);
+    var sid = (p.get('session') || p.get('room') || '').trim();
+    if (sid && p.get('role') !== 'watch') document.documentElement.classList.add('study-participant');
+  } catch (_) {}
+})();
+</script>
 <style>
 /* Layout matched to Figma frames: 16px gutters, 4px radii, #009B49 green, sheet chrome */
 :root{
@@ -204,6 +214,9 @@ a{color:var(--blue);text-decoration:none}
   .desk{display:contents;padding:0;max-width:none}
   .app{width:100%;max-width:none;height:100dvh;min-height:100dvh;box-shadow:none}
 }
+/* Study participant link — phone only, no verifier panel */
+html.study-participant .vo-panel{display:none!important}
+html.study-participant .desk{justify-content:center}
 .stage{flex:1;min-height:0;position:relative;overflow:hidden;background:#3c3c3e}
 .screen{
   position:absolute;inset:0;display:none;flex-direction:column;
