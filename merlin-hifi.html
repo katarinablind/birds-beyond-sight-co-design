@@ -515,6 +515,7 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
 #s-save .row.bird{
   cursor:default;pointer-events:none;
 }
+#s-save .row.bird .bird-play{pointer-events:auto}
 #s-save .clips{pointer-events:auto;padding-left:0;margin-bottom:8px}
 #s-save .list > li{border-bottom:1px solid var(--line)}
 #s-save .list > li:last-child{border-bottom:none}
@@ -716,8 +717,10 @@ h2.save-birds-label{font-size:1.125rem;font-weight:600;margin:18px 0 8px}
   display:block;font-size:.6875rem;font-weight:600;color:var(--muted);
   margin:0 0 6px;letter-spacing:.01em;
 }
-.title-field{margin:0 0 2px}
-input.field{min-height:0;resize:none}
+input.field{
+  min-height:0;resize:none;white-space:nowrap;overflow-x:auto;word-break:normal;
+}
+.title-field{margin:0 0 2px;position:relative;z-index:2}
 .meta-block{margin:4px 0 16px}
 .meta-block .meta{margin:0}
 .notes{
@@ -1747,7 +1750,7 @@ input.field{min-height:0;resize:none}
   <div class="modal-root" id="modal" hidden>
     <div class="modal-backdrop" id="modal-backdrop"></div>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <h2 id="modal-title">Add more details to remember your session</h2>
+      <h2 id="modal-title" tabindex="-1">Add more details to remember your session</h2>
       <button type="button" class="btn btn-blue" id="modal-now">Add details</button>
       <button type="button" class="later" id="modal-later">No, thanks</button>
     </div>
@@ -1756,7 +1759,7 @@ input.field{min-height:0;resize:none}
   <div class="modal-root" id="friend-modal" hidden>
     <div class="modal-backdrop" id="friend-backdrop"></div>
     <div class="modal friend-modal" role="dialog" aria-modal="true" aria-labelledby="friend-title">
-      <h2 id="friend-title">Who joined?</h2>
+      <h2 id="friend-title" tabindex="-1">Who joined?</h2>
       <p id="friend-sub">Select friends who were with you on this outing.</p>
       <ul class="friend-options" id="friend-options"></ul>
       <div class="friend-actions">
@@ -1847,7 +1850,8 @@ input.field{min-height:0;resize:none}
     's-activity': 'Activity'
   };
 
-  // Prefer one channel on iOS VoiceOver: aria-live only (no parallel speechSynthesis).
+  // Prefer one speech channel. Never pair speechSynthesis with aria-live —
+  // Firefox + NVDA/VoiceOver (and iOS) will double-speak.
   function voSimSpeechAllowed() {
     const panel = document.getElementById('vo-panel');
     if (!panel) return false;
@@ -1856,6 +1860,7 @@ input.field{min-height:0;resize:none}
 
   function announce(msg) {
     if (!msg) return;
+    // aria-live only — real screen readers speak this once
     live.textContent = '';
     requestAnimationFrame(() => { live.textContent = msg; });
     if (window.__voSim) window.__voSim.live(msg);
@@ -2136,8 +2141,15 @@ input.field{min-height:0;resize:none}
     lastFocus = document.activeElement;
     modal.hidden = false;
     syncChromeInert();
-    document.getElementById('modal-now').focus();
-    announce('Dialog: Add more details to remember your session');
+    // Focus the heading so VoiceOver/NVDA reads the dialog title (not only the buttons).
+    // Do not also aria-live the same text — that double-speaks.
+    const title = document.getElementById('modal-title');
+    if (title) {
+      if (!title.hasAttribute('tabindex')) title.setAttribute('tabindex', '-1');
+      try { title.focus({ preventScroll: true }); } catch (_) {}
+    } else {
+      document.getElementById('modal-now')?.focus();
+    }
   }
   function closeModal(silent) {
     modal.hidden = true;
@@ -2942,7 +2954,14 @@ input.field{min-height:0;resize:none}
     const picker = document.getElementById('friend-modal');
     picker.hidden = false;
     syncChromeInert();
-    picker.querySelector('.friend-option')?.focus();
+    if (title) {
+      if (!title.hasAttribute('tabindex')) title.setAttribute('tabindex', '-1');
+      try { title.focus({ preventScroll: true }); } catch (_) {
+        picker.querySelector('.friend-option')?.focus();
+      }
+    } else {
+      picker.querySelector('.friend-option')?.focus();
+    }
   }
 
   function closeFriendPicker() {
@@ -4082,6 +4101,10 @@ input.field{min-height:0;resize:none}
       let y0 = 0, dy = 0, active = false, startedOnGrabber = false;
       const onStart = (y, target) => {
         if (scr.scrollTop > 8) return;
+        // Don't steal clicks/drags from form fields (breaks session title editing)
+        if (target?.closest?.(
+          'input, textarea, select, button, a, label, [role="button"], [role="switch"], [contenteditable="true"]'
+        )) return;
         startedOnGrabber = !!(target.closest && target.closest('.grabber, .toolbar, .share-top'));
         y0 = y; dy = 0; active = true;
         scr.classList.add('dragging');
@@ -4240,14 +4263,15 @@ input.field{min-height:0;resize:none}
     }
 
     function speak(text) {
-      if (!speakOn || !window.speechSynthesis) return;
+      // Explicit verifier-only TTS — never when a real screen reader is in use
+      if (!speakOn || !voSimSpeechAllowed() || !window.speechSynthesis) return;
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.rate = 1.05;
       window.speechSynthesis.speak(u);
     }
 
-    function show(role, say, { speech } = { speech: true }) {
+    function show(role, say, { speech } = { speech: false }) {
       roleEl.textContent = role;
       sayEl.textContent = say;
       const line = document.createElement('div');
@@ -4308,7 +4332,7 @@ input.field{min-height:0;resize:none}
     function focusAt(i, { speech } = { speech: true }) {
       nodes = collect();
       if (!nodes.length) {
-        show('Empty', 'No readable items on this screen', { speech });
+        show('Empty', 'No readable items on this screen', { speech: false });
         return;
       }
       idx = ((i % nodes.length) + nodes.length) % nodes.length;
@@ -4317,14 +4341,15 @@ input.field{min-height:0;resize:none}
       try {
         if (el.matches('button,a,input,textarea,[tabindex]')) el.focus({ preventScroll: true });
       } catch (_) {}
-      show(roleOf(el), nameOf(el), { speech });
+      // Next/Prev may speak; focusin will also fire — keep speech only here when requested
+      show(roleOf(el), nameOf(el), { speech: !!speech });
     }
 
     function dumpReadingOrder() {
       nodes = collect();
       logEl.innerHTML = '';
       if (!nodes.length) {
-        show('Reading order', 'Nothing readable on this screen', { speech: true });
+        show('Reading order', 'Nothing readable on this screen', { speech: false });
         return;
       }
       nodes.forEach((el) => {
@@ -4333,7 +4358,7 @@ input.field{min-height:0;resize:none}
         line.textContent = roleOf(el) + ' — ' + nameOf(el);
         logEl.appendChild(line);
       });
-      show('Reading order', 'Stepping through this screen.', { speech: true });
+      show('Reading order', 'Stepping through this screen.', { speech: false });
       focusAt(0, { speech: false });
     }
 
@@ -4347,7 +4372,7 @@ input.field{min-height:0;resize:none}
         highlight(null);
         window.speechSynthesis?.cancel();
       } else {
-        show('Simulator', 'On. Reading order, then Next.', { speech: speakOn && voSimSpeechAllowed() });
+        show('Simulator', 'On. Reading order, then Next.', { speech: false });
       }
     }
 
@@ -4359,8 +4384,8 @@ input.field{min-height:0;resize:none}
       btnSpeak.textContent = speakOn ? 'Speak' : 'Muted';
       if (!speakOn) window.speechSynthesis?.cancel();
     });
-    btnNext.addEventListener('click', () => { if (on) focusAt(idx + 1); });
-    btnPrev.addEventListener('click', () => { if (on) focusAt(idx - 1); });
+    btnNext.addEventListener('click', () => { if (on) focusAt(idx + 1, { speech: true }); });
+    btnPrev.addEventListener('click', () => { if (on) focusAt(idx - 1, { speech: true }); });
     btnOrder?.addEventListener('click', () => { if (on) dumpReadingOrder(); });
 
     document.addEventListener('focusin', (e) => {
@@ -4372,27 +4397,30 @@ input.field{min-height:0;resize:none}
       if (i >= 0) {
         idx = i;
         highlight(e.target);
-        show(roleOf(e.target), nameOf(e.target), { speech: true });
+        // Log only — never speechSynthesis on focus (Firefox NVDA / VoiceOver already speak)
+        show(roleOf(e.target), nameOf(e.target), { speech: false });
       }
     });
 
     document.addEventListener('keydown', (e) => {
       if (!on) return;
       if (e.target.closest('.vo-panel')) return;
+      // Don't hijack arrow keys while editing text
+      if (e.target.matches?.('input, textarea, select, [contenteditable="true"]')) return;
       if (e.key === 'ArrowRight' || (e.key === 'Tab' && !e.shiftKey && e.altKey)) {
         e.preventDefault();
-        focusAt(idx + 1);
+        focusAt(idx + 1, { speech: true });
       } else if (e.key === 'ArrowLeft' || (e.key === 'Tab' && e.shiftKey && e.altKey)) {
         e.preventDefault();
-        focusAt(idx - 1);
+        focusAt(idx - 1, { speech: true });
       }
     });
 
     window.__voSim = {
       live(msg) {
         if (!on) return;
-        // Desktop verifier only — speechSynthesis + VoiceOver double-speaks on iPhone
-        show('Announcement', msg, { speech: speakOn && voSimSpeechAllowed() });
+        // Log announcements in the panel only — aria-live already spoke for real SRs
+        show('Announcement', msg, { speech: false });
       },
       refresh() { nodes = collect(); },
       collect,
@@ -4403,7 +4431,8 @@ input.field{min-height:0;resize:none}
       roleOf
     };
 
-    setOn(voSimSpeechAllowed());
+    // Panel visible for desktop QA, but off by default so Firefox + NVDA isn't doubled
+    setOn(false);
   })();
 
   // Init: unhide pattern — screens use both .on and hidden
