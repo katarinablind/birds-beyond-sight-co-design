@@ -162,7 +162,7 @@ async function handleRelay(req, res, url) {
 
 function safePath(urlPath) {
   const decoded = decodeURIComponent(urlPath.split('?')[0]);
-  const rel = decoded === '/' ? '/study.html' : decoded;
+    const rel = decoded === '/' ? '/index.html' : decoded;
   const full = path.normalize(path.join(ROOT, rel));
   if (!full.startsWith(ROOT)) return null;
   return full;

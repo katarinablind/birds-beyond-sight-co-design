@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Screen reader layers · Merle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1a1a;
+  --muted:#6C6C6C;
+  --line:#e8e6e1;
+  --bg:#e5e5ea;
+  --panel:#fff;
+  --green:#009B49;
+  --hl:#1a73e8;
+  --font:'Radio Canada Big',sans-serif;
+  --font-sub:'Source Serif 4',Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --explode:52;
+  --iso-x:55;
+  --iso-y:0;
+  --iso-z:5;
+  --zoom:0.5;
+  --pan-x:0;
+  --pan-y:0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{
+  height:100%;
+  margin:0;padding:0;
+}
+body{
+  font-family:var(--font);color:var(--ink);
+  background:var(--panel);
+  margin:0;padding:0;
+  height:100%;
+  overflow:hidden;
+}
+a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+a:hover{opacity:.65}
+
+.shell{
+  display:grid;
+  grid-template-columns:minmax(260px,320px) minmax(0,1fr) minmax(240px,300px);
+  grid-template-rows:1fr;
+  width:100%;
+  height:100%;
+  min-height:100vh;
+  margin:0;padding:0;
+  background:var(--panel);
+}
+@media (max-width:900px){
+  .shell{
+    grid-template-columns:1fr;
+    grid-template-rows:auto minmax(360px,1fr) auto;
+    overflow:auto;height:auto;min-height:100dvh;
+  }
+  html,body{overflow:auto;height:auto;background:var(--bg)}
+}
+
+.side{
+  background:var(--panel);overflow:auto;min-height:0;
+}
+.side.right{
+  border-left:1px solid var(--line);padding:18px;
+  display:flex;flex-direction:column;min-height:0;
+}
+@media (max-width:900px){
+  .side.right{border-left:0;border-top:1px solid var(--line);max-height:280px}
+}
+
+.side h2{
+  font-family:var(--font-sub);font-size:.85rem;font-weight:400;
+  color:var(--green);margin:0 0 12px;flex:none;
+}
+
+.preview-pane{
+  background:var(--panel);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;min-height:0;padding:16px;
+  align-items:center;justify-content:flex-start;
+}
+@media (max-width:900px){
+  .preview-pane{border-right:0;border-bottom:1px solid var(--line);max-height:420px}
+}
+.page-tabs{
+  display:flex;flex-wrap:wrap;gap:5px;margin:0 0 8px;flex:none;
+  justify-content:center;width:100%;
+}
+.page-tabs button{
+  font:inherit;font-size:.68rem;font-weight:600;padding:5px 9px;border-radius:999px;
+  border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;
+}
+.page-tabs button[aria-current="page"]{
+  background:var(--green);border-color:var(--green);color:#fff;
+}
+.preview-frame-wrap{
+  flex:none;
+  display:flex;align-items:center;justify-content:center;
+  width:100%;
+}
+.preview-phone{
+  width:min(280px, 100%);
+  aspect-ratio:390 / 844;
+  height:auto;
+  max-height:min(100%, calc(100dvh - 120px));
+  border-radius:22px;overflow:hidden;
+  border:1px solid var(--line);background:#3c3c3e;
+  box-shadow:0 12px 40px rgba(0,0,0,.12);
+  position:relative;
+}
+.preview-phone iframe{
+  position:absolute;inset:0;
+  width:390px;height:844px;border:0;
+  transform-origin:top left;
+}
+.proto-hl{
+  position:absolute;z-index:6;pointer-events:none;
+  border:2px solid var(--hl);
+  outline:2px solid rgba(26,115,232,.35);
+  outline-offset:1px;
+  border-radius:8px;
+  box-shadow:0 0 0 3px rgba(26,115,232,.18);
+  transition:top .15s ease,left .15s ease,width .15s ease,height .15s ease;
+}
+.kbd-hint{
+  font-family:var(--font-sub);font-size:.62rem;color:var(--muted);
+  margin:auto 0 0;padding-top:14px;line-height:1.35;flex:none;
+}
+.order-scroll{flex:1;min-height:0;overflow:auto}
+
+.center-stage{
+  position:relative;
+  display:flex;flex-direction:column;min-height:0;min-width:0;
+  background:var(--bg);border-right:1px solid var(--line);
+}
+.stage-wrap{
+  position:relative;flex:1;min-height:0;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  perspective:1600px;
+  perspective-origin:50% 40%;
+}
+.stage{
+  position:relative;width:300px;height:620px;
+  transform-style:preserve-3d;
+  transform:
+    translate3d(calc(var(--pan-x) * 1px), calc(var(--pan-y) * 1px), 0)
+    scale(var(--zoom))
+    rotateX(calc(var(--iso-x) * 1deg))
+    rotateY(calc(var(--iso-y) * 1deg))
+    rotateZ(calc(var(--iso-z) * 1deg));
+  transition:transform .35s ease;
+  transform-origin:center 42%;
+}
+.stage.dragging{transition:none}
+.stage-wrap.mode-pan{cursor:grab}
+.stage-wrap.mode-pan.grabbing{cursor:grabbing}
+.stage-wrap.mode-rotate{cursor:crosshair}
+
+.phone-frame{
+  position:absolute;inset:0;border-radius:36px;
+  border:2px solid rgba(0,0,0,.12);background:rgba(255,255,255,.35);
+  box-shadow:0 30px 80px rgba(0,0,0,.18);
+  transform:translateZ(0);pointer-events:none;
+}
+.phone-notch{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  width:90px;height:22px;border-radius:12px;background:rgba(0,0,0,.08);
+}
+
+.layer{
+  position:absolute;left:16px;right:16px;
+  border-radius:10px;background:#fff;border:1px solid rgba(0,0,0,.1);
+  box-shadow:0 8px 24px rgba(0,0,0,.08);
+  transform-style:preserve-3d;
+  transform:translateZ(calc(var(--z) * var(--explode) * 1px));
+  transition:transform .35s ease, box-shadow .2s, border-color .2s, outline .15s, opacity .25s ease;
+  cursor:pointer;padding:10px 12px;min-height:40px;
+  display:flex;align-items:center;gap:10px;
+  opacity:1;
+}
+.layer.above{
+  /* already-read layers in front become more solid as you go deeper */
+  background:#fff;
+}
+.layer:hover,.layer.on{
+  border-color:var(--hl);
+  outline:2px solid rgba(26,115,232,.35);
+  outline-offset:1px;
+  box-shadow:0 12px 32px rgba(26,115,232,.18);
+  z-index:5;
+}
+.layer .ord{
+  flex:none;width:22px;height:22px;border-radius:6px;
+  background:var(--ink);color:#fff;font-size:.65rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;font-family:var(--mono);
+}
+.layer.on .ord{background:var(--hl)}
+.layer .copy{min-width:0;flex:1}
+.layer .role{
+  font-size:.62rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--muted);
+}
+.layer .name{
+  font-size:.82rem;font-weight:600;line-height:1.25;margin-top:1px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.layer.chrome{background:#f3f3f3}
+.layer.tabbar{background:#fafafa}
+.layer.cta{background:var(--green);border-color:var(--green);color:#fff}
+.layer.cta .role{color:rgba(255,255,255,.75)}
+.layer.cta .ord{background:rgba(0,0,0,.25)}
+.layer.mix{background:var(--green);color:#fff;border-color:var(--green)}
+.layer.mix .role{color:rgba(255,255,255,.75)}
+.layer.mix .ord{background:rgba(0,0,0,.25)}
+
+.view-menu{
+  position:absolute;top:14px;left:14px;right:auto;z-index:30;
+  display:flex;align-items:flex-start;gap:6px;
+}
+.tool-btn{
+  width:36px;height:36px;border-radius:10px;
+  border:1px solid var(--line);background:#fff;
+  color:var(--ink);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.06);
+  flex:none;padding:0;
+}
+.tool-btn:hover{background:#f7f6f3}
+.tool-btn[aria-pressed="true"],
+.tool-btn[aria-expanded="true"]{
+  background:var(--green);border-color:var(--green);color:#fff;
+}
+.tool-btn svg{width:18px;height:18px;display:block;flex:none}
+#sound-toggle .ico-sound-on{display:none}
+#sound-toggle .ico-sound-off{display:block}
+#sound-toggle[aria-pressed="true"] .ico-sound-on{display:block}
+#sound-toggle[aria-pressed="true"] .ico-sound-off{display:none}
+.view-menu-btn{
+  width:36px;height:36px;border-radius:10px;
+  border:1px solid var(--line);background:#fff;
+  color:var(--ink);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.06);
+  font-size:1.15rem;line-height:1;letter-spacing:.06em;
+  flex:none;
+}
+.view-menu-btn:hover{background:#f7f6f3}
+.view-menu-btn[aria-expanded="true"]{background:#f0eee9}
+.view-panel{
+  display:none;position:absolute;top:calc(100% + 8px);left:0;right:auto;
+  width:240px;padding:12px 14px 14px;
+  background:#fff;border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 16px 40px rgba(0,0,0,.12);
+  max-height:min(70vh,520px);overflow:auto;
+}
+.view-panel.open{display:block}
+.view-panel label{
+  display:block;font-size:.68rem;font-weight:600;color:var(--muted);margin:10px 0 4px;
+}
+.view-panel label:first-child{margin-top:0}
+.view-panel input[type=range]{width:100%;accent-color:var(--green)}
+.view-panel .hint{
+  font-family:var(--font-sub);font-size:.7rem;color:var(--muted);
+  line-height:1.4;margin-top:12px;
+}
+.view-panel a{font-size:.75rem}
+.view-panel .reset-btn{
+  margin-top:10px;width:100%;font:inherit;font-size:.72rem;font-weight:600;
+  padding:7px 10px;border-radius:8px;border:1px solid var(--line);
+  background:#f7f7f8;color:var(--ink);cursor:pointer;
+}
+.view-panel .reset-btn:hover{background:#eee}
+
+.order-list{list-style:none;display:flex;flex-direction:column;gap:4px}
+.order-list button{
+  width:100%;text-align:left;border:1px solid transparent;background:transparent;
+  border-radius:8px;padding:8px 10px;cursor:pointer;font:inherit;
+  display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;
+}
+.order-list button:hover{background:rgba(0,0,0,.04)}
+.order-list button.on{
+  background:#e8f0fe;border-color:#c5d8fc;
+}
+.order-list .n{
+  font-family:var(--mono);font-size:.72rem;font-weight:600;color:var(--muted);padding-top:2px;
+}
+.order-list button.on .n{color:var(--hl)}
+.order-list .r{
+  font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+}
+.order-list .t{font-size:.82rem;font-weight:600;line-height:1.25}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="preview-pane" aria-label="Prototype preview">
+    <div class="page-tabs" id="page-tabs" role="tablist" aria-label="Merle screens">
+      <button type="button" data-screen="identify" aria-current="page">Identify</button>
+      <button type="button" data-screen="save">Save</button>
+      <button type="button" data-screen="date">Date</button>
+      <button type="button" data-screen="species">Species</button>
+      <button type="button" data-screen="location">Location</button>
+    </div>
+    <div class="preview-frame-wrap">
+      <div class="preview-phone">
+        <iframe id="proto-frame" title="Merle prototype preview" src="merlin-hifi.html?start=s-identify"></iframe>
+        <div class="proto-hl" id="proto-hl" hidden></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="center-stage">
+    <div class="view-menu" id="view-menu">
+      <button type="button" class="tool-btn" id="mode-rotate" aria-pressed="true" aria-label="Rotate view" title="Rotate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+      </button>
+      <button type="button" class="tool-btn" id="mode-pan" aria-pressed="false" aria-label="Pan view" title="Pan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+      </button>
+      <button type="button" class="tool-btn" id="sound-toggle" aria-pressed="false" aria-label="Sound off" title="Read aloud">
+        <svg class="ico-sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg>
+        <svg class="ico-sound-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>
+      </button>
+      <button type="button" class="view-menu-btn" id="view-menu-btn" aria-expanded="false" aria-controls="view-panel" aria-label="View settings">···</button>
+      <div class="view-panel" id="view-panel" role="region" aria-label="View controls">
+        <label for="explode">Layer separation</label>
+        <input type="range" id="explode" min="0" max="110" value="52" aria-valuetext="52">
+
+        <label for="zoom">Zoom</label>
+        <input type="range" id="zoom" min="20" max="120" value="50" aria-valuetext="50 percent">
+
+        <label for="iso-x">Pitch</label>
+        <input type="range" id="iso-x" min="-180" max="180" value="55">
+
+        <label for="iso-y">Yaw</label>
+        <input type="range" id="iso-y" min="-180" max="180" value="0">
+
+        <label for="iso-z">Roll</label>
+        <input type="range" id="iso-z" min="-180" max="180" value="5">
+
+        <button type="button" class="reset-btn" id="view-reset">Reset view</button>
+        <button type="button" class="reset-btn" id="open-modal-layers">Details modal layers</button>
+        <button type="button" class="reset-btn" id="open-peek-layers">Location peek layers</button>
+        <p class="hint"><a href="index.html">Wiki</a> · <a href="merlin-hifi.html">Merle</a> · <a href="study.html">Study</a></p>
+      </div>
+    </div>
+
+    <div class="stage-wrap mode-rotate" id="stage-wrap">
+      <div class="stage" id="stage" aria-hidden="true">
+        <div class="phone-frame"><div class="phone-notch"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="side right" aria-label="Reading order">
+    <h2>Reading order</h2>
+    <div class="order-scroll">
+      <ol class="order-list" id="order-list"></ol>
+    </div>
+    <p class="kbd-hint">↑ ↓ or ← → to step through</p>
+  </aside>
+</div>
+
+<script>
+const SCREEN_START = {
+  identify: 's-identify',
+  save: 's-save',
+  date: 's-history-date',
+  species: 's-history-species',
+  location: 's-history-location'
+};
+
+/** Optional query flags + post-load setup inside the Merle iframe */
+const SCREEN_SETUP = {
+  identify: { modal: '0' },
+  save: { modal: '0', friends: '0' },
+  date: {},
+  species: {},
+  location: { peek: '0' },
+  'identify-modal': { start: 's-identify', modal: '1' },
+  'location-peek': { start: 's-history-location', peek: '1' }
+};
+
+const SCREENS = {
+  identify: {
+    label: 'Identify',
+    layers: [
+      { top: 56, h: 48, role: 'Heading 1', name: '9–11am Union Bay', cls: '', sel: '#id-heading' },
+      { top: 52, h: 40, role: 'Button', name: 'Close identify', cls: 'chrome', w: 44, left: true, sel: '#id-close' },
+      { top: 280, h: 56, role: 'Button', name: 'House Finch, likely', cls: '', sel: '#detect-list [data-id-bird="house-finch"]' },
+      { top: 340, h: 56, role: 'Button', name: 'Spotted Towhee, likely', cls: '', sel: '#detect-list [data-id-bird="spotted-towhee"]' },
+      { top: 410, h: 48, role: 'Button', name: 'Save session', cls: 'cta', sel: '#btn-save-top' },
+      { top: 520, h: 56, role: 'Button', name: 'Start listening for more birds', cls: 'chrome', sel: '#mic' },
+      { top: 600, h: 52, role: 'Tab, selected', name: 'Identify', cls: 'tabbar', col: 0, sel: '#tabbar [data-go="s-identify"]' },
+      { top: 600, h: 52, role: 'Tab, unavailable', name: 'Explore', cls: 'tabbar', col: 1, sel: '#tabbar [aria-label="Explore, unavailable"]' },
+      { top: 600, h: 52, role: 'Tab', name: 'History', cls: 'tabbar', col: 2, sel: '#tabbar [data-go="s-history-date"]' },
+      { top: 600, h: 52, role: 'Tab, unavailable', name: 'Life List', cls: 'tabbar', col: 3, sel: '#tabbar [aria-label="Life List, unavailable"]' }
+    ]
+  },
+  'identify-modal': {
+    label: 'Details prompt',
+    layers: [
+      { top: 220, h: 48, role: 'Heading', name: 'Add more details to remember your session', cls: '', sel: '#modal-title' },
+      { top: 280, h: 48, role: 'Button', name: 'Add details', cls: 'cta', sel: '#modal-now' },
+      { top: 340, h: 44, role: 'Button', name: 'No, thanks', cls: 'chrome', sel: '#modal-later' }
+    ]
+  },
+  save: {
+    label: 'Save Session',
+    layers: [
+      { top: 44, h: 36, role: 'Heading 1', name: 'Save Session', cls: '', sel: '#save-heading' },
+      { top: 40, h: 40, role: 'Button', name: 'Close without saving', cls: 'chrome', w: 40, right: true, sel: '#s-save [aria-label="Close without saving"]' },
+      { top: 96, h: 64, role: 'Text field', name: 'Session title — Saturday Morning at Union Bay', cls: '', sel: '#session-title' },
+      { top: 180, h: 48, role: 'Heading 2', name: 'Who joined', cls: 'chrome', sel: '#who-label' },
+      { top: 180, h: 44, role: 'Button', name: 'Add friends who joined this outing', cls: 'chrome', w: 44, right: true, sel: '#add-friends' },
+      { top: 244, h: 72, role: 'Group', name: 'Who can hear — Lucy and Joe', cls: '', sel: '#s-save .share-row' },
+      { top: 300, h: 36, role: 'Button', name: 'Edit who can hear', cls: '', sel: '#edit-share-people' },
+      { top: 360, h: 36, role: 'Heading 2', name: 'Birds', cls: 'chrome', sel: '#s-save .save-birds-label' },
+      { top: 404, h: 52, role: 'Button', name: 'Play House Finch', cls: 'mix', sel: '#save-species-list li:nth-child(1) button' },
+      { top: 464, h: 52, role: 'Button', name: 'Play Spotted Towhee', cls: 'mix', sel: '#save-species-list li:nth-child(2) button' },
+      { top: 528, h: 48, role: 'Button', name: 'Add photos to this session', cls: '', sel: '#add-photo' },
+      { top: 584, h: 48, role: 'Text area', name: 'Field notes', cls: '', sel: '#field-notes' },
+      { top: 640, h: 48, role: 'Button', name: 'Save Session', cls: 'cta', sel: '#save-session' }
+    ]
+  },
+  date: {
+    label: 'History · Date',
+    layers: [
+      { top: 48, h: 40, role: 'Heading 1', name: 'History', cls: '', sel: '#hist-h' },
+      { top: 48, h: 40, role: 'Button', name: 'Open calendar view', cls: 'chrome', w: 40, right: true, sel: '#s-history-date [aria-label="Open calendar view"]' },
+      { top: 100, h: 40, role: 'Tab, selected', name: 'Date', cls: 'chrome', col: 0, cols: 3, seg: true, sel: '#s-history-date .seg [data-go="s-history-date"]' },
+      { top: 100, h: 40, role: 'Tab', name: 'Species', cls: 'chrome', col: 1, cols: 3, seg: true, sel: '#s-history-date .seg [data-go="s-history-species"]' },
+      { top: 100, h: 40, role: 'Tab', name: 'Location', cls: 'chrome', col: 2, cols: 3, seg: true, sel: '#s-history-date .seg [data-go="s-history-location"]' },
+      { top: 156, h: 44, role: 'Search field', name: 'Search place, bird, date…', cls: '', sel: '#outing-search' },
+      { top: 220, h: 64, role: 'Button', name: 'Play Chorus of July 21, 2025', cls: 'mix', sel: '#summer-mix' },
+      { top: 228, h: 48, role: 'Button', name: 'Share Chorus of July 21, 2025', cls: 'chrome', w: 44, right: true, sel: '#s-history-date .mix-share' },
+      { top: 310, h: 72, role: 'Button', name: 'Wednesday Morning at Seward Park', cls: '', sel: '#outings-root ul li:nth-child(1) .sess-row' },
+      { top: 390, h: 72, role: 'Button', name: 'Dawn chorus at Arboretum', cls: '', sel: '#outings-root ul li:nth-child(2) .sess-row' },
+      { top: 600, h: 52, role: 'Tab', name: 'Identify', cls: 'tabbar', col: 0, sel: '#tabbar [data-go="s-identify"]' },
+      { top: 600, h: 52, role: 'Tab, unavailable', name: 'Explore', cls: 'tabbar', col: 1, sel: '#tabbar [aria-label="Explore, unavailable"]' },
+      { top: 600, h: 52, role: 'Tab, selected', name: 'History', cls: 'tabbar', col: 2, sel: '#tabbar [data-go="s-history-date"]' },
+      { top: 600, h: 52, role: 'Tab, unavailable', name: 'Life List', cls: 'tabbar', col: 3, sel: '#tabbar [aria-label="Life List, unavailable"]' }
+    ]
+  },
+  species: {
+    label: 'History · Species',
+    layers: [
+      { top: 48, h: 40, role: 'Heading 1', name: 'History', cls: '', sel: '#hist-sp-h' },
+      { top: 100, h: 40, role: 'Tab', name: 'Date', cls: 'chrome', col: 0, cols: 3, seg: true, sel: '#s-history-species .seg [data-go="s-history-date"]' },
+      { top: 100, h: 40, role: 'Tab, selected', name: 'Species', cls: 'chrome', col: 1, cols: 3, seg: true, sel: '#s-history-species .seg [data-go="s-history-species"]' },
+      { top: 100, h: 40, role: 'Tab', name: 'Location', cls: 'chrome', col: 2, cols: 3, seg: true, sel: '#s-history-species .seg [data-go="s-history-location"]' },
+      { top: 160, h: 56, role: 'Button', name: 'House Finch', cls: '', sel: '#species-list li:nth-child(1) [data-species]' },
+      { top: 224, h: 56, role: 'Button', name: 'Spotted Towhee', cls: '', sel: '#species-list li:nth-child(2) [data-species]' },
+      { top: 288, h: 56, role: 'Button', name: 'American Robin', cls: '', sel: '#species-list li:nth-child(3) [data-species]' },
+      { top: 600, h: 52, role: 'Tab', name: 'Identify', cls: 'tabbar', col: 0, sel: '#tabbar [data-go="s-identify"]' },
+      { top: 600, h: 52, role: 'Tab, unavailable', name: 'Explore', cls: 'tabbar', col: 1, sel: '#tabbar [aria-label="Explore, unavailable"]' },
+      { top: 600, h: 52, role: 'Tab, selected', name: 'History', cls: 'tabbar', col: 2, sel: '#tabbar [data-go="s-history-date"]' },
+      { top: 600, h: 52, role: 'Tab, unavailable', name: 'Life List', cls: 'tabbar', col: 3, sel: '#tabbar [aria-label="Life List, unavailable"]' }
+    ]
+  },
+  location: {
+    label: 'History · Location',
+    layers: [
+      { top: 48, h: 40, role: 'Heading 1', name: 'History', cls: '', sel: '#hist-loc-h' },
+      { top: 100, h: 40, role: 'Tab', name: 'Date', cls: 'chrome', col: 0, cols: 3, seg: true, sel: '#s-history-location .seg [data-go="s-history-date"]' },
+      { top: 100, h: 40, role: 'Tab', name: 'Species', cls: 'chrome', col: 1, cols: 3, seg: true, sel: '#s-history-location .seg [data-go="s-history-species"]' },
+      { top: 100, h: 40, role: 'Tab, selected', name: 'Location', cls: 'chrome', col: 2, cols: 3, seg: true, sel: '#s-history-location .seg [data-go="s-history-location"]' },
+      { top: 180, h: 56, role: 'Image', name: 'Map of recording locations around Seattle', cls: '', sel: '#loc-map-status' },
+      { top: 320, h: 36, role: 'Heading 2', name: 'Locations', cls: 'chrome', sel: '#loc-sheet-title' },
+      { top: 364, h: 56, role: 'Button', name: 'Seward Park — 8 sessions · 16 species', cls: '', sel: '#loc-sheet-list [data-place="seward"]' },
+      { top: 428, h: 56, role: 'Button', name: 'University District — 3 sessions · 9 species', cls: '', sel: '#loc-sheet-list [data-place="udistrict"]' },
+      { top: 492, h: 56, role: 'Button', name: 'Marymoor Park — 2 sessions · 7 species', cls: '', sel: '#loc-sheet-list [data-place="redmond"]' },
+      { top: 600, h: 52, role: 'Tab', name: 'Identify', cls: 'tabbar', col: 0, sel: '#tabbar [data-go="s-identify"]' },
+      { top: 600, h: 52, role: 'Tab, unavailable', name: 'Explore', cls: 'tabbar', col: 1, sel: '#tabbar [aria-label="Explore, unavailable"]' },
+      { top: 600, h: 52, role: 'Tab, selected', name: 'History', cls: 'tabbar', col: 2, sel: '#tabbar [data-go="s-history-date"]' },
+      { top: 600, h: 52, role: 'Tab, unavailable', name: 'Life List', cls: 'tabbar', col: 3, sel: '#tabbar [aria-label="Life List, unavailable"]' }
+    ]
+  },
+  'location-peek': {
+    label: 'Location peek',
+    layers: [
+      { top: 320, h: 36, role: 'Button', name: 'Close location preview', cls: 'chrome', w: 40, right: true, sel: '#peek-close' },
+      { top: 360, h: 40, role: 'Heading', name: 'Seward Park', cls: '', sel: '#peek-title' },
+      { top: 400, h: 28, role: 'Text', name: 'Seattle · 16 species', cls: 'chrome', sel: '#peek-sub' },
+      { top: 480, h: 48, role: 'Button', name: 'View full history', cls: 'cta', sel: '#sheet-view' }
+    ]
+  }
+};
+
+const stage = document.getElementById('stage');
+const orderList = document.getElementById('order-list');
+const explodeEl = document.getElementById('explode');
+const zoomEl = document.getElementById('zoom');
+const isoX = document.getElementById('iso-x');
+const isoY = document.getElementById('iso-y');
+const isoZ = document.getElementById('iso-z');
+const protoFrame = document.getElementById('proto-frame');
+const protoHl = document.getElementById('proto-hl');
+const pageTabs = document.getElementById('page-tabs');
+const viewMenuBtn = document.getElementById('view-menu-btn');
+const viewPanel = document.getElementById('view-panel');
+const modeRotateBtn = document.getElementById('mode-rotate');
+const modePanBtn = document.getElementById('mode-pan');
+const soundToggle = document.getElementById('sound-toggle');
+const stageWrap = document.getElementById('stage-wrap');
+const root = document.documentElement;
+
+const DEFAULT_VIEW = { explode: 52, zoom: 50, x: 55, y: 0, z: 5, panX: 0, panY: 0 };
+const STAGE_H = 620;
+const STAGE_W = 300;
+
+let selected = 0;
+let currentScreen = 'identify';
+let protoStyleReady = false;
+let dragMode = 'rotate'; // 'rotate' | 'pan'
+let soundOn = false;
+let panX = 0;
+let panY = 0;
+
+function clampAngle(v) {
+  let n = Number(v);
+  while (n > 180) n -= 360;
+  while (n < -180) n += 360;
+  return Math.round(n);
+}
+
+function setCSSVars() {
+  root.style.setProperty('--explode', explodeEl.value);
+  root.style.setProperty('--zoom', String(Number(zoomEl.value) / 100));
+  root.style.setProperty('--iso-x', isoX.value);
+  root.style.setProperty('--iso-y', isoY.value);
+  root.style.setProperty('--iso-z', isoZ.value);
+  root.style.setProperty('--pan-x', String(panX));
+  root.style.setProperty('--pan-y', String(panY));
+  explodeEl.setAttribute('aria-valuetext', explodeEl.value);
+  zoomEl.setAttribute('aria-valuetext', zoomEl.value + ' percent');
+}
+
+function setDragMode(mode) {
+  dragMode = mode === 'pan' ? 'pan' : 'rotate';
+  modeRotateBtn.setAttribute('aria-pressed', String(dragMode === 'rotate'));
+  modePanBtn.setAttribute('aria-pressed', String(dragMode === 'pan'));
+  stageWrap.classList.toggle('mode-rotate', dragMode === 'rotate');
+  stageWrap.classList.toggle('mode-pan', dragMode === 'pan');
+}
+
+function stopSpeech() {
+  try { window.speechSynthesis?.cancel(); } catch (_) {}
+}
+
+function speakLayer(spec, index) {
+  if (!soundOn || !spec || !window.speechSynthesis) return;
+  stopSpeech();
+  const text = `${index + 1}. ${spec.role}. ${spec.name}`;
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 1.05;
+  window.speechSynthesis.speak(u);
+}
+
+function setSoundOn(on) {
+  soundOn = !!on;
+  soundToggle.setAttribute('aria-pressed', String(soundOn));
+  soundToggle.setAttribute('aria-label', soundOn ? 'Sound on' : 'Sound off');
+  if (!soundOn) stopSpeech();
+  else {
+    const layers = SCREENS[currentScreen]?.layers;
+    if (layers?.[selected]) speakLayer(layers[selected], selected);
+  }
+}
+
+function syncPreview(key) {
+  const setup = SCREEN_SETUP[key] || {};
+  const start = setup.start || SCREEN_START[key] || 's-identify';
+  const params = new URLSearchParams();
+  params.set('start', start);
+  if (setup.modal != null) params.set('modal', setup.modal);
+  if (setup.friends != null) params.set('friends', setup.friends);
+  if (setup.peek != null) params.set('peek', setup.peek);
+  const url = 'merlin-hifi.html?' + params.toString();
+  if (protoFrame) protoFrame.src = url;
+  protoStyleReady = false;
+  pageTabs.querySelectorAll('button').forEach(btn => {
+    const tabKey = btn.dataset.screen;
+    const on = tabKey === key
+      || (key === 'identify-modal' && tabKey === 'identify')
+      || (key === 'location-peek' && tabKey === 'location');
+    btn.setAttribute('aria-current', on ? 'page' : 'false');
+  });
+}
+
+function setScreen(key) {
+  if (!SCREENS[key]) return;
+  currentScreen = key;
+  selected = 0;
+  syncPreview(key);
+  render();
+}
+
+function layoutLayer(el, spec, index, total) {
+  const z = (total - index);
+  el.style.setProperty('--z', z);
+  el.style.top = spec.top + 'px';
+  el.style.minHeight = (spec.h || 40) + 'px';
+
+  if (spec.w && (spec.right || spec.left)) {
+    if (spec.right) {
+      el.style.left = 'auto';
+      el.style.right = '18px';
+    } else {
+      el.style.left = '18px';
+      el.style.right = 'auto';
+    }
+    el.style.width = spec.w + 'px';
+  } else if (spec.col != null) {
+    const cols = spec.cols || 4;
+    const gap = 4;
+    const inset = spec.seg ? 18 : 12;
+    const usable = `calc(100% - ${inset * 2}px - ${(cols - 1) * gap}px)`;
+    el.style.left = `calc(${inset}px + (${usable}) * ${spec.col / cols} + ${gap * spec.col}px)`;
+    el.style.right = 'auto';
+    el.style.width = `calc((${usable}) / ${cols})`;
+  } else {
+    el.style.left = '16px';
+    el.style.right = '16px';
+    el.style.width = 'auto';
+  }
+}
+
+function ensureProtoStyle(doc) {
+  if (!doc) return;
+  if (doc.getElementById('sr-layer-hl-style')) {
+    protoStyleReady = true;
+    return;
+  }
+  const style = doc.createElement('style');
+  style.id = 'sr-layer-hl-style';
+  style.textContent = `
+    .sr-layer-hl {
+      outline: 2px solid #1a73e8 !important;
+      outline-offset: 2px !important;
+      box-shadow: 0 0 0 4px rgba(26,115,232,.28) !important;
+      border-radius: 8px;
+      z-index: 8;
+    }
+  `;
+  doc.head.appendChild(style);
+  protoStyleReady = true;
+}
+
+function clearProtoDomHl() {
+  try {
+    const doc = protoFrame?.contentDocument;
+    if (!doc) return;
+    doc.querySelectorAll('.sr-layer-hl').forEach(el => el.classList.remove('sr-layer-hl'));
+  } catch (_) {}
+}
+
+function showOverlayHl(spec) {
+  const phone = document.querySelector('.preview-phone');
+  if (!protoHl || !phone || !spec) {
+    if (protoHl) protoHl.hidden = true;
+    return;
+  }
+  const pw = phone.clientWidth || 1;
+  const ph = phone.clientHeight || 1;
+  const y = (spec.top / STAGE_H) * ph;
+  const h = Math.max(((spec.h || 40) / STAGE_H) * ph, 22);
+  protoHl.hidden = false;
+  protoHl.style.top = y + 'px';
+  protoHl.style.height = h + 'px';
+  if (spec.w && (spec.right || spec.left)) {
+    const w = (spec.w / STAGE_W) * pw;
+    protoHl.style.width = w + 'px';
+    if (spec.right) {
+      protoHl.style.left = 'auto';
+      protoHl.style.right = (16 / STAGE_W) * pw + 'px';
+    } else {
+      protoHl.style.left = (16 / STAGE_W) * pw + 'px';
+      protoHl.style.right = 'auto';
+    }
+  } else {
+    protoHl.style.left = (16 / STAGE_W) * pw + 'px';
+    protoHl.style.right = (16 / STAGE_W) * pw + 'px';
+    protoHl.style.width = 'auto';
+  }
+}
+
+/** Map an element inside the scaled Merle iframe onto the phone overlay. */
+function placeHlFromElement(el) {
+  const phone = document.querySelector('.preview-phone');
+  if (!protoHl || !phone || !el || !protoFrame) {
+    if (protoHl) protoHl.hidden = true;
+    return false;
+  }
+  const er = el.getBoundingClientRect();
+  if (er.width < 1 && er.height < 1) {
+    protoHl.hidden = true;
+    return false;
+  }
+  const fr = protoFrame.getBoundingClientRect();
+  const pr = phone.getBoundingClientRect();
+  const iw = protoFrame.clientWidth || 390;
+  const ih = protoFrame.clientHeight || 844;
+  const sx = fr.width / iw;
+  const sy = fr.height / ih;
+  protoHl.hidden = false;
+  protoHl.style.top = (fr.top - pr.top + er.top * sy) + 'px';
+  protoHl.style.left = (fr.left - pr.left + er.left * sx) + 'px';
+  protoHl.style.width = Math.max(er.width * sx, 10) + 'px';
+  protoHl.style.height = Math.max(er.height * sy, 10) + 'px';
+  protoHl.style.right = 'auto';
+  return true;
+}
+
+function highlightInProto(spec) {
+  clearProtoDomHl();
+  if (protoHl) protoHl.hidden = true;
+  if (!spec) return;
+
+  try {
+    const doc = protoFrame?.contentDocument;
+    if (!doc || !spec.sel) {
+      showOverlayHl(spec);
+      return;
+    }
+    ensureProtoStyle(doc);
+    const el = doc.querySelector(spec.sel);
+    if (!el) {
+      showOverlayHl(spec);
+      return;
+    }
+
+    el.classList.add('sr-layer-hl');
+    try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (_) {}
+
+    // Also map an overlay onto the phone chrome so the highlight reads clearly
+    // even when the target is a small icon button.
+    const paint = () => {
+      if (!placeHlFromElement(el)) showOverlayHl(spec);
+    };
+    paint();
+    requestAnimationFrame(paint);
+    setTimeout(paint, 100);
+  } catch (_) {
+    showOverlayHl(spec);
+  }
+}
+
+/** Opaque for selected + layers above it (earlier reading order / higher in the stack). */
+function applyLayerDepth() {
+  stage.querySelectorAll('.layer').forEach(el => {
+    const idx = Number(el.dataset.index);
+    el.classList.toggle('on', idx === selected);
+    el.classList.toggle('above', idx < selected);
+    el.style.opacity = idx <= selected ? '1' : '0.2';
+  });
+}
+
+function switchLayersOnly(key) {
+  if (!SCREENS[key]) return;
+  currentScreen = key;
+  selected = 0;
+  pageTabs.querySelectorAll('button').forEach(btn => {
+    const tabKey = btn.dataset.screen;
+    const on = tabKey === key
+      || (key === 'identify-modal' && tabKey === 'identify')
+      || (key === 'location-peek' && tabKey === 'location');
+    btn.setAttribute('aria-current', on ? 'page' : 'false');
+  });
+  render();
+}
+
+function wireProtoBridge() {
+  try {
+    const doc = protoFrame?.contentDocument;
+    if (!doc || doc.documentElement.dataset.srWired === '1') return;
+    doc.documentElement.dataset.srWired = '1';
+
+    doc.getElementById('btn-save-top')?.addEventListener('click', () => {
+      setTimeout(() => {
+        if (currentScreen === 'identify' || currentScreen === 'identify-modal') {
+          switchLayersOnly('identify-modal');
+        }
+      }, 40);
+    });
+    doc.getElementById('modal-later')?.addEventListener('click', () => {
+      setTimeout(() => {
+        if (currentScreen === 'identify-modal') switchLayersOnly('identify');
+      }, 40);
+    });
+    doc.getElementById('modal-backdrop')?.addEventListener('click', () => {
+      setTimeout(() => {
+        if (currentScreen === 'identify-modal') switchLayersOnly('identify');
+      }, 40);
+    });
+    doc.getElementById('modal-now')?.addEventListener('click', () => {
+      setTimeout(() => setScreen('save'), 80);
+    });
+    doc.getElementById('peek-close')?.addEventListener('click', () => {
+      setTimeout(() => {
+        if (currentScreen === 'location-peek') switchLayersOnly('location');
+      }, 40);
+    });
+    // Map pins are created after MapLibre loads — use delegation.
+    doc.addEventListener('click', (e) => {
+      if (!e.target.closest?.('.map-pin-el')) return;
+      setTimeout(() => {
+        if (currentScreen === 'location' || currentScreen === 'location-peek') {
+          switchLayersOnly('location-peek');
+        }
+      }, 80);
+    }, true);
+  } catch (_) {}
+}
+
+function render() {
+  const data = SCREENS[currentScreen];
+  const layers = data.layers;
+  const total = layers.length;
+
+  stage.querySelectorAll('.layer').forEach(n => n.remove());
+
+  layers.forEach((spec, i) => {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'layer ' + (spec.cls || '');
+    el.dataset.index = String(i);
+    el.innerHTML = `<span class="ord">${i + 1}</span><span class="copy"><span class="role">${spec.role}</span><div class="name">${spec.name}</div></span>`;
+    layoutLayer(el, spec, i, total);
+    el.addEventListener('click', () => select(i));
+    stage.appendChild(el);
+  });
+
+  orderList.innerHTML = '';
+  layers.forEach((spec, i) => {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.index = String(i);
+    btn.innerHTML = `<span class="n">${i + 1}</span><span><div class="r">${spec.role}</div><div class="t">${spec.name}</div></span>`;
+    btn.addEventListener('click', () => select(i));
+    li.appendChild(btn);
+    orderList.appendChild(li);
+  });
+
+  select(Math.min(selected, layers.length - 1), { scroll: false, speak: false });
+}
+
+function select(i, { scroll = true, speak = true } = {}) {
+  const layers = SCREENS[currentScreen].layers;
+  if (!layers.length) return;
+  selected = Math.max(0, Math.min(layers.length - 1, i));
+  applyLayerDepth();
+  orderList.querySelectorAll('button').forEach(btn => {
+    const on = Number(btn.dataset.index) === selected;
+    btn.classList.toggle('on', on);
+    if (on && scroll) btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
+  highlightInProto(layers[selected]);
+  if (speak) speakLayer(layers[selected], selected);
+}
+
+function stepLayer(delta) {
+  select(selected + delta);
+}
+
+pageTabs.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', () => setScreen(btn.dataset.screen));
+});
+
+
+[explodeEl, zoomEl, isoX, isoY, isoZ].forEach(el => el.addEventListener('input', setCSSVars));
+
+document.getElementById('view-reset')?.addEventListener('click', () => {
+  explodeEl.value = String(DEFAULT_VIEW.explode);
+  zoomEl.value = String(DEFAULT_VIEW.zoom);
+  isoX.value = String(DEFAULT_VIEW.x);
+  isoY.value = String(DEFAULT_VIEW.y);
+  isoZ.value = String(DEFAULT_VIEW.z);
+  panX = DEFAULT_VIEW.panX;
+  panY = DEFAULT_VIEW.panY;
+  setCSSVars();
+});
+
+document.getElementById('open-modal-layers')?.addEventListener('click', () => {
+  setScreen('identify-modal');
+  viewPanel.classList.remove('open');
+  viewMenuBtn.setAttribute('aria-expanded', 'false');
+});
+document.getElementById('open-peek-layers')?.addEventListener('click', () => {
+  setScreen('location-peek');
+  viewPanel.classList.remove('open');
+  viewMenuBtn.setAttribute('aria-expanded', 'false');
+});
+
+modeRotateBtn.addEventListener('click', () => setDragMode('rotate'));
+modePanBtn.addEventListener('click', () => setDragMode('pan'));
+soundToggle.addEventListener('click', () => setSoundOn(!soundOn));
+
+viewMenuBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const open = !viewPanel.classList.contains('open');
+  viewPanel.classList.toggle('open', open);
+  viewMenuBtn.setAttribute('aria-expanded', String(open));
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#view-menu')) {
+    viewPanel.classList.remove('open');
+    viewMenuBtn.setAttribute('aria-expanded', 'false');
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && viewPanel.classList.contains('open')) {
+    viewPanel.classList.remove('open');
+    viewMenuBtn.setAttribute('aria-expanded', 'false');
+    return;
+  }
+  const tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    stepLayer(1);
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    stepLayer(-1);
+  } else if (e.key === 'Home') {
+    e.preventDefault();
+    select(0);
+  } else if (e.key === 'End') {
+    e.preventDefault();
+    select(SCREENS[currentScreen].layers.length - 1);
+  }
+});
+
+(function dragInteract() {
+  const wrap = stageWrap;
+  let dragging = false, x0 = 0, y0 = 0, ix0 = 0, iy0 = 0, iz0 = 0, px0 = 0, py0 = 0, shift = false;
+  const start = (x, y, e) => {
+    dragging = true;
+    stage.classList.add('dragging');
+    wrap.classList.add('grabbing');
+    x0 = x; y0 = y;
+    ix0 = Number(isoX.value);
+    iy0 = Number(isoY.value);
+    iz0 = Number(isoZ.value);
+    px0 = panX;
+    py0 = panY;
+    shift = !!(e && e.shiftKey);
+  };
+  const move = (x, y) => {
+    if (!dragging) return;
+    const dx = x - x0, dy = y - y0;
+    if (dragMode === 'pan') {
+      panX = px0 + dx;
+      panY = py0 + dy;
+    } else if (shift) {
+      isoZ.value = String(clampAngle(iz0 + dx * 0.35));
+    } else {
+      isoY.value = String(clampAngle(iy0 + dx * 0.35));
+      isoX.value = String(clampAngle(ix0 - dy * 0.35));
+    }
+    setCSSVars();
+  };
+  const end = () => {
+    dragging = false;
+    stage.classList.remove('dragging');
+    wrap.classList.remove('grabbing');
+  };
+  wrap.addEventListener('mousedown', e => {
+    if (e.target.closest('.layer') || e.target.closest('.view-menu')) return;
+    start(e.clientX, e.clientY, e);
+  });
+  window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
+  window.addEventListener('mouseup', end);
+  wrap.addEventListener('touchstart', e => {
+    if (e.target.closest('.layer') || e.target.closest('.view-menu')) return;
+    const t = e.changedTouches[0];
+    start(t.clientX, t.clientY, e);
+  }, { passive: true });
+  window.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const t = e.changedTouches[0];
+    move(t.clientX, t.clientY);
+  }, { passive: true });
+  window.addEventListener('touchend', end);
+})();
+
+document.getElementById('stage-wrap').addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const next = Math.max(20, Math.min(120, Number(zoomEl.value) - Math.sign(e.deltaY) * 4));
+  zoomEl.value = String(next);
+  setCSSVars();
+}, { passive: false });
+
+protoFrame?.addEventListener('load', () => {
+  protoStyleReady = false;
+  wireProtoBridge();
+  const layers = SCREENS[currentScreen]?.layers;
+  const paint = () => {
+    if (layers?.[selected]) highlightInProto(layers[selected]);
+  };
+  paint();
+  setTimeout(paint, 120);
+  setTimeout(paint, 800);
+});
+
+setCSSVars();
+setDragMode('rotate');
+setSoundOn(false);
+{
+  const params = new URLSearchParams(location.search);
+  const bootScreen = params.get('screen');
+  setScreen(SCREENS[bootScreen] ? bootScreen : 'identify');
+  const bootLayer = Number(params.get('layer'));
+  if (Number.isFinite(bootLayer) && bootLayer > 0) {
+    setTimeout(() => select(bootLayer, { speak: false }), 1000);
+  }
+}
+
+(function fitPreviewPhone() {
+  const phone = document.querySelector('.preview-phone');
+  const frame = protoFrame;
+  if (!phone || !frame) return;
+  const apply = () => {
+    const w = phone.clientWidth || 280;
+    const h = phone.clientHeight || (w * 844 / 390);
+    const s = Math.min(w / 390, h / 844);
+    frame.style.transform = `scale(${s})`;
+    const layers = SCREENS[currentScreen]?.layers;
+    if (layers?.[selected]) highlightInProto(layers[selected]);
+  };
+  apply();
+  new ResizeObserver(apply).observe(phone);
+})();
+</script>
+</body>
+</html>

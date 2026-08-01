@@ -16,7 +16,7 @@
   --green-light:#2f7d2214;
   --green-mid:#2f7d2238;
   --green-dim:#2f7d2299;
-  --green-bright:#67AD5B;   /* illustration / habitat art only */
+  --green-bright:#009B49;   /* illustration / habitat art only */
   --gray:#6C6C6C;
   --gray-light:#6C6C6C1f;
   --brown:#C4955A;          /* illustration only */
@@ -350,7 +350,7 @@ body.embed .bottom-nav{padding:calc(10px * var(--lv-font,1)) calc(16px * var(--l
 body.embed .card{padding:calc(14px * var(--lv-font,1));border-radius:calc(16px * var(--lv-font,1))}
 body.embed .pill{padding:calc(6px * var(--lv-font,1)) calc(13px * var(--lv-font,1))}
 body.embed .card-icon{width:calc(36px * var(--lv-font,1));height:calc(36px * var(--lv-font,1))}
-body.embed .vo-sr-focus{outline:3px solid #67AD5B!important;outline-offset:3px;
+body.embed .vo-sr-focus{outline:3px solid #009B49!important;outline-offset:3px;
   box-shadow:0 0 0 5px rgba(103,173,91,.35)!important;border-radius:8px}
 body.embed .vo-sr-press{transform:scale(.95);transition:transform .15s}
 
@@ -1408,7 +1408,7 @@ function buildSonoBg(habitat,w,h){
 }
 
 function drawBirdLayer(ctx,w,h,habitat,t){
-  const c='#67AD5B';
+  const c='#009B49';
   if(habitat==='suburban'){
     // House finch: warbling, undulating multi-trace
     for(let x=0;x<w;x+=2){

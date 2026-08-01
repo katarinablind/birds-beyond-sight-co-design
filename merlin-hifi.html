@@ -1340,7 +1340,7 @@ input.field{
           9–11am Union Bay
           <span class="sub" id="id-meta">2 birds · ready to save</span>
         </h1>
-        <button type="button" class="icon-btn" aria-label="Close identify" data-go="s-history-date">
+        <button type="button" class="icon-btn" id="id-close" aria-label="Close identify" data-go="s-history-date">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
         <!-- Bell mounts here; kept after birds+Save in reading order via tabindex/collection order on Identify content first -->
@@ -4455,7 +4455,29 @@ input.field{
   });
   mountNotifBells();
   renderActivity();
-  go('s-identify', { silent: true });
+  {
+    const params = new URLSearchParams(location.search);
+    const start = params.get('start');
+    const startId = (start && document.getElementById(start)) ? start : 's-identify';
+    go(startId, { silent: true });
+    if (params.get('modal') === '1') {
+      requestAnimationFrame(() => {
+        try { openModal(); } catch (_) {}
+      });
+    } else {
+      try { closeModal(true); } catch (_) {}
+    }
+    if (params.get('peek') === '1') {
+      setTimeout(() => {
+        try {
+          ensureMap();
+          if (PLACES[0]) selectPlace(PLACES[0], { openPeek: true });
+        } catch (_) {}
+      }, 700);
+    } else {
+      try { hidePeek(); } catch (_) {}
+    }
+  }
   syncChromeInert();
   renderSaveBirds();
 

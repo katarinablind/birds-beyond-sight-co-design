@@ -13,7 +13,7 @@
   --black:#1a1a1a;
   /* one brand accent — accessible green (AA on white) */
   --green:#2f7d22;--green-light:#2f7d2214;--green-mid:#2f7d2238;--green-dim:#2f7d2299;
-  --green-bright:#67AD5B;        /* visualizations only */
+  --green-bright:#009B49;        /* visualizations only */
   --gray:#6C6C6C;--gray-light:#6C6C6C1c;
   /* cool, non-beige neutrals */
   --bg:#f6f7f8;--surface:#fff;--border:#e6e8ea;--text:#1a1a1a;
@@ -638,7 +638,7 @@ const REG=[
     embed:false,src:'sonogram.html',
     lens:'<b>Familiar surface, deeper content.</b> Borrows the IG-story format people already know, but the payload is a place-rooted sonogram, not a vanity post.'},
   {id:'compose',t:'Audio Composition Tool',sci:'Co-design workshop facilitation',aud:'group',time:'colocated',fid:4,
-    mot:['teach','witness'],skills:[],apis:[],embed:false,src:'index.html',scene:'outdoor',
+    mot:['teach','witness'],skills:[],apis:[],embed:false,src:'bird-composition.html',scene:'outdoor',
     reminisce:0,learnActive:3,learnPassive:1,audioFirst:5,audioCentrality:5,shareKind:'tool',memoryScope:4,retrospective:0,mindfulness:5,postWhen:'immediate',
     lens:'<b>Made together, in the room.</b> A co-design tool for a co-located workshop — one shared screen building a composition with participants.'},
   {id:'sketch-trailpost',t:'Trailhead Sound Post',sci:'Hand-sketched · non-tech',aud:'community',time:'colocated',fid:1,
@@ -895,8 +895,8 @@ function rateContrast(r){
 const CONTRAST_PAIRS=[
   {name:'Body text on white',use:'Card titles, copy',fg:'#1a1a1a',bg:'#ffffff'},
   {name:'Secondary gray on white',use:'Meta, captions',fg:'#6C6C6C',bg:'#ffffff'},
-  {name:'Brand green text on white',use:'Lens emphasis, links',fg:'#67AD5B',bg:'#ffffff'},
-  {name:'White on brand green',use:'Play buttons, active pills',fg:'#ffffff',bg:'#67AD5B'},
+  {name:'Brand green text on white',use:'Lens emphasis, links',fg:'#009B49',bg:'#ffffff'},
+  {name:'White on brand green',use:'Play buttons, active pills',fg:'#ffffff',bg:'#009B49'},
   {name:'White on accessible green',use:'Proposed button fill',fg:'#ffffff',bg:'#2f7d22'},
   {name:'Brown text on white',use:'Land accent labels',fg:'#C4955A',bg:'#ffffff'},
   {name:'Blue text on white',use:'Water accent labels',fg:'#8BB8E8',bg:'#ffffff'},
@@ -1733,7 +1733,7 @@ function renderA11y(){
   document.getElementById('contrastBlock').innerHTML=`
     <div class="bh">Live contrast audit</div>
     ${rows}
-    <div class="a11y-fix"><b>Real finding:</b> the brand green at <code>#67AD5B</code> only reaches <b>2.73:1</b> — it fails AA as both text and as a white-on-green button. Introduce <code>--green-text:#2f7d22</code> (<b>5.15:1</b>) for any text-bearing or interactive element; keep bright green for large decorative fills only.</div>`;
+    <div class="a11y-fix"><b>Real finding:</b> the brand green at <code>#009B49</code> only reaches <b>2.73:1</b> — it fails AA as both text and as a white-on-green button. Introduce <code>--green-text:#2f7d22</code> (<b>5.15:1</b>) for any text-bearing or interactive element; keep bright green for large decorative fills only.</div>`;
 
   // 2 — quick reference
   document.getElementById('quickRefBlock').innerHTML=`
