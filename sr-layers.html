@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Screen reader layers · Merle</title>
+<title>Screen reader debug · Merle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
@@ -107,14 +107,16 @@ a:hover{opacity:.65}
   height:auto;
   max-height:min(100%, calc(100dvh - 120px));
   border-radius:22px;overflow:hidden;
-  border:1px solid var(--line);background:#3c3c3e;
+  border:1px solid var(--line);background:#fff;
   box-shadow:0 12px 40px rgba(0,0,0,.12);
   position:relative;
 }
-.preview-phone iframe{
-  position:absolute;inset:0;
-  width:390px;height:844px;border:0;
-  transform-origin:top left;
+.preview-zoom{
+  position:relative;
+  transform-origin:0 0;
+}
+.preview-zoom iframe{
+  display:block;width:390px;height:844px;border:0;
 }
 .proto-hl{
   position:absolute;z-index:6;pointer-events:none;
@@ -123,7 +125,7 @@ a:hover{opacity:.65}
   outline-offset:1px;
   border-radius:8px;
   box-shadow:0 0 0 3px rgba(26,115,232,.18);
-  transition:top .15s ease,left .15s ease,width .15s ease,height .15s ease;
+  transition:top .12s ease,left .12s ease,width .12s ease,height .12s ease;
 }
 .kbd-hint{
   font-family:var(--font-sub);font-size:.62rem;color:var(--muted);
@@ -234,10 +236,6 @@ a:hover{opacity:.65}
   background:var(--green);border-color:var(--green);color:#fff;
 }
 .tool-btn svg{width:18px;height:18px;display:block;flex:none}
-#sound-toggle .ico-sound-on{display:none}
-#sound-toggle .ico-sound-off{display:block}
-#sound-toggle[aria-pressed="true"] .ico-sound-on{display:block}
-#sound-toggle[aria-pressed="true"] .ico-sound-off{display:none}
 .view-menu-btn{
   width:36px;height:36px;border-radius:10px;
   border:1px solid var(--line);background:#fff;
@@ -292,6 +290,44 @@ a:hover{opacity:.65}
   font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
 }
 .order-list .t{font-size:.82rem;font-weight:600;line-height:1.25}
+
+/* Flat / 2D reading-order view */
+body.flat-mode .stage-wrap{
+  perspective:none;
+  align-items:stretch;
+  justify-content:flex-start;
+  overflow:auto;
+  padding:56px 20px 24px;
+}
+body.flat-mode .stage{
+  width:min(440px, 100%);
+  height:auto;
+  min-height:0;
+  margin:0 auto;
+  transform:none !important;
+  transform-style:flat;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  position:relative;
+}
+body.flat-mode .phone-frame{display:none}
+body.flat-mode .layer{
+  position:relative !important;
+  left:auto !important;right:auto !important;top:auto !important;
+  width:100% !important;
+  transform:none !important;
+  opacity:1 !important;
+  min-height:48px;
+}
+body.flat-mode #mode-rotate,
+body.flat-mode #mode-pan{
+  opacity:.35;pointer-events:none;
+}
+#mode-flat .ico-flat-on{display:none}
+#mode-flat .ico-flat-off{display:block}
+#mode-flat[aria-pressed="true"] .ico-flat-on{display:block}
+#mode-flat[aria-pressed="true"] .ico-flat-off{display:none}
 </style>
 </head>
 <body>
@@ -306,7 +342,9 @@ a:hover{opacity:.65}
     </div>
     <div class="preview-frame-wrap">
       <div class="preview-phone">
-        <iframe id="proto-frame" title="Merle prototype preview" src="merlin-hifi.html?start=s-identify"></iframe>
+        <div class="preview-zoom" id="preview-zoom">
+          <iframe id="proto-frame" title="Merle prototype preview" src="merlin-hifi.html?start=s-identify"></iframe>
+        </div>
         <div class="proto-hl" id="proto-hl" hidden></div>
       </div>
     </div>
@@ -320,9 +358,9 @@ a:hover{opacity:.65}
       <button type="button" class="tool-btn" id="mode-pan" aria-pressed="false" aria-label="Pan view" title="Pan">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
       </button>
-      <button type="button" class="tool-btn" id="sound-toggle" aria-pressed="false" aria-label="Sound off" title="Read aloud">
-        <svg class="ico-sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg>
-        <svg class="ico-sound-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>
+      <button type="button" class="tool-btn" id="mode-flat" aria-pressed="false" aria-label="Flat 2D view" title="Flat 2D view">
+        <svg class="ico-flat-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/><path d="M18 15v4M16 17h4"/></svg>
+        <svg class="ico-flat-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 12h8M8 15h5"/></svg>
       </button>
       <button type="button" class="view-menu-btn" id="view-menu-btn" aria-expanded="false" aria-controls="view-panel" aria-label="View settings">···</button>
       <div class="view-panel" id="view-panel" role="region" aria-label="View controls">
@@ -344,7 +382,7 @@ a:hover{opacity:.65}
         <button type="button" class="reset-btn" id="view-reset">Reset view</button>
         <button type="button" class="reset-btn" id="open-modal-layers">Details modal layers</button>
         <button type="button" class="reset-btn" id="open-peek-layers">Location peek layers</button>
-        <p class="hint"><a href="index.html">Wiki</a> · <a href="merlin-hifi.html">Merle</a> · <a href="study.html">Study</a></p>
+        <p class="hint"><a href="index.html">Wiki</a> · <a href="merlin-hifi.html">Merle</a> · <a href="lv-anatomy.html">Low vision debug</a> · <a href="study.html">Study</a></p>
       </div>
     </div>
 
@@ -388,16 +426,30 @@ const SCREENS = {
   identify: {
     label: 'Identify',
     layers: [
-      { top: 56, h: 48, role: 'Heading 1', name: '9–11am Union Bay', cls: '', sel: '#id-heading' },
-      { top: 52, h: 40, role: 'Button', name: 'Close identify', cls: 'chrome', w: 44, left: true, sel: '#id-close' },
-      { top: 280, h: 56, role: 'Button', name: 'House Finch, likely', cls: '', sel: '#detect-list [data-id-bird="house-finch"]' },
+      { top: 56, h: 48, role: 'Heading 1', name: '9–11am Union Bay', cls: '', sel: '#id-heading',
+        sayApp: '9–11am Union Bay, 2 birds, ready to save, heading',
+        sayWeb: 'heading level 1, 9–11am Union Bay, 2 birds · ready to save' },
+      { top: 52, h: 40, role: 'Button', name: 'Close identify', cls: 'chrome', w: 44, left: true, sel: '#id-close',
+        sayApp: 'Close identify, button',
+        sayWeb: 'Close identify, button' },
+      { top: 280, h: 56, role: 'Button', name: 'House Finch, likely', cls: '', sel: '#detect-list [data-id-bird="house-finch"]',
+        sayApp: 'House Finch, likely, button',
+        sayWeb: 'House Finch, likely, button' },
       { top: 340, h: 56, role: 'Button', name: 'Spotted Towhee, likely', cls: '', sel: '#detect-list [data-id-bird="spotted-towhee"]' },
       { top: 410, h: 48, role: 'Button', name: 'Save session', cls: 'cta', sel: '#btn-save-top' },
-      { top: 520, h: 56, role: 'Button', name: 'Start listening for more birds', cls: 'chrome', sel: '#mic' },
-      { top: 600, h: 52, role: 'Tab, selected', name: 'Identify', cls: 'tabbar', col: 0, sel: '#tabbar [data-go="s-identify"]' },
-      { top: 600, h: 52, role: 'Tab, unavailable', name: 'Explore', cls: 'tabbar', col: 1, sel: '#tabbar [aria-label="Explore, unavailable"]' },
+      { top: 520, h: 56, role: 'Button', name: 'Start listening for more birds', cls: 'chrome', sel: '#mic',
+        sayApp: 'Start listening for more birds, button',
+        sayWeb: 'Start listening for more birds, button' },
+      { top: 600, h: 52, role: 'Tab, selected', name: 'Identify', cls: 'tabbar', col: 0, sel: '#tabbar [data-go="s-identify"]',
+        sayApp: 'Identify, tab, selected',
+        sayWeb: 'Identify, tab selected' },
+      { top: 600, h: 52, role: 'Tab, unavailable', name: 'Explore', cls: 'tabbar', col: 1, sel: '#tabbar [aria-label="Explore, unavailable"]',
+        sayApp: 'Explore, dimmed',
+        sayWeb: 'Explore, button, unavailable' },
       { top: 600, h: 52, role: 'Tab', name: 'History', cls: 'tabbar', col: 2, sel: '#tabbar [data-go="s-history-date"]' },
-      { top: 600, h: 52, role: 'Tab, unavailable', name: 'Life List', cls: 'tabbar', col: 3, sel: '#tabbar [aria-label="Life List, unavailable"]' }
+      { top: 600, h: 52, role: 'Tab, unavailable', name: 'Life List', cls: 'tabbar', col: 3, sel: '#tabbar [aria-label="Life List, unavailable"]',
+        sayApp: 'Life List, dimmed',
+        sayWeb: 'Life List, button, unavailable' }
     ]
   },
   'identify-modal': {
@@ -504,8 +556,9 @@ const viewMenuBtn = document.getElementById('view-menu-btn');
 const viewPanel = document.getElementById('view-panel');
 const modeRotateBtn = document.getElementById('mode-rotate');
 const modePanBtn = document.getElementById('mode-pan');
-const soundToggle = document.getElementById('sound-toggle');
+const modeFlatBtn = document.getElementById('mode-flat');
 const stageWrap = document.getElementById('stage-wrap');
+const previewZoom = document.getElementById('preview-zoom');
 const root = document.documentElement;
 
 const DEFAULT_VIEW = { explode: 52, zoom: 50, x: 55, y: 0, z: 5, panX: 0, panY: 0 };
@@ -516,9 +569,22 @@ let selected = 0;
 let currentScreen = 'identify';
 let protoStyleReady = false;
 let dragMode = 'rotate'; // 'rotate' | 'pan'
-let soundOn = false;
+let flatMode = false;
 let panX = 0;
 let panY = 0;
+
+function setFlatMode(on) {
+  flatMode = !!on;
+  document.body.classList.toggle('flat-mode', flatMode);
+  modeFlatBtn?.setAttribute('aria-pressed', String(flatMode));
+  modeFlatBtn?.setAttribute('aria-label', flatMode ? '3D explode view' : 'Flat 2D view');
+  if (flatMode) {
+    // Keep rotate/pan visually disabled; stage CSS handles layout.
+  } else {
+    setCSSVars();
+  }
+  render();
+}
 
 function clampAngle(v) {
   let n = Number(v);
@@ -545,30 +611,6 @@ function setDragMode(mode) {
   modePanBtn.setAttribute('aria-pressed', String(dragMode === 'pan'));
   stageWrap.classList.toggle('mode-rotate', dragMode === 'rotate');
   stageWrap.classList.toggle('mode-pan', dragMode === 'pan');
-}
-
-function stopSpeech() {
-  try { window.speechSynthesis?.cancel(); } catch (_) {}
-}
-
-function speakLayer(spec, index) {
-  if (!soundOn || !spec || !window.speechSynthesis) return;
-  stopSpeech();
-  const text = `${index + 1}. ${spec.role}. ${spec.name}`;
-  const u = new SpeechSynthesisUtterance(text);
-  u.rate = 1.05;
-  window.speechSynthesis.speak(u);
-}
-
-function setSoundOn(on) {
-  soundOn = !!on;
-  soundToggle.setAttribute('aria-pressed', String(soundOn));
-  soundToggle.setAttribute('aria-label', soundOn ? 'Sound on' : 'Sound off');
-  if (!soundOn) stopSpeech();
-  else {
-    const layers = SCREENS[currentScreen]?.layers;
-    if (layers?.[selected]) speakLayer(layers[selected], selected);
-  }
 }
 
 function syncPreview(key) {
@@ -600,6 +642,15 @@ function setScreen(key) {
 }
 
 function layoutLayer(el, spec, index, total) {
+  if (flatMode) {
+    el.style.removeProperty('--z');
+    el.style.top = '';
+    el.style.left = '';
+    el.style.right = '';
+    el.style.width = '';
+    el.style.minHeight = '';
+    return;
+  }
   const z = (total - index);
   el.style.setProperty('--z', z);
   el.style.top = spec.top + 'px';
@@ -691,7 +742,8 @@ function showOverlayHl(spec) {
 /** Map an element inside the scaled Merle iframe onto the phone overlay. */
 function placeHlFromElement(el) {
   const phone = document.querySelector('.preview-phone');
-  if (!protoHl || !phone || !el || !protoFrame) {
+  const zoom = previewZoom;
+  if (!protoHl || !phone || !el || !protoFrame || !zoom) {
     if (protoHl) protoHl.hidden = true;
     return false;
   }
@@ -700,17 +752,14 @@ function placeHlFromElement(el) {
     protoHl.hidden = true;
     return false;
   }
-  const fr = protoFrame.getBoundingClientRect();
+  const zr = zoom.getBoundingClientRect();
   const pr = phone.getBoundingClientRect();
-  const iw = protoFrame.clientWidth || 390;
-  const ih = protoFrame.clientHeight || 844;
-  const sx = fr.width / iw;
-  const sy = fr.height / ih;
+  const scale = zr.width / 390 || 1;
   protoHl.hidden = false;
-  protoHl.style.top = (fr.top - pr.top + er.top * sy) + 'px';
-  protoHl.style.left = (fr.left - pr.left + er.left * sx) + 'px';
-  protoHl.style.width = Math.max(er.width * sx, 10) + 'px';
-  protoHl.style.height = Math.max(er.height * sy, 10) + 'px';
+  protoHl.style.top = (zr.top - pr.top + er.top * scale) + 'px';
+  protoHl.style.left = (zr.left - pr.left + er.left * scale) + 'px';
+  protoHl.style.width = Math.max(er.width * scale, 10) + 'px';
+  protoHl.style.height = Math.max(er.height * scale, 10) + 'px';
   protoHl.style.right = 'auto';
   return true;
 }
@@ -755,7 +804,7 @@ function applyLayerDepth() {
     const idx = Number(el.dataset.index);
     el.classList.toggle('on', idx === selected);
     el.classList.toggle('above', idx < selected);
-    el.style.opacity = idx <= selected ? '1' : '0.2';
+    el.style.opacity = flatMode ? '1' : (idx <= selected ? '1' : '0.2');
   });
 }
 
@@ -846,10 +895,10 @@ function render() {
     orderList.appendChild(li);
   });
 
-  select(Math.min(selected, layers.length - 1), { scroll: false, speak: false });
+  select(Math.min(selected, layers.length - 1), { scroll: false });
 }
 
-function select(i, { scroll = true, speak = true } = {}) {
+function select(i, { scroll = true } = {}) {
   const layers = SCREENS[currentScreen].layers;
   if (!layers.length) return;
   selected = Math.max(0, Math.min(layers.length - 1, i));
@@ -860,7 +909,6 @@ function select(i, { scroll = true, speak = true } = {}) {
     if (on && scroll) btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   });
   highlightInProto(layers[selected]);
-  if (speak) speakLayer(layers[selected], selected);
 }
 
 function stepLayer(delta) {
@@ -896,9 +944,15 @@ document.getElementById('open-peek-layers')?.addEventListener('click', () => {
   viewMenuBtn.setAttribute('aria-expanded', 'false');
 });
 
-modeRotateBtn.addEventListener('click', () => setDragMode('rotate'));
-modePanBtn.addEventListener('click', () => setDragMode('pan'));
-soundToggle.addEventListener('click', () => setSoundOn(!soundOn));
+modeRotateBtn.addEventListener('click', () => {
+  if (flatMode) setFlatMode(false);
+  setDragMode('rotate');
+});
+modePanBtn.addEventListener('click', () => {
+  if (flatMode) setFlatMode(false);
+  setDragMode('pan');
+});
+modeFlatBtn?.addEventListener('click', () => setFlatMode(!flatMode));
 
 viewMenuBtn.addEventListener('click', (e) => {
   e.stopPropagation();
@@ -1009,26 +1063,26 @@ protoFrame?.addEventListener('load', () => {
 
 setCSSVars();
 setDragMode('rotate');
-setSoundOn(false);
 {
   const params = new URLSearchParams(location.search);
   const bootScreen = params.get('screen');
   setScreen(SCREENS[bootScreen] ? bootScreen : 'identify');
   const bootLayer = Number(params.get('layer'));
   if (Number.isFinite(bootLayer) && bootLayer > 0) {
-    setTimeout(() => select(bootLayer, { speak: false }), 1000);
+    setTimeout(() => select(bootLayer), 1000);
   }
 }
 
 (function fitPreviewPhone() {
   const phone = document.querySelector('.preview-phone');
-  const frame = protoFrame;
-  if (!phone || !frame) return;
+  const zoom = previewZoom;
+  if (!phone || !zoom || !protoFrame) return;
   const apply = () => {
     const w = phone.clientWidth || 280;
     const h = phone.clientHeight || (w * 844 / 390);
     const s = Math.min(w / 390, h / 844);
-    frame.style.transform = `scale(${s})`;
+    protoFrame.style.transform = '';
+    zoom.style.transform = `scale(${s})`;
     const layers = SCREENS[currentScreen]?.layers;
     if (layers?.[selected]) highlightInProto(layers[selected]);
   };

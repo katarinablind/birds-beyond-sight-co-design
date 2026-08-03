@@ -36,6 +36,7 @@ body{background:#eef0f1;font-family:var(--font);color:var(--text);-webkit-font-s
   font-size:.6rem;font-weight:600;color:var(--gray);cursor:pointer;padding:5px 11px;transition:all .12s}
 .clearbtn:hover{border-color:var(--green);color:var(--green)}
 .clearbtn:disabled{opacity:.4;cursor:default}
+.clearbtn[aria-pressed="true"]{border-color:var(--green);color:var(--green);background:var(--green-light)}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{display:inline-flex;align-items:center;gap:7px;padding:5px 11px 5px 9px;border-radius:999px;
   border:1.5px solid var(--border);background:var(--surface);cursor:pointer;font-size:.64rem;font-weight:600;
@@ -53,7 +54,8 @@ body{background:#eef0f1;font-family:var(--font);color:var(--text);-webkit-font-s
 .card.span4{grid-column:span 4}.card.span6{grid-column:span 6}.card.span8{grid-column:span 8}.card.span12{grid-column:span 12}
 .card-h{font-size:.7rem;font-weight:700;margin-bottom:2px}
 .card-sub{font-family:var(--font-sub);font-size:.58rem;color:var(--gray);margin-bottom:13px}
-@media(max-width:1080px){.card.span4,.card.span6,.card.span8{grid-column:span 12}}
+@media(max-width:1080px){.card.span4,.card.span6,.card.span8{grid-column:span 6}}
+@media(max-width:720px){.card.span4,.card.span6,.card.span8,.card.span12{grid-column:span 12}}
 
 /* horizontal bar rows */
 .row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
@@ -94,6 +96,7 @@ svg.scatter{width:100%;height:auto;display:block;overflow:hidden}
 #tip .t-meta{font-family:var(--font-sub);color:#cfcfcf}
 
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;white-space:nowrap}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -101,27 +104,30 @@ svg.scatter{width:100%;height:auto;display:block;overflow:hidden}
 <header><h1 class="sr-only">Jiu Jiu · Ideation Analytics</h1></header>
 <div class="sr-only" aria-live="polite" id="live"></div>
 
-<div class="head">
+<div class="head" id="pageHead" hidden>
   <div>
     <div class="h-title"><span class="dot"></span>Jiu Jiu · Ideation Analytics</div>
-    <div class="h-sub">Every concept from the evaluation matrix, read by its <b>categories of interaction</b>.</div>
+    <div class="h-sub">Focus buckets: <b>Visual Share</b> (incl. collectibles) &amp; <b>Audio Exposure</b>, plus play, bird content, places, together.</div>
   </div>
   <div class="h-count"><b id="kpiCount">0</b> ideas · <span id="kpiCats">0</span> categories shown</div>
 </div>
 
 <div class="filter">
   <div class="filter-top">
-    <span class="filter-lbl">Categories of interaction</span>
-    <span class="filter-hint">Click to isolate · click more to compare · click again to remove</span>
-    <button class="clearbtn" id="clearBtn" onclick="clearSel()" disabled>Show all</button>
+    <span class="filter-lbl">Categories</span>
+    <span class="filter-hint" id="catHint">6 focus areas</span>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="clearbtn" id="detailBtn" onclick="toggleDetail()" aria-pressed="false">Show detailed categories</button>
+      <button class="clearbtn" id="clearBtn" onclick="clearSel()" disabled>Show all</button>
+    </div>
   </div>
   <div class="chips" id="chips"></div>
-  <div class="filter-top" style="margin-top:15px;padding-top:13px;border-top:1px solid var(--border)">
+  <div class="filter-top" id="motHead" hidden style="margin-top:15px;padding-top:13px;border-top:1px solid var(--border)">
     <span class="filter-lbl">Motivation</span>
     <span class="filter-hint">Keep only ideas driven by these motivations (verbs from the matrix)</span>
     <button class="clearbtn" id="clearMotBtn" onclick="clearMot()" disabled>All motivations</button>
   </div>
-  <div class="chips" id="motChips"></div>
+  <div class="chips" id="motChips" hidden></div>
 </div>
 
 <div class="grid">
@@ -136,31 +142,31 @@ svg.scatter{width:100%;height:auto;display:block;overflow:hidden}
     <div class="card-sub">Each dot is one idea, coloured by category. Pick the two axes to compare any dimensions.</div>
     <div class="scatter-wrap"><svg class="scatter" id="scatter" viewBox="0 0 1200 520" preserveAspectRatio="xMidYMid meet"></svg></div></div>
 
-  <div class="card span4"><div class="card-h">Ideas per category</div>
+  <div class="card span4" id="catCard"><div class="card-h">Ideas per category</div>
     <div class="card-sub">How many concepts fall under each category of interaction.</div>
     <div id="catBar"></div></div>
 
-  <div class="card span8"><div class="card-h">Motivation</div>
+  <div class="card span8" id="motCard"><div class="card-h">Motivation</div>
     <div class="card-sub">Verbs from the matrix (an idea can have several), stacked by category.</div>
     <div id="verbBar"></div></div>
 
-  <div class="card span6"><div class="card-h">Sharing</div>
+  <div class="card span4" id="sharingCard"><div class="card-h">Sharing</div>
     <div class="card-sub">Private · Between · Public, stacked by category.</div>
     <div id="sharingBar"></div></div>
 
-  <div class="card span6"><div class="card-h">Learning</div>
+  <div class="card span4" id="learnCard"><div class="card-h">Learning</div>
     <div class="card-sub">Passive → Active.</div>
     <div id="learnBar"></div></div>
 
-  <div class="card span6"><div class="card-h">Audio focus (1–5)</div>
+  <div class="card span4" id="audioCard"><div class="card-h">Audio focus (1–5)</div>
     <div class="card-sub">1 = background · 5 = audio-focused.</div>
     <div id="audioBar"></div></div>
 
-  <div class="card span6"><div class="card-h">Mindfulness (1–5)</div>
+  <div class="card span4" id="mindCard"><div class="card-h">Mindfulness (1–5)</div>
     <div class="card-sub">1 = low · 5 = high.</div>
     <div id="mindBar"></div></div>
 
-  <div class="card span12"><div class="card-h">Timeline (1–5)</div>
+  <div class="card span4" id="timeCard"><div class="card-h">Timeline (1–5)</div>
     <div class="card-sub">1 = after birding · 5 = all the time / pre-birding.</div>
     <div id="timeBar"></div></div>
 </div>
@@ -168,22 +174,68 @@ svg.scatter{width:100%;height:auto;display:block;overflow:hidden}
 <div id="tip"></div>
 
 <script>
-const DATA=[{"n":"Featured bird from different countries (bird of the day but with region focus, audio featured)","s":"Public","v":["Explore","Grow"],"a":3,"l":"Active","t":5,"w":"","m":1,"c":"Bird Feature"},{"n":"Spin wheel to for bird sound feature from different country","s":"Public","v":["Connect","Remember"],"a":4,"l":"Active","t":1,"w":"","m":3,"c":"Bird Feature"},{"n":"Create an album for each type of birds, collecting different calls and songs","s":"Public","v":["Explore","Remember"],"a":5,"l":"Active","t":5,"w":"all time","m":2,"c":"Bird Feature"},{"n":"Log daily the bird you find representative of yourself and see what birds your friends are in different locations","s":"Public","v":["Explore","Connect"],"a":1,"l":"Between","t":5,"w":"all time","m":1,"c":"Map"},{"n":"Get a random bird outside of your location that encourages you to travel to see these birds. Provides birds for travel goals","s":"Public","v":["Explore"],"a":1,"l":"Active","t":5,"w":"prebirding","m":2,"c":"Bird Feature"},{"n":"Assortment of birds species and sounds from your home","s":"Public","v":["Remember","Relive"],"a":4,"l":"Between","t":5,"w":"","m":4,"c":"Bird Feature"},{"n":"People going outside and listening to birds in the wild for certain amount of time daily","s":"Private","v":["Explore","Connect"],"a":null,"l":"Active","t":5,"w":"prebirding all time","m":5,"c":"Encourage outdoors"},{"n":"Audio drama/music piece of day/year in the life of a bird","s":"Public","v":["Rethink","Grow"],"a":5,"l":"Passive","t":5,"w":"","m":4,"c":"Bird Feature"},{"n":"A globe visualization that shows all of the birds you and your friends have entered, and you can go in and listen to your friends' bird entries with notes, audio, and photos.","s":"Public","v":["Meet","Explore","Show"],"a":null,"l":"Active","t":5,"w":"","m":1,"c":"Map"},{"n":"World map with different birds","s":"Public","v":["Explore","Grow"],"a":1,"l":"Active","t":5,"w":"","m":1,"c":"Encourage outdoors"},{"n":"You haven't been birding is a long time/ you haven't recorded birds sound in a while notification reminder.","s":"Between","v":["Show","Remember","Relive"],"a":1,"l":"Passive","t":1,"w":"","m":2,"c":"Contextualize"},{"n":"human attempts at bird vocalization rater","s":"Between","v":["Connect","Express","Befriend"],"a":4,"l":"Active","t":1,"w":"","m":1,"c":"Language"},{"n":"passively recording all of the birds in the background when you are out for a walk with your friends/family. Note, it doesn't show them in real time to distract from the interaction or nature. It also has the use case for logging all of the heard birds, not retaining the sound bites of them, and is meant for long-term recording. Then, get a shareable artifact showing what birds were with you during your walk.","s":"Public","v":["Express","Rethink","Show","Connect"],"a":4,"l":"Passive","t":5,"w":"","m":2,"c":"In nature together"},{"n":"laser show visualizations to bird sounds","s":"Between","v":["Relive","Connect","Rethink"],"a":1,"l":"Passive","t":1,"w":"","m":1,"c":"Spatial"},{"n":"phone only shows colors and when there is a lot of bird sound around you or it hears a rare bird it will turn red to tell you and your birding friends to shut up and listen to the birds","s":"Private","v":["Connect"],"a":3,"l":"Passive","t":5,"w":"during","m":4,"c":"Bird Mode"},{"n":"Using bird facts to supplement awkward social interactions","s":"Public","v":["Rescue","Meet","Express"],"a":2,"l":"Between","t":5,"w":"all time","m":3,"c":"Sharable Knowledge"},{"n":"creating a hearing a bird direct to adding it to your lifer list pipeline","s":"Between","v":["Show","Remember","Build","Grow"],"a":3,"l":"Passive","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"badges that signify taking courses offered by Cornell","s":"Public","v":["Show","Grow","Meet"],"a":1,"l":"Active","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"birding profile showing how many birds you can ID by ear and by sight","s":"Public","v":["Grow","Meet","Show"],"a":1,"l":"Active","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"AI made summary page of your last birding outing with the birds you saw, your best recordings, photos, where you went and more.","s":"Public","v":["Relive","Show","Build"],"a":2,"l":"Passive","t":1,"w":"","m":2,"c":"Curation"},{"n":"phone is unable to be used at full capacity till you record bird sound","s":"Private","v":["Connect"],"a":5,"l":"Passive","t":5,"w":"all time","m":3,"c":"Audio Exposure"},{"n":"Chat where you can send bird sounds but you can't hear what others have posted till you post your own","s":"Public","v":["Connect","Meet","Express","Relive"],"a":5,"l":"Passive","t":1,"w":"","m":2,"c":"Audio Exposure"},{"n":"Shared mini bird nature cologne that populates when multiple people add recent bird IDs","s":"Public","v":["Show","Connect","Relive","Explore","Remember"],"a":1,"l":"Passive","t":1,"w":"","m":1,"c":"Game"},{"n":"iterative bird learning that starts off by IDing the bird then asks you to pick what bird you are hearing if you hear it again later on","s":"Private","v":["Grow"],"a":5,"l":"Active","t":1,"w":"","m":3,"c":"Game"},{"n":"bird tamagotchi. tamagotchi progresses the more bird related activities you do and is bird themed","s":"Private","v":["Grow","Connect","Build"],"a":1,"l":"Passive","t":1,"w":"","m":1,"c":"Game"},{"n":"Weekly bird audio quiz","s":"Private","v":["Grow"],"a":5,"l":"Active","t":1,"w":"","m":1,"c":"Game"},{"n":"AI made song made up of all of the birds you have recorded over a certain amount of time. You can play around and order and mess with the sounds to create the song you want.","s":"Between","v":["Build","Relive","Remember","Express"],"a":5,"l":"Passive","t":1,"w":"","m":1,"c":"Audio Creation"},{"n":"Profiles for birds showing it as \"look at all of the friends you made this week\" recaps","s":"Between","v":["Relive","Remember"],"a":1,"l":"Passive","t":1,"w":"","m":2,"c":"Profile"},{"n":"list of birding groups in your area","s":"Private","v":["Meet","Connect"],"a":1,"l":"Passive","t":5,"w":"all time","m":1,"c":"Community"},{"n":"pre birding group mindfulness primer insulated through an app","s":"Private","v":["Connect","Meet"],"a":3,"l":"Passive","t":4,"w":"","m":5,"c":"Meditation"},{"n":"weekly goals to listen to blank amount of bird sound","s":"Private","v":["Connect","Grow"],"a":4,"l":"Passive","t":5,"w":"all time","m":4,"c":"Habit"},{"n":"daily streaks of recording bird sounds","s":"Public","v":["Connect","Prove","Build"],"a":4,"l":"Active","t":5,"w":"all time","m":2,"c":"Habit"},{"n":"Building a space where people can revisit the birding encounters immersively","s":"Private","v":["Relive","Remember"],"a":3,"l":"Passive","t":5,"w":"all time","m":4,"c":"Spatial"},{"n":"Growing plants that are edible for birds in the neighborhood garden","s":"Public","v":["Connect","Befriend","Grow"],"a":1,"l":"Passive","t":5,"w":"prebirding all time","m":1,"c":"Spatial"},{"n":"Earning bird-related badges on one's LinkedIn by reflecting on recent birding experience","s":"Public","v":["Prove"],"a":1,"l":"Between","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"Receiving postcards from bird friends, showing places they've been","s":"Private","v":["Connect","Befriend","Grow"],"a":1,"l":"Passive","t":5,"w":"all time","m":2,"c":"Collectible"},{"n":"Posting birding encounters and connect with birders and like-minded people","s":"Public","v":["Prove","Meet"],"a":1,"l":"Passive","t":1,"w":"1 day","m":4,"c":"Interests/Personality"},{"n":"Listening back to the audio","s":"Private","v":["Remember","Relive"],"a":5,"l":"Active","t":1,"w":"1 week","m":5,"c":"Audio Exposure"},{"n":"After setting personal representative birds, when texting to your friends, the ringtone will change to your personal rep bird's call for your friends","s":"Public","v":["Love","Build","Connect"],"a":5,"l":"Passive","t":5,"w":"all time","m":3,"c":"Audio Exposure"},{"n":"Every 3 or 6 months, the birds you encountered will fly back, bringing voice recording from previous birding as \"gifts\" to you; if it's a group birding event, it will send recording to all members","s":"Public","v":["Relive","Connect","Remember","Show"],"a":5,"l":"Passive","t":3,"w":"1 month","m":5,"c":"Audio Exposure"},{"n":"When bird album is shared in group, allow a quick button to play the audio directly in the group chat page without jumping to a different page","s":"Public","v":["Explore","Show"],"a":5,"l":"Active","t":5,"w":"all time","m":3,"c":"Audio Aware"},{"n":"Acknowledging that every bird sounds differently, so on Merlin page, provide a sound button at the corner to make it more accessible and visible","s":"Public","v":["Explore","Rethink"],"a":5,"l":"Active","t":5,"w":"all time","m":3,"c":"Audio Aware"},{"n":"Breakdown the audio clips, and system will tell whether it is a call or song","s":"Private","v":["Remember","Rethink"],"a":5,"l":"Active","t":1,"w":"1 month","m":4,"c":"Audio Breakdown"},{"n":"Based on different segments of bird audio clips, let users listen and compare different calls and songs back to back","s":"Public","v":["Meet","Build","Remember"],"a":5,"l":"Passive","t":1,"w":"1 day","m":4,"c":"Chat"},{"n":"Using bird calls and type of birds they encounter recently to locate your friend. goal is to locate them based on the list of birds they see in past 3 days","s":"Public","v":["Rescue","Explore","Rethink"],"a":3,"l":"Passive","t":5,"w":"all time","m":2,"c":"Game"},{"n":"There's a bot in the group chat which asks questions or trivia within the gc, and you and your friends can interact with it","s":"Public","v":["Explore","Express"],"a":3,"l":"Active","t":5,"w":"all time","m":1,"c":"Game"},{"n":"Nurture an egg together with your partner, going through hatching, feeding, and hunting different phases of a bird's life. You don't know what bird it would be unless you keep taking care of it. Different stages also represent diff stages of relationships","s":"Public","v":["Connect","Build"],"a":1,"l":"Passive","t":5,"w":"all time","m":1,"c":"Game"},{"n":"Having bird feeders for birds in the neighborhood","s":"Between","v":["Connect","Befriend"],"a":1,"l":"Passive","t":5,"w":"all time","m":1,"c":"Direct communication"},{"n":"Having water for birds in the pond","s":"Between","v":["Connect","Befriend"],"a":1,"l":"Passive","t":5,"w":"all time","m":1,"c":"Direct communication"},{"n":"Each bird has their own profile page, based on user's pictures and user picked name (or randomly generated). Next time when the same bird is spotted or encountered, it sends you a message of \"XYZ is back\" or \"XYZ's cousin is back\"","s":"Private","v":["Connect","Befriend"],"a":3,"l":"Passive","t":5,"w":"all time","m":3,"c":"Profile"},{"n":"In the community page, people can share their experience and learn together to find like-minded people","s":"Public","v":["Explore","Meet","Grow"],"a":1,"l":"Active","t":1,"w":"1 day","m":3,"c":"Community"},{"n":"Share birding in the community in a professional setting, and you can reach out to like-minded people","s":"Public","v":["Connect","Meet","Grow"],"a":1,"l":"Active","t":1,"w":"1 day","m":3,"c":"Community"},{"n":"When birding, phone will be set to bird mode (only allows for recording bird sounds) and smart watches will push for mindful practices (e.g.: breathing exercise and listening exercise, trying to listen for far far away sound, mid distance or super close)","s":"Private","v":["Connect"],"a":5,"l":"Passive","t":5,"w":"Prebirding","m":5,"c":"Meditation"},{"n":"Celebrate little achievements in birding (either visual or auditory) by giving rewards in the app and visualing the growth","s":"Private","v":["Grow","Show"],"a":3,"l":"Between","t":1,"w":"all time","m":2,"c":"Habit"},{"n":"Find my but for bird friends (approx location based on logged habitat)","s":"Private","v":["Connect","Befriend","Explore"],"a":1,"l":"Between","t":5,"w":"all time","m":4,"c":"Map"},{"n":"All time mix of recorded bird audio","s":"Private","v":["Explore","Connect"],"a":1,"l":"Passive","t":5,"w":"all time","m":4,"c":"Encourage outdoors"},{"n":"Birding location suggestions phrased as \"live\" shows (birds = music)","s":"Public","v":["Explore","Rethink"],"a":5,"l":"Passive","t":5,"w":"Prebirding all time","m":4,"c":"Encourage outdoors"},{"n":"Prompt to record bird you'd miss if you moved","s":"Private","v":["Rethink","Befriend","Remember"],"a":5,"l":"Passive","t":5,"w":"all time","m":5,"c":"Encourage outdoors"},{"n":"Number of people who heard same bird (post-sound ID)","s":"Public","v":["Connect"],"a":4,"l":"Between","t":1,"w":"30sec","m":1,"c":"Contextualize"},{"n":"Score for human mimimed bird call","s":"Private","v":["Build","Rethink"],"a":5,"l":"Active","t":3,"w":"1 month","m":3,"c":"Language"},{"n":"Nudge to think about emotion of bird","s":"Private","v":["Rethink","Befriend"],"a":3,"l":"Passive","t":4,"w":"1 year","m":5,"c":"Language"},{"n":"Bird sound breakdown of nuances","s":"Public","v":["Grow"],"a":5,"l":"Active","t":2,"w":"1 week","m":1,"c":"Language"},{"n":"Guided reflective note taking after sound ID","s":"Private","v":["Connect"],"a":3,"l":"Passive","t":5,"w":"during","m":5,"c":"Bird Mode"},{"n":"Badges for bird friendly habitat initatives","s":"Public","v":["Befriend","Prove"],"a":1,"l":"Between","t":5,"w":"all time","m":3,"c":"Collectible"},{"n":"Postcard stamps that play bird audio when having gone to other places","s":"Public","v":["Prove","Explore"],"a":3,"l":"Between","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"Digital of vinyl of good bird recordings","s":"Public","v":["Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"Cute digital bird stickers for life list","s":"Public","v":["Prove"],"a":1,"l":"Between","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"Badge of own sound ID abilities","s":"Public","v":["Prove"],"a":4,"l":"Active","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"Bird albums with sales going for conservation proceeds","s":"Public","v":["Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"Amount of people live listening to bird species","s":"Public","v":["Connect"],"a":5,"l":"Between","t":5,"w":"pre","m":1,"c":"Live"},{"n":"Live chat of people uploading bird audio on species","s":"Public","v":["Connect"],"a":5,"l":"Passive","t":5,"w":"during","m":1,"c":"Live"},{"n":"Live listening sessions set up by other birders","s":"Public","v":["Connect","Explore"],"a":5,"l":"Passive","t":5,"w":"during","m":1,"c":"Live"},{"n":"Live notification of friends hearing named bird friends","s":"Between","v":["Befriend"],"a":3,"l":"Between","t":5,"w":"pre","m":1,"c":"Live"},{"n":"ID specific bird friend based on species and location","s":"Private","v":["Befriend"],"a":3,"l":"Passive","t":5,"w":"pre","m":3,"c":"Live"},{"n":"Weekly favorite bird encounters","s":"Between","v":["Relive"],"a":1,"l":"Passive","t":3,"w":"1 week","m":2,"c":"Curation"},{"n":"Bird ecounters shitposting feed for friends","s":"Between","v":["Connect","Love"],"a":1,"l":"Between","t":3,"w":"1 week","m":1,"c":"Curation"},{"n":"Bird horoscope with audio","s":"Public","v":["Rethink"],"a":3,"l":"Passive","t":4,"w":"1 year","m":3,"c":"Interests/Personality"},{"n":"Top 5 bird sounds","s":"Public","v":["Express"],"a":5,"l":"Passive","t":5,"w":"all time","m":2,"c":"Interests/Personality"},{"n":"Shortcut to favorite bird audio from home","s":"Private","v":["Remember"],"a":5,"l":"Passive","t":5,"w":"all time","m":4,"c":"Interests/Personality"},{"n":"Get matched with other birder on favorite bird sounds","s":"Between","v":["Connect"],"a":5,"l":"Passive","t":4,"w":"1 month","m":1,"c":"Interests/Personality"},{"n":"Set phone to bird","s":"Private","v":["Grow"],"a":3,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"n":"Lock new recording behind listening to old one","s":"Private","v":["Grow"],"a":5,"l":"Passive","t":5,"w":"pre","m":1,"c":"Audio Exposure"},{"n":"Bird friend in group chat sends voice notes","s":"Between","v":["Befriend","Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"n":"Bird friend in group facetime","s":"Between","v":["Befriend","Rethink"],"a":4,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"n":"Birds to study/relax to","s":"Private","v":["Love"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"n":"Play sound of bird friend on opening app if not logged recently","s":"Private","v":["Befriend","Remember"],"a":5,"l":"Passive","t":4,"w":"1 month","m":2,"c":"Audio Exposure"},{"n":"Highlighting commmon sound IDs that everyone knows","s":"Private","v":["Rethink"],"a":5,"l":"Active","t":5,"w":"pre","m":1,"c":"Audio Aware"},{"n":"Audio breakdown on bird sound and habitat","s":"Public","v":["Grow"],"a":5,"l":"Active","t":3,"w":"1 week","m":1,"c":"Audio Breakdown"},{"n":"Reminder to just be with your bird friends","s":"Private","v":["Befriend"],"a":1,"l":"Between","t":5,"w":"1 year","m":3,"c":"Audio Aware"},{"n":"Send bird audio that expires","s":"Between","v":["Connect","Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Chat"},{"n":"Seed packet for birds with proceeds for conservation","s":"Between","v":["Befriend"],"a":1,"l":"Between","t":5,"w":"all time","m":3,"c":"Direct communication"},{"n":"Bird friend profile","s":"Between","v":["Befriend","Rethink"],"a":1,"l":"Between","t":5,"w":"all time","m":3,"c":"Profile"},{"n":"Timer for birding by ear as meditation","s":"Private","v":["Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":5,"c":"Meditation"},{"n":"Morning bird chorus audio","s":"Public","v":["Relive"],"a":5,"l":"Passive","t":2,"w":"1 day","m":5,"c":"Meditation"},{"n":"Show most recent bird encounters on profile","s":"Public","v":["Show","Prove"],"a":1,"l":"Between","t":1,"w":"5min","m":1,"c":"Habit"},{"n":"Streak for listening to birds","s":"Between","v":["Prove"],"a":3,"l":"Passive","t":2,"w":"1 day","m":1,"c":"Habit"},{"n":"Playing last bird audio on opening app","s":"Private","v":["Remember"],"a":5,"l":"Passive","t":5,"w":"pre","m":2,"c":"Habit"}];
-const CAT_ORDER=["Collectible", "Audio Exposure", "Game", "Bird Feature", "Habit", "Encourage outdoors", "Interests/Personality", "Live", "Language", "Meditation", "Audio Aware", "Map", "Spatial", "Curation", "Profile", "Community", "Direct communication", "Contextualize", "Bird Mode", "Audio Breakdown", "Chat", "In nature together", "Sharable Knowledge", "Audio Creation"];
+const DATA=[{"n":"Featured bird from different countries (bird of the day but with region focus, audio featured)","s":"Public","v":["Explore","Grow"],"a":3,"l":"Active","t":5,"w":"","m":1,"c":"Bird Feature"},{"n":"Spin wheel to for bird sound feature from different country","s":"Public","v":["Connect","Remember"],"a":4,"l":"Active","t":1,"w":"","m":3,"c":"Bird Feature"},{"n":"Create an album for each type of birds, collecting different calls and songs","s":"Public","v":["Explore","Remember"],"a":5,"l":"Active","t":5,"w":"all time","m":2,"c":"Bird Feature"},{"n":"Log daily the bird you find representative of yourself and see what birds your friends are in different locations","s":"Public","v":["Explore","Connect"],"a":1,"l":"Between","t":5,"w":"all time","m":1,"c":"Map"},{"n":"Get a random bird outside of your location that encourages you to travel to see these birds. Provides birds for travel goals","s":"Public","v":["Explore"],"a":1,"l":"Active","t":5,"w":"prebirding","m":2,"c":"Bird Feature"},{"n":"Assortment of birds species and sounds from your home","s":"Public","v":["Remember","Relive"],"a":4,"l":"Between","t":5,"w":"","m":4,"c":"Bird Feature"},{"n":"People going outside and listening to birds in the wild for certain amount of time daily","s":"Private","v":["Explore","Connect"],"a":null,"l":"Active","t":5,"w":"prebirding all time","m":5,"c":"Encourage outdoors"},{"n":"Audio drama/music piece of day/year in the life of a bird","s":"Public","v":["Rethink","Grow"],"a":5,"l":"Passive","t":5,"w":"","m":4,"c":"Bird Feature"},{"n":"A globe visualization that shows all of the birds you and your friends have entered, and you can go in and listen to your friends' bird entries with notes, audio, and photos.","s":"Public","v":["Meet","Explore","Show"],"a":null,"l":"Active","t":5,"w":"","m":1,"c":"Map"},{"n":"World map with different birds","s":"Public","v":["Explore","Grow"],"a":1,"l":"Active","t":5,"w":"","m":1,"c":"Encourage outdoors"},{"n":"You haven't been birding is a long time/ you haven't recorded birds sound in a while notification reminder.","s":"Between","v":["Show","Remember","Relive"],"a":1,"l":"Passive","t":1,"w":"","m":2,"c":"Contextualize"},{"n":"human attempts at bird vocalization rater","s":"Between","v":["Connect","Express","Befriend"],"a":4,"l":"Active","t":1,"w":"","m":1,"c":"Language"},{"n":"passively recording all of the birds in the background when you are out for a walk with your friends/family. Note, it doesn't show them in real time to distract from the interaction or nature. It also has the use case for logging all of the heard birds, not retaining the sound bites of them, and is meant for long-term recording. Then, get a shareable artifact showing what birds were with you during your walk.","s":"Public","v":["Express","Rethink","Show","Connect"],"a":4,"l":"Passive","t":5,"w":"","m":2,"c":"In nature together"},{"n":"laser show visualizations to bird sounds","s":"Between","v":["Relive","Connect","Rethink"],"a":1,"l":"Passive","t":1,"w":"","m":1,"c":"Spatial"},{"n":"phone only shows colors and when there is a lot of bird sound around you or it hears a rare bird it will turn red to tell you and your birding friends to shut up and listen to the birds","s":"Private","v":["Connect"],"a":3,"l":"Passive","t":5,"w":"during","m":4,"c":"Bird Mode"},{"n":"Using bird facts to supplement awkward social interactions","s":"Public","v":["Rescue","Meet","Express"],"a":2,"l":"Between","t":5,"w":"all time","m":3,"c":"Sharable Knowledge"},{"n":"creating a hearing a bird direct to adding it to your lifer list pipeline","s":"Between","v":["Show","Remember","Build","Grow"],"a":3,"l":"Passive","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"badges that signify taking courses offered by Cornell","s":"Public","v":["Show","Grow","Meet"],"a":1,"l":"Active","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"birding profile showing how many birds you can ID by ear and by sight","s":"Public","v":["Grow","Meet","Show"],"a":1,"l":"Active","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"AI made summary page of your last birding outing with the birds you saw, your best recordings, photos, where you went and more.","s":"Public","v":["Relive","Show","Build"],"a":2,"l":"Passive","t":1,"w":"","m":2,"c":"Curation"},{"n":"phone is unable to be used at full capacity till you record bird sound","s":"Private","v":["Connect"],"a":5,"l":"Passive","t":5,"w":"all time","m":3,"c":"Audio Exposure"},{"n":"Chat where you can send bird sounds but you can't hear what others have posted till you post your own","s":"Public","v":["Connect","Meet","Express","Relive"],"a":5,"l":"Passive","t":1,"w":"","m":2,"c":"Audio Exposure"},{"n":"Shared mini bird nature cologne that populates when multiple people add recent bird IDs","s":"Public","v":["Show","Connect","Relive","Explore","Remember"],"a":1,"l":"Passive","t":1,"w":"","m":1,"c":"Game"},{"n":"iterative bird learning that starts off by IDing the bird then asks you to pick what bird you are hearing if you hear it again later on","s":"Private","v":["Grow"],"a":5,"l":"Active","t":1,"w":"","m":3,"c":"Game"},{"n":"bird tamagotchi. tamagotchi progresses the more bird related activities you do and is bird themed","s":"Private","v":["Grow","Connect","Build"],"a":1,"l":"Passive","t":1,"w":"","m":1,"c":"Game"},{"n":"Weekly bird audio quiz","s":"Private","v":["Grow"],"a":5,"l":"Active","t":1,"w":"","m":1,"c":"Game"},{"n":"AI made song made up of all of the birds you have recorded over a certain amount of time. You can play around and order and mess with the sounds to create the song you want.","s":"Between","v":["Build","Relive","Remember","Express"],"a":5,"l":"Passive","t":1,"w":"","m":1,"c":"Audio Creation"},{"n":"Profiles for birds showing it as \"look at all of the friends you made this week\" recaps","s":"Between","v":["Relive","Remember"],"a":1,"l":"Passive","t":1,"w":"","m":2,"c":"Profile"},{"n":"list of birding groups in your area","s":"Private","v":["Meet","Connect"],"a":1,"l":"Passive","t":5,"w":"all time","m":1,"c":"Community"},{"n":"pre birding group mindfulness primer insulated through an app","s":"Private","v":["Connect","Meet"],"a":3,"l":"Passive","t":4,"w":"","m":5,"c":"Meditation"},{"n":"weekly goals to listen to blank amount of bird sound","s":"Private","v":["Connect","Grow"],"a":4,"l":"Passive","t":5,"w":"all time","m":4,"c":"Habit"},{"n":"daily streaks of recording bird sounds","s":"Public","v":["Connect","Prove","Build"],"a":4,"l":"Active","t":5,"w":"all time","m":2,"c":"Habit"},{"n":"Building a space where people can revisit the birding encounters immersively","s":"Private","v":["Relive","Remember"],"a":3,"l":"Passive","t":5,"w":"all time","m":4,"c":"Spatial"},{"n":"Growing plants that are edible for birds in the neighborhood garden","s":"Public","v":["Connect","Befriend","Grow"],"a":1,"l":"Passive","t":5,"w":"prebirding all time","m":1,"c":"Spatial"},{"n":"Earning bird-related badges on one's LinkedIn by reflecting on recent birding experience","s":"Public","v":["Prove"],"a":1,"l":"Between","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"Receiving postcards from bird friends, showing places they've been","s":"Private","v":["Connect","Befriend","Grow"],"a":1,"l":"Passive","t":5,"w":"all time","m":2,"c":"Collectible"},{"n":"Posting birding encounters and connect with birders and like-minded people","s":"Public","v":["Prove","Meet"],"a":1,"l":"Passive","t":1,"w":"1 day","m":4,"c":"Interests/Personality"},{"n":"Listening back to the audio","s":"Private","v":["Remember","Relive"],"a":5,"l":"Active","t":1,"w":"1 week","m":5,"c":"Audio Exposure"},{"n":"After setting personal representative birds, when texting to your friends, the ringtone will change to your personal rep bird's call for your friends","s":"Public","v":["Love","Build","Connect"],"a":5,"l":"Passive","t":5,"w":"all time","m":3,"c":"Audio Exposure"},{"n":"Every 3 or 6 months, the birds you encountered will fly back, bringing voice recording from previous birding as \"gifts\" to you; if it's a group birding event, it will send recording to all members","s":"Public","v":["Relive","Connect","Remember","Show"],"a":5,"l":"Passive","t":3,"w":"1 month","m":5,"c":"Audio Exposure"},{"n":"When bird album is shared in group, allow a quick button to play the audio directly in the group chat page without jumping to a different page","s":"Public","v":["Explore","Show"],"a":5,"l":"Active","t":5,"w":"all time","m":3,"c":"Audio Aware"},{"n":"Acknowledging that every bird sounds differently, so on Merlin page, provide a sound button at the corner to make it more accessible and visible","s":"Public","v":["Explore","Rethink"],"a":5,"l":"Active","t":5,"w":"all time","m":3,"c":"Audio Aware"},{"n":"Breakdown the audio clips, and system will tell whether it is a call or song","s":"Private","v":["Remember","Rethink"],"a":5,"l":"Active","t":1,"w":"1 month","m":4,"c":"Audio Breakdown"},{"n":"Based on different segments of bird audio clips, let users listen and compare different calls and songs back to back","s":"Public","v":["Meet","Build","Remember"],"a":5,"l":"Passive","t":1,"w":"1 day","m":4,"c":"Chat"},{"n":"Using bird calls and type of birds they encounter recently to locate your friend. goal is to locate them based on the list of birds they see in past 3 days","s":"Public","v":["Rescue","Explore","Rethink"],"a":3,"l":"Passive","t":5,"w":"all time","m":2,"c":"Game"},{"n":"There's a bot in the group chat which asks questions or trivia within the gc, and you and your friends can interact with it","s":"Public","v":["Explore","Express"],"a":3,"l":"Active","t":5,"w":"all time","m":1,"c":"Game"},{"n":"Nurture an egg together with your partner, going through hatching, feeding, and hunting different phases of a bird's life. You don't know what bird it would be unless you keep taking care of it. Different stages also represent diff stages of relationships","s":"Public","v":["Connect","Build"],"a":1,"l":"Passive","t":5,"w":"all time","m":1,"c":"Game"},{"n":"Having bird feeders for birds in the neighborhood","s":"Between","v":["Connect","Befriend"],"a":1,"l":"Passive","t":5,"w":"all time","m":1,"c":"Direct communication"},{"n":"Having water for birds in the pond","s":"Between","v":["Connect","Befriend"],"a":1,"l":"Passive","t":5,"w":"all time","m":1,"c":"Direct communication"},{"n":"Each bird has their own profile page, based on user's pictures and user picked name (or randomly generated). Next time when the same bird is spotted or encountered, it sends you a message of \"XYZ is back\" or \"XYZ's cousin is back\"","s":"Private","v":["Connect","Befriend"],"a":3,"l":"Passive","t":5,"w":"all time","m":3,"c":"Profile"},{"n":"In the community page, people can share their experience and learn together to find like-minded people","s":"Public","v":["Explore","Meet","Grow"],"a":1,"l":"Active","t":1,"w":"1 day","m":3,"c":"Community"},{"n":"Share birding in the community in a professional setting, and you can reach out to like-minded people","s":"Public","v":["Connect","Meet","Grow"],"a":1,"l":"Active","t":1,"w":"1 day","m":3,"c":"Community"},{"n":"When birding, phone will be set to bird mode (only allows for recording bird sounds) and smart watches will push for mindful practices (e.g.: breathing exercise and listening exercise, trying to listen for far far away sound, mid distance or super close)","s":"Private","v":["Connect"],"a":5,"l":"Passive","t":5,"w":"Prebirding","m":5,"c":"Meditation"},{"n":"Celebrate little achievements in birding (either visual or auditory) by giving rewards in the app and visualing the growth","s":"Private","v":["Grow","Show"],"a":3,"l":"Between","t":1,"w":"all time","m":2,"c":"Habit"},{"n":"Find my but for bird friends (approx location based on logged habitat)","s":"Private","v":["Connect","Befriend","Explore"],"a":1,"l":"Between","t":5,"w":"all time","m":4,"c":"Map"},{"n":"All time mix of recorded bird audio","s":"Private","v":["Explore","Connect"],"a":1,"l":"Passive","t":5,"w":"all time","m":4,"c":"Encourage outdoors"},{"n":"Birding location suggestions phrased as \"live\" shows (birds = music)","s":"Public","v":["Explore","Rethink"],"a":5,"l":"Passive","t":5,"w":"Prebirding all time","m":4,"c":"Encourage outdoors"},{"n":"Prompt to record bird you'd miss if you moved","s":"Private","v":["Rethink","Befriend","Remember"],"a":5,"l":"Passive","t":5,"w":"all time","m":5,"c":"Encourage outdoors"},{"n":"Number of people who heard same bird (post-sound ID)","s":"Public","v":["Connect"],"a":4,"l":"Between","t":1,"w":"30sec","m":1,"c":"Contextualize"},{"n":"Score for human mimimed bird call","s":"Private","v":["Build","Rethink"],"a":5,"l":"Active","t":3,"w":"1 month","m":3,"c":"Language"},{"n":"Nudge to think about emotion of bird","s":"Private","v":["Rethink","Befriend"],"a":3,"l":"Passive","t":4,"w":"1 year","m":5,"c":"Language"},{"n":"Bird sound breakdown of nuances","s":"Public","v":["Grow"],"a":5,"l":"Active","t":2,"w":"1 week","m":1,"c":"Language"},{"n":"Guided reflective note taking after sound ID","s":"Private","v":["Connect"],"a":3,"l":"Passive","t":5,"w":"during","m":5,"c":"Bird Mode"},{"n":"Badges for bird friendly habitat initatives","s":"Public","v":["Befriend","Prove"],"a":1,"l":"Between","t":5,"w":"all time","m":3,"c":"Collectible"},{"n":"Postcard stamps that play bird audio when having gone to other places","s":"Public","v":["Prove","Explore"],"a":3,"l":"Between","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"Digital of vinyl of good bird recordings","s":"Public","v":["Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"n":"Cute digital bird stickers for life list","s":"Public","v":["Prove"],"a":1,"l":"Between","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"Badge of own sound ID abilities","s":"Public","v":["Prove"],"a":4,"l":"Active","t":5,"w":"all time","m":1,"c":"Collectible"},{"n":"Bird albums with sales going for conservation proceeds","s":"Public","v":["Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"n":"Amount of people live listening to bird species","s":"Public","v":["Connect"],"a":5,"l":"Between","t":5,"w":"pre","m":1,"c":"Live"},{"n":"Live chat of people uploading bird audio on species","s":"Public","v":["Connect"],"a":5,"l":"Passive","t":5,"w":"during","m":1,"c":"Live"},{"n":"Live listening sessions set up by other birders","s":"Public","v":["Connect","Explore"],"a":5,"l":"Passive","t":5,"w":"during","m":1,"c":"Live"},{"n":"Live notification of friends hearing named bird friends","s":"Between","v":["Befriend"],"a":3,"l":"Between","t":5,"w":"pre","m":1,"c":"Live"},{"n":"ID specific bird friend based on species and location","s":"Private","v":["Befriend"],"a":3,"l":"Passive","t":5,"w":"pre","m":3,"c":"Live"},{"n":"Weekly favorite bird encounters","s":"Between","v":["Relive"],"a":1,"l":"Passive","t":3,"w":"1 week","m":2,"c":"Curation"},{"n":"Bird ecounters shitposting feed for friends","s":"Between","v":["Connect","Love"],"a":1,"l":"Between","t":3,"w":"1 week","m":1,"c":"Curation"},{"n":"Bird horoscope with audio","s":"Public","v":["Rethink"],"a":3,"l":"Passive","t":4,"w":"1 year","m":3,"c":"Interests/Personality"},{"n":"Top 5 bird sounds","s":"Public","v":["Express"],"a":5,"l":"Passive","t":5,"w":"all time","m":2,"c":"Audio Exposure"},{"n":"Shortcut to favorite bird audio from home","s":"Private","v":["Remember"],"a":5,"l":"Passive","t":5,"w":"all time","m":4,"c":"Audio Exposure"},{"n":"Get matched with other birder on favorite bird sounds","s":"Between","v":["Connect"],"a":5,"l":"Passive","t":4,"w":"1 month","m":1,"c":"Audio Exposure"},{"n":"Set phone to bird","s":"Private","v":["Grow"],"a":3,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"n":"Lock new recording behind listening to old one","s":"Private","v":["Grow"],"a":5,"l":"Passive","t":5,"w":"pre","m":1,"c":"Audio Exposure"},{"n":"Bird friend in group chat sends voice notes","s":"Between","v":["Befriend","Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"n":"Bird friend in group facetime","s":"Between","v":["Befriend","Rethink"],"a":4,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"n":"Birds to study/relax to","s":"Private","v":["Love"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Audio Exposure"},{"n":"Play sound of bird friend on opening app if not logged recently","s":"Private","v":["Befriend","Remember"],"a":5,"l":"Passive","t":4,"w":"1 month","m":2,"c":"Audio Exposure"},{"n":"Highlighting commmon sound IDs that everyone knows","s":"Private","v":["Rethink"],"a":5,"l":"Active","t":5,"w":"pre","m":1,"c":"Audio Aware"},{"n":"Audio breakdown on bird sound and habitat","s":"Public","v":["Grow"],"a":5,"l":"Active","t":3,"w":"1 week","m":1,"c":"Audio Breakdown"},{"n":"Reminder to just be with your bird friends","s":"Private","v":["Befriend"],"a":1,"l":"Between","t":5,"w":"1 year","m":3,"c":"Audio Aware"},{"n":"Send bird audio that expires","s":"Between","v":["Connect","Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":1,"c":"Chat"},{"n":"Seed packet for birds with proceeds for conservation","s":"Between","v":["Befriend"],"a":1,"l":"Between","t":5,"w":"all time","m":3,"c":"Direct communication"},{"n":"Bird friend profile","s":"Between","v":["Befriend","Rethink"],"a":1,"l":"Between","t":5,"w":"all time","m":3,"c":"Profile"},{"n":"Timer for birding by ear as meditation","s":"Private","v":["Rethink"],"a":5,"l":"Passive","t":5,"w":"all time","m":5,"c":"Meditation"},{"n":"Morning bird chorus audio","s":"Public","v":["Relive"],"a":5,"l":"Passive","t":2,"w":"1 day","m":5,"c":"Meditation"},{"n":"Show most recent bird encounters on profile","s":"Public","v":["Show","Prove"],"a":1,"l":"Between","t":1,"w":"5min","m":1,"c":"Habit"},{"n":"Streak for listening to birds","s":"Between","v":["Prove"],"a":3,"l":"Passive","t":2,"w":"1 day","m":1,"c":"Habit"},{"n":"Playing last bird audio on opening app","s":"Private","v":["Remember"],"a":5,"l":"Passive","t":5,"w":"pre","m":2,"c":"Habit"}];
+const CAT_DETAILED=["Collectible", "Audio Exposure", "Game", "Bird Feature", "Habit", "Encourage outdoors", "Interests/Personality", "Live", "Language", "Meditation", "Audio Aware", "Map", "Spatial", "Curation", "Profile", "Community", "Direct communication", "Contextualize", "Bird Mode", "Audio Breakdown", "Chat", "In nature together", "Sharable Knowledge", "Audio Creation"];
+// Focus view: keep Collectible + Audio Exposure distinct; fold the rest around visual sharing
+const CAT_FOCUS=["Visual Share", "Audio Exposure", "Play & Habits", "Bird Content", "Places & Maps", "Together"];
+// Focus view logic:
+// Visual Share  — show/prove artifacts (badges, feeds, profiles, collectibles)
+// Audio Exposure — listening/live/sound-first loops
+// Play & Habits — games + streaks/routines
+// Bird Content — bird features, learning, audio tools
+// Places & Maps — location / outdoors
+// Together — community, chat, shared presence, mindfulness with others
+const CAT_ROLLUP={
+  "Collectible":"Visual Share",
+  "Curation":"Visual Share",
+  "Interests/Personality":"Visual Share",
+  "Profile":"Visual Share",
+  "Sharable Knowledge":"Visual Share",
+  "Audio Exposure":"Audio Exposure",
+  "Live":"Audio Exposure",
+  "Game":"Play & Habits",
+  "Habit":"Play & Habits",
+  "Bird Feature":"Bird Content",
+  "Audio Creation":"Bird Content",
+  "Audio Aware":"Bird Content",
+  "Audio Breakdown":"Bird Content",
+  "Language":"Bird Content",
+  "Map":"Places & Maps",
+  "Spatial":"Places & Maps",
+  "Encourage outdoors":"Places & Maps",
+  "Community":"Together",
+  "Chat":"Together",
+  "Direct communication":"Together",
+  "In nature together":"Together",
+  "Contextualize":"Together",
+  "Bird Mode":"Together",
+  "Meditation":"Together",
+};
 const VERB_ORDER=["Connect", "Grow", "Rethink", "Explore", "Befriend", "Remember", "Relive", "Show", "Meet", "Build", "Prove", "Express", "Love", "Rescue"];
 
-// distinct colour per category (golden-angle hue rotation)
+let detailMode=false;
+function catOf(d){return detailMode?d.c:(CAT_ROLLUP[d.c]||d.c);}
+function catOrder(){return detailMode?CAT_DETAILED:CAT_FOCUS;}
+
+// distinct colour per category (golden-angle hue rotation) — detailed fallback
 const CAT_COLOR={};
-CAT_ORDER.forEach((c,i)=>{CAT_COLOR[c]=`hsl(${Math.round((i*137.508)%360)} 55% 54%)`;});
+[...CAT_DETAILED].forEach((c,i)=>{if(!CAT_COLOR[c])CAT_COLOR[c]=`hsl(${Math.round((i*137.508)%360)} 55% 54%)`;});
+// Focus cats: one clear hue each (no shared pink / blue pairs)
+CAT_COLOR["Visual Share"]="hsl(28 70% 48%)";       // warm — badges, feeds, collectibles
+CAT_COLOR["Bird Content"]="hsl(4 68% 52%)";        // red
+CAT_COLOR["Together"]="hsl(142 52% 42%)";          // green
+CAT_COLOR["Play & Habits"]="hsl(48 78% 46%)";      // yellow
+CAT_COLOR["Audio Exposure"]="hsl(255 48% 54%)";    // violet
+CAT_COLOR["Places & Maps"]="hsl(205 62% 48%)";     // blue
 
 // ── selection state (empty set = show all) ──
-const sel=new Set();          // categories
+const sel=new Set();          // categories (in current mode's vocabulary)
 const selMot=new Set();       // motivation verbs
 function isOn(c){return sel.size===0||sel.has(c);}
 function motOn(vs){return selMot.size===0||vs.some(v=>selMot.has(v));}
-function activeCats(){return sel.size?CAT_ORDER.filter(c=>sel.has(c)):CAT_ORDER;}
+function activeCats(){const o=catOrder();return sel.size?o.filter(c=>sel.has(c)):o;}
 // data passing BOTH filters
-function rows(){return DATA.filter(d=>isOn(d.c)&&motOn(d.v));}
+function rows(){return DATA.filter(d=>isOn(catOf(d))&&motOn(d.v));}
 
 function toggle(c){
   if(sel.has(c))sel.delete(c);else sel.add(c);
@@ -191,6 +243,31 @@ function toggle(c){
   renderAll();
 }
 function clearSel(){sel.clear();document.getElementById('clearBtn').disabled=true;renderAll();}
+function syncCondensedChrome(){
+  // Header stays hidden on both views — data only.
+  document.getElementById('pageHead').hidden=true;
+  const condensed=!detailMode;
+  document.getElementById('motHead').hidden=condensed;
+  document.getElementById('motChips').hidden=condensed;
+  document.getElementById('motCard').hidden=condensed;
+  if(condensed){
+    selMot.clear();
+    document.getElementById('clearMotBtn').disabled=true;
+  }
+}
+function toggleDetail(){
+  detailMode=!detailMode;
+  sel.clear();
+  document.getElementById('clearBtn').disabled=true;
+  const btn=document.getElementById('detailBtn');
+  btn.setAttribute('aria-pressed',String(detailMode));
+  btn.textContent=detailMode?'Show focus categories':'Show detailed categories';
+  document.getElementById('catHint').textContent=detailMode
+    ?'All original categories'
+    :'6 focus areas';
+  syncCondensedChrome();
+  renderAll();
+}
 function toggleMot(v){
   if(selMot.has(v))selMot.delete(v);else selMot.add(v);
   document.getElementById('clearMotBtn').disabled=selMot.size===0;
@@ -207,15 +284,16 @@ function hideTip(){tip.classList.remove('on');}
 // dot tooltip — look the record up by index so long names with quotes are safe
 let _sd=[];
 function dotTip(i,e){const d=_sd[i];if(!d)return;
-  showTip('<div class="t-cat">'+esc(d.n)+'</div><div class="t-meta">'+d.c+' · '+d.v.join(', ')+' · '+d.s+' · '+AXES[axisX].fmt(d)+', '+AXES[axisY].fmt(d)+'</div>',e);}
+  const cat=catOf(d);const detail=(!detailMode&&d.c!==cat)?' ('+d.c+')':'';
+  showTip('<div class="t-cat">'+esc(d.n)+'</div><div class="t-meta">'+esc(cat)+esc(detail)+' · '+d.v.join(', ')+' · '+d.s+' · '+AXES[axisX].fmt(d)+', '+AXES[axisY].fmt(d)+'</div>',e);}
 
 // ── legend / chips ──
 function renderChips(){
-  const counts={};DATA.forEach(d=>counts[d.c]=(counts[d.c]||0)+1);
-  document.getElementById('chips').innerHTML=CAT_ORDER.map(c=>{
+  const counts={};DATA.forEach(d=>{const c=catOf(d);counts[c]=(counts[c]||0)+1;});
+  document.getElementById('chips').innerHTML=catOrder().map(c=>{
     const on=sel.has(c),dim=sel.size&&!sel.has(c);
     return `<span class="chip${on?' on':''}${dim?' dim':''}" style="${on?'color:'+CAT_COLOR[c]:''}" onclick="toggle('${c.replace(/'/g,"\\'")}')">
-      <span class="sw" style="background:${CAT_COLOR[c]}"></span>${c} <span class="n">${counts[c]}</span></span>`;
+      <span class="sw" style="background:${CAT_COLOR[c]}"></span>${c} <span class="n">${counts[c]||0}</span></span>`;
   }).join('');
 }
 function renderMotChips(){
@@ -233,7 +311,7 @@ function stacked(elId,buckets,valOf,opts={}){
   const per={};buckets.forEach(b=>per[b.key]={});
   data.forEach(d=>{
     let keys=valOf(d);if(keys==null)return;if(!Array.isArray(keys))keys=[keys];
-    keys.forEach(k=>{if(per[k]===undefined)return;per[k][d.c]=(per[k][d.c]||0)+1;});
+    keys.forEach(k=>{if(per[k]===undefined)return;const c=catOf(d);per[k][c]=(per[k][c]||0)+1;});
   });
   const totals=buckets.map(b=>Object.values(per[b.key]).reduce((a,x)=>a+x,0));
   const max=Math.max(1,...totals);
@@ -255,7 +333,7 @@ function stacked(elId,buckets,valOf,opts={}){
 
 // ── single-colour category bar ──
 function renderCatBar(){
-  const data=rows(),counts={};data.forEach(d=>counts[d.c]=(counts[d.c]||0)+1);
+  const data=rows(),counts={};data.forEach(d=>{const c=catOf(d);counts[c]=(counts[c]||0)+1;});
   const cats=activeCats().filter(c=>counts[c]).sort((a,b)=>counts[b]-counts[a]);
   const max=Math.max(1,...cats.map(c=>counts[c]));
   document.getElementById('catBar').innerHTML=cats.map(c=>
@@ -311,7 +389,7 @@ function renderScatter(){
     const jx=((i*47)%15-7)/7*jitAmp, jy=((i*29)%15-7)/7*jitAmp;
     const cx=clamp(X(xi)+jx,pad.l+R,pad.l+iw-R);
     const cy=clamp(Y(yi)+jy,pad.t+R,pad.t+ih-R);
-    g+=`<circle class="dot" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${R}" fill="${CAT_COLOR[d.c]}" fill-opacity=".8"
+    g+=`<circle class="dot" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${R}" fill="${CAT_COLOR[catOf(d)]}" fill-opacity=".8"
       onmousemove="dotTip(${i},event)" onmouseleave="hideTip()"></circle>`;
   });
   document.getElementById('scatter').innerHTML=g;
@@ -331,10 +409,11 @@ function renderAll(){
   stacked('timeBar',[1,2,3,4,5].map(n=>({key:n,label:String(n)})),d=>d.t);
   const data=rows();
   document.getElementById('kpiCount').textContent=data.length;
-  document.getElementById('kpiCats').textContent=activeCats().filter(c=>data.some(d=>d.c===c)).length;
+  document.getElementById('kpiCats').textContent=activeCats().filter(c=>data.some(d=>catOf(d)===c)).length;
 }
 window.addEventListener('scroll',hideTip,true);
 initAxisSelects();
+syncCondensedChrome();
 renderAll();
 </script>
 

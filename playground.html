@@ -632,7 +632,7 @@ const REG=[
     mot:['connect','witness','teach'],skills:[],apis:[],embed:true,proto:15,
     reminisce:0,learnActive:1,learnPassive:1,audioFirst:5,audioCentrality:5,shareKind:'gift',memoryScope:3,retrospective:1,mindfulness:2,postWhen:'30min',
     lens:'<b>The clip is the message.</b> Naming the bird & place clearly means no one is excluded from the content.'},
-  {id:'stories',t:'Habitat IG Stories',sci:'Live sonograms in the bird\'s environment',aud:'public',time:'async',fid:4,
+  {id:'stories',t:'Sonogram',sci:'Live habitat sonograms · IG-story format',aud:'public',time:'async',fid:4,
     mot:['witness','connect'],skills:['highlightable-grass-field','proximity-audio-mapping'],apis:[],
     reminisce:1,learnActive:1,learnPassive:2,audioFirst:5,audioCentrality:5,shareKind:'performance',memoryScope:5,retrospective:1,mindfulness:3,postWhen:'day',
     embed:false,src:'sonogram.html',
@@ -811,7 +811,7 @@ const VO_SCRIPTS={
     {say:'Send. Button.',sel:'#proto-15 .chat-ibtn:last-of-type',tap:true,after:'Message sent.'},
   ],
   stories:[
-    {say:'Habitat I G Stories. Full-screen sonogram in the bird environment.'},
+    {say:'Sonogram. Full-screen habitat story with live spectrogram.'},
     {say:'Live sonogram overlay on marsh habitat. Tap to listen.'},
     {say:'Swipe up for species name and location.'},
     {say:'Proximity audio. Sound grows louder as you move toward the habitat.'},
@@ -838,8 +838,8 @@ const GAPS={
 //  SKILLS shelf
 // ═══════════════════════════════════════════════════════════════
 const SKILLS=[
-  {name:'highlightable-grass-field',when:'Habitat backdrops (marsh, tall grass) that brighten & sway near the cursor.',used:'Used in IG Stories'},
-  {name:'proximity-audio-mapping',when:'Cursor-/distance-driven birdsong gain — "walk toward the sound" soundscapes.',used:'Planned for Stories'},
+  {name:'highlightable-grass-field',when:'Habitat backdrops (marsh, tall grass) that brighten & sway near the cursor.',used:'Used in Sonogram'},
+  {name:'proximity-audio-mapping',when:'Cursor-/distance-driven birdsong gain — "walk toward the sound" soundscapes.',used:'Used in Sonogram'},
   {name:'marching-squares-topology',when:'Sonar / contour styling — drawing sound as terrain or iso-lines.',used:'Used in Sonograph'},
   {name:'svg-path-grow-animation',when:'Drawing-on sonograms, growth & lifecycle reveals via stroke-dashoffset.',used:'Used in Sonograph'},
   {name:'minimap-radar-overlay',when:'Frosted map / radar HUD with player chevron and POI markers.',used:'Used in Friends Map'},
@@ -1787,6 +1787,12 @@ function toggleChk(g,i,el){
 renderCatTabs();renderIdeaList();
 resizeViz();renderOverview();renderFid();renderSkills();renderKit();renderApis();renderA11y();
 selectIdea(1);
+(function bootTabFromUrl(){
+  try{
+    const tab=new URLSearchParams(location.search).get('tab')||location.hash.replace(/^#/,'');
+    if(tab&&TABS.some(t=>t.id===tab)) showTab(tab);
+  }catch(_){}
+})();
 </script>
 
 </main>

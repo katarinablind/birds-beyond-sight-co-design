@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Place × Feed × Map — v5</title>
+<title>Places</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -15,37 +15,41 @@
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
 }
 html{font-size:16px}
-body{background:#e5e5ea;font-family:var(--font);color:var(--label);min-height:100vh;padding:28px 18px 80px;-webkit-font-smoothing:antialiased}
+body{background:#e5e5ea;font-family:var(--font);color:var(--label);min-height:100vh;padding:28px 0 56px;-webkit-font-smoothing:antialiased}
 
-.page-head{max-width:1180px;margin:0 auto 28px}
-.page-title{font-size:1.35rem;font-weight:700;letter-spacing:-.03em}
-.page-sub{font-size:.78rem;color:var(--tertiary);margin-top:8px;line-height:1.45;max-width:720px}
-.legend{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px}
-.legend span{font-size:.65rem;font-weight:600;background:#fff;padding:5px 10px;border-radius:980px;color:var(--secondary);box-shadow:0 0 0 1px var(--sep)}
+.page{max-width:1320px;margin:0 auto;padding:0 20px}
+.section-block{margin:0 0 48px}
+.section-block h2{
+  font-size:.72rem;font-weight:650;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--tertiary);margin:0 0 18px;padding:0 6px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:32px 22px;
+  justify-items:center;
+  align-items:start;
+}
+@media (max-width:1200px){.grid{grid-template-columns:repeat(3, minmax(0, 1fr))}}
+@media (max-width:920px){.grid{grid-template-columns:repeat(2, minmax(0, 1fr))}}
+@media (max-width:640px){.grid{grid-template-columns:1fr}}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(292px,1fr));gap:36px 22px;max-width:1180px;margin:0 auto;align-items:start}
-.cell{display:flex;flex-direction:column;align-items:center;gap:10px}
-.cell-num{align-self:stretch;display:flex;gap:10px;padding:0 2px}
-.cell-num .n{font-size:1.25rem;font-weight:700;letter-spacing:-.04em;min-width:1.7em}
-.cell-num .t{font-size:.72rem;font-weight:650}
-.cell-num .d{font-size:.65rem;color:var(--tertiary);margin-top:3px;line-height:1.4}
+.cell{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0;width:100%}
+.cell-num{display:none}
+.cell-label{font-size:.68rem;font-weight:600;color:var(--tertiary);letter-spacing:-.01em;text-align:center;max-width:290px}
 
 .phone{
-  width:290px;height:620px;background:var(--bg);border-radius:40px;position:relative;overflow:hidden;
+  width:290px;height:620px;max-width:100%;background:var(--bg);border-radius:40px;position:relative;overflow:hidden;
+  isolation:isolate;
   box-shadow:0 0 0 1px #1c1c1e,0 0 0 8px #2c2c2e,0 24px 48px -12px rgba(0,0,0,.35);
-  display:flex;flex-direction:column;
+  display:flex;flex-direction:column;flex:none;
 }
 .statusbar{height:32px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:12px 22px 0;font-size:.72rem;font-weight:600;z-index:4;background:var(--bg)}
-.screen{flex:1;min-height:0;overflow-y:auto;padding:0 0 64px;scrollbar-width:none}
+.screen{flex:1;min-height:0;overflow-y:auto;padding:0 0 16px;scrollbar-width:none}
 .screen::-webkit-scrollbar{display:none}
 
-.tabbar{position:absolute;bottom:0;left:0;right:0;height:56px;z-index:5;background:rgba(242,242,247,.92);backdrop-filter:blur(20px);border-top:0.5px solid var(--sep);display:flex;align-items:flex-start;justify-content:space-around;padding:6px 8px 0}
-.tabbar span{flex:1;font-size:.58rem;font-weight:500;color:var(--tertiary);text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
-.tabbar span.on{color:var(--ink);font-weight:600}
-.tabbar .ico{width:22px;height:22px;border-radius:6px;background:var(--fill)}
-.tabbar span.on .ico{background:var(--ink)}
 
-.nav{display:flex;align-items:center;gap:6px;padding:4px 14px 10px;background:var(--bg);position:sticky;top:0;z-index:3}
+.nav{display:flex;align-items:center;gap:6px;padding:4px 14px 10px;background:var(--bg);position:relative;z-index:3}
 .nav .back{font-size:1.05rem;width:28px}
 .nav .title{flex:1;font-size:1.05rem;font-weight:700;letter-spacing:-.02em}
 .nav .right{font-size:.85rem;color:var(--tertiary)}
@@ -143,7 +147,12 @@ body{background:#e5e5ea;font-family:var(--font);color:var(--label);min-height:10
 .hero-place img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5}
 .hero-place .inner{position:relative;z-index:1}
 
-.map-full{position:absolute;inset:32px 0 56px;z-index:1}
+.map-full{position:absolute;inset:0;z-index:1;width:100%;height:100%;overflow:hidden;border-radius:inherit}
+.map-full .leaflet-container{width:100%!important;height:100%!important;background:#e8e8ed;font:inherit}
+.map-full .leaflet-pane,
+.map-full .leaflet-map-pane,
+.map-full .leaflet-tile-pane{max-width:100%}
+.map-full .leaflet-control-container{display:none}
 .sheet-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.28);z-index:6}
 .sheet{position:absolute;left:0;right:0;bottom:0;z-index:7;background:var(--bg);border-radius:14px 14px 0 0;padding:8px 0 56px;max-height:74%;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.18)}
 .sheet .grab{width:36px;height:5px;border-radius:3px;background:var(--fill);margin:4px auto 10px}
@@ -165,9 +174,9 @@ body{background:#e5e5ea;font-family:var(--font);color:var(--label);min-height:10
 .share-row .circ{width:48px;height:48px;border-radius:50%;background:#3a3a3c;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:600}
 .share-row .act span{font-size:.55rem;color:rgba(255,255,255,.55)}
 
-.refs{max-width:1180px;margin:56px auto 0;padding-top:28px;border-top:0.5px solid var(--sep)}
-.refs h2{font-size:1.1rem;font-weight:700;margin-bottom:6px}
-.refs p{font-size:.75rem;color:var(--tertiary);margin-bottom:18px;max-width:640px;line-height:1.45}
+.refs{max-width:1180px;margin:40px auto 0;padding:24px 18px 0;border-top:0.5px solid var(--sep)}
+.refs h2{font-size:.95rem;font-weight:700;margin-bottom:4px}
+.refs > p{font-size:.72rem;color:var(--tertiary);margin-bottom:14px;max-width:640px;line-height:1.45}
 .ref-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
 .ref-card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 0 0 0.5px var(--sep)}
 .ref-card .n{font-size:.7rem;font-weight:700;color:var(--tertiary);margin-bottom:6px}
@@ -181,610 +190,592 @@ body{background:#e5e5ea;font-family:var(--font);color:var(--label);min-height:10
 </head>
 <body>
 <div class="sr-only" aria-live="polite" id="live"></div>
+<h1 class="sr-only">Places prototypes</h1>
 
-<div class="page-head">
-  <h1 class="page-title">v5.1 · polish pass</h1>
-  <div class="page-sub">
-    02 shared-with is a simple inline stack. 04 date left / card right. Past uses search + place filters.
-    Map pins show place names (+ faces if shared). Places list with Backyard as home. 11 is a bottom ref card.
-  </div>
-  <div class="legend">
-    <span>01–03 place</span><span>04 updates</span><span>06–07a/b past</span><span>08 hub</span>
-    <span>09–10 · 09b map</span><span>12 bird@place</span><span>13–19 share</span><span>20 log</span>
-  </div>
-</div>
-
-<div class="grid">
-
-<!-- 01 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">01</div><div><div class="t">Place timeline</div><div class="d">Location in header. This time last year: play only, no chevron. Play left · people right.</div></div></div>
-  <main class="phone">
-    <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen">
-      <nav class="nav" aria-label="Main"><span class="back">‹</span><div class="title">Union Bay</div><span class="right">⋯</span></div>
-      <div class="sub">Seattle, WA · 47 listens · Jul 2026</div>
-      <div class="pill-row">
-        <button class="pill on">All</button><button class="pill">Shared</button><button class="pill">Mine</button><button class="pill">Mix</button>
-      </div>
-      <div class="past-card">
-        <div class="k">This time last year</div>
-        <div class="h">Quieter mornings · 3 birds</div>
-        <div class="m">Same week · Jul 2025 · Union Bay</div>
-        <div class="act">
-          <button type="button" class="play sm" aria-label="Play bird recording"></button>
-          <div class="grow"><div class="nm" style="font-size:.82rem">Compare with this week</div></div>
-        </div>
-      </div>
-      <div class="section">July 2026</div>
-      <div class="week-hd"><span class="w">Week of Jul 13–19</span><span class="c">5</span></div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · 6:40pm</div><div class="meta">5 birds · Overcast · 64°</div></div><div class="stack"><img src="person.jpg" alt=""><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · 7:12am</div><div class="meta">2 birds · Clear · Just you</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 12 · 10:04am</div><div class="meta">4 birds · With Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 11 · 8:22am</div><div class="meta">Song Sparrow</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 10 · 5:55pm</div><div class="meta">3 birds</div></div></div>
-      </div>
-      <div class="week-hd"><span class="w">Week of Jul 6–12</span><span class="c">8</span></div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 8 · 7:30am</div><div class="meta">6 birds · With Maya</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 7 · 6:15am</div><div class="meta">2 birds · Dawn</div></div></div>
-        <div class="row" style="justify-content:center;padding:10px"><span class="chip more">+ 6 more this week</span></div>
-      </div>
-    </div>
-    <div class="tabbar"><span><div class="ico"></div>ID</span><span class="on"><div class="ico"></div>Places</span><span><div class="ico"></div>Updates</span><span><div class="ico"></div>Friends</span></div>
-  </div>
-</div>
-
-<!-- 02 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">02</div><div><div class="t">Outing detail</div><div class="d">Shared-with = simple inline stack (not a card). Notes separate.</div></div></div>
-  <div class="phone">
-    <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen">
-      <div class="nav"><span class="back">‹</span><div class="title">Jul 14 · evening</div></div>
-      <div class="sub">5 birds · 1:12 · Union Bay</div>
-      <div class="shared-inline">
-        <span class="when">Shared 1d ago</span>
-        <div class="stack"><img src="person.jpg" alt=""><img src="person.jpg" alt=""></div>
-        <div class="people-btn">+</div>
-      </div>
-      <div class="log-meta">
-        <div class="line"><span class="k">Place</span><span class="v">Union Bay, Seattle</span></div>
-        <div class="line"><span class="k">Weather</span><span class="v">Overcast · 64°</span></div>
-        <div class="line"><span class="k">With</span><span class="v">Phoebe, Sara</span></div>
-      </div>
-      <div class="section">Birds</div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><img class="thumb" src="bird.jpg" alt=""><div class="grow"><div class="nm">Red-winged Blackbird</div><div class="meta">0:08</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><img class="thumb" src="bird.jpg" alt=""><div class="grow"><div class="nm">Song Sparrow</div><div class="meta">0:06</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><img class="thumb" src="bird.jpg" alt=""><div class="grow"><div class="nm">American Robin</div><div class="meta">0:05</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><img class="thumb" src="bird.jpg" alt=""><div class="grow"><div class="nm">Marsh Wren</div><div class="meta">0:07</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><img class="thumb" src="bird.jpg" alt=""><div class="grow"><div class="nm">Chickadee</div><div class="meta">0:04</div></div></div>
-      </div>
-      <div class="section">Chorus</div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Full session · 1:12</div><div class="meta">5 birds overlapping</div></div></div>
-      </div>
-      <div class="section">Your notes</div>
-      <div class="notes-box">
-        <div class="lbl">Only you can see this</div>
-        <p>Wet after rain — blackbirds loud from the reeds.</p>
-      </div>
-    </div>
-    <div class="tabbar"><span><div class="ico"></div>ID</span><span class="on"><div class="ico"></div>Places</span><span><div class="ico"></div>Updates</span><span><div class="ico"></div>Friends</span></div>
-  </div>
-</div>
-
-<!-- 03 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">03</div><div><div class="t">Place insight</div><div class="d">Play left · friend avatar right when shared.</div></div></div>
-  <div class="phone">
-    <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen">
-      <div class="nav"><span class="back">‹</span><div class="title">Backyard</div></div>
-      <div class="sub">Seattle · 23 listens</div>
-      <div class="past-card">
-        <div class="k">Lately</div>
-        <div class="h">More dawn chatter than in spring</div>
-        <div class="m">From last 6 listens</div>
-        <div class="act"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm" style="font-size:.82rem">Hear spring vs now</div></div></div>
-      </div>
-      <div class="section">Recent</div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · House Finch</div><div class="meta">You · Clear · 68°</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 13 · American Robin</div><div class="meta">Shared from Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 12 · 3 birds</div><div class="meta">You · With Sara</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 11 · Song Sparrow</div><div class="meta">Maya · co-listen</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 10 · Bus wait</div><div class="meta">You · incidental</div></div></div>
-        <div class="row" style="justify-content:center;padding:10px"><span class="chip more">+ 18 more</span></div>
-      </div>
-    </div>
-    <div class="tabbar"><span><div class="ico"></div>ID</span><span class="on"><div class="ico"></div>Places</span><span><div class="ico"></div>Updates</span><span><div class="ico"></div>Friends</span></div>
-  </div>
-</div>
-
-<!-- 04 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">04</div><div><div class="t">Updates</div><div class="d">Date column left · card right. Same day reuses date slot.</div></div></div>
-  <div class="phone">
-    <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen">
-      <div class="large-title">Updates</div>
-      <div class="sub">Friends’ shares · yours · past audio</div>
-      <div class="diary">
-        <div class="diary-row">
-          <div class="diary-date"><div class="d">14</div><div class="m">Wed</div></div>
-          <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Phoebe · Robin</div><div class="meta">Backyard</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        </div>
-        <div class="diary-row">
-          <div class="diary-date empty"><div class="d">·</div></div>
-          <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">You · House Finch</div><div class="meta">Backyard · 7:12am</div></div></div>
-        </div>
-        <div class="diary-row">
-          <div class="diary-date empty"><div class="d">·</div></div>
-          <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Maya · 4 birds</div><div class="meta">Union Bay</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        </div>
-        <div class="diary-row">
-          <div class="diary-date"><div class="d">12</div><div class="m">Mon</div></div>
-          <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">You → Sara</div><div class="meta">Union Bay · Overcast</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        </div>
-        <div class="diary-row">
-          <div class="diary-date"><div class="d">11</div><div class="m">Sun</div></div>
-          <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Phoebe · Sparrow</div><div class="meta">Bus stop</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        </div>
-        <div class="diary-row">
-          <div class="diary-date"><div class="d">’25</div><div class="m">Jul</div></div>
-          <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">This time last year</div><div class="meta">Union Bay · quieter</div></div></div>
-        </div>
-        <div class="diary-row">
-          <div class="diary-date"><div class="d">08</div><div class="m">Thu</div></div>
-          <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">You · Dawn chorus</div><div class="meta">Union Bay · with Maya</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        </div>
-      </div>
-    </div>
-    <div class="tabbar"><span><div class="ico"></div>ID</span><span><div class="ico"></div>Places</span><span class="on"><div class="ico"></div>Updates</span><span><div class="ico"></div>Friends</span></div>
-  </div>
-</div>
-
-<!-- 06 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">06</div><div><div class="t">Past</div><div class="d">Mix cards + search / place filter. No browse grid.</div></div></div>
-  <div class="phone">
-    <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen">
-      <div class="large-title">Past</div>
-      <div class="section">Mixes</div>
-      <div class="mix-cards">
-        <div class="mix-card"><img src="bird.jpg" alt=""><div class="inner"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="txt"><div class="t">July mix</div><div class="s">12 clips · 3 places</div></div></div></div>
-        <div class="mix-card"><img src="bird.jpg" alt="" style="filter:grayscale(1)"><div class="inner"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="txt"><div class="t">This time last year</div><div class="s">8 clips · Union Bay</div></div></div></div>
-        <div class="mix-card"><img src="person.jpg" alt="" style="opacity:.55"><div class="inner"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="txt"><div class="t">From friends</div><div class="s">5 clips</div></div></div></div>
-      </div>
-      <div class="section">Outings</div>
-      <div class="search"><span style="opacity:.45">⌕</span><span class="ph">Search outings</span></div>
-      <div class="pill-row">
-        <button class="pill on">All places</button>
-        <button class="pill">Backyard</button>
-        <button class="pill">Union Bay</button>
-        <button class="pill">Shared</button>
-      </div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · evening</div><div class="meta">Union Bay · 5 birds</div></div><div class="stack"><img src="person.jpg" alt=""><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · morning</div><div class="meta">Backyard · 2 birds</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 12 · morning</div><div class="meta">Union Bay · Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 11 · bus</div><div class="meta">Bus stop · Sparrow</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 8 · dawn</div><div class="meta">Union Bay · Maya</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row" style="justify-content:center;padding:10px"><span class="chip more">+ 42 more</span></div>
-      </div>
-    </div>
-    <div class="tabbar"><span><div class="ico"></div>ID</span><span><div class="ico"></div>Places</span><span class="on"><div class="ico"></div>Past</span><span><div class="ico"></div>Friends</span></div>
-  </div>
-</div>
-
-<!-- 07a Mix -->
-<div class="cell">
-  <div class="cell-num"><div class="n">07a</div><div><div class="t">Mix player</div><div class="d">Just your field clips in sequence. Not Merlin library.</div></div></div>
-  <div class="phone">
-    <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen">
-      <div class="nav"><span class="back">‹</span><div class="title">July mix</div></div>
-      <div class="sub">12 clips · 4:02 · your recordings</div>
-      <div style="margin:16px 14px;padding:24px;background:var(--grouped);border-radius:16px;text-align:center">
-        <button type="button" class="play xl" style="margin:0 auto 12px" aria-label="Play bird recording"></button>
-        <div class="nm">Clip 4 of 12</div>
-        <div class="meta" style="margin-top:4px">Jul 11 · Backyard · House Finch</div>
-        <div class="meta">Clear · 68° · Just you</div>
-      </div>
-      <div class="section">In this mix</div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">1 · Jul 14 · Union Bay</div><div class="meta">Chorus · 5 birds</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">2 · Jul 13 · Backyard</div><div class="meta">Robin · from Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">3 · Jul 12 · Union Bay</div><div class="meta">4 birds</div></div></div>
-        <div class="row" style="background:var(--fill2)"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">4 · Jul 11 · Backyard</div><div class="meta">House Finch · playing</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">5 · Jul 10 · Bus stop</div><div class="meta">Sparrow</div></div></div>
-        <div class="row" style="justify-content:center;padding:10px"><span class="chip more">+ 7 more</span></div>
-      </div>
-      <button class="btn plain">Share mix</button>
-    </div>
-    <div class="tabbar"><span><div class="ico"></div>ID</span><span><div class="ico"></div>Places</span><span class="on"><div class="ico"></div>Past</span><span><div class="ico"></div>Friends</span></div>
-  </div>
-</div>
-
-<!-- 07b compare -->
-<div class="cell">
-  <div class="cell-num"><div class="n">07b</div><div><div class="t">Yours ↔ Merlin</div><div class="d">Separate from mix. One of your clips next to Merlin song + call.</div></div></div>
-  <div class="phone">
-    <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen">
-      <div class="nav"><span class="back">‹</span><div class="title">House Finch</div></div>
-      <div class="sub">Compare · Backyard · Jul 11</div>
-      <div class="inset" style="margin-top:8px">
-        <div class="row"><button type="button" class="play" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Yours</div><div class="meta">Field · 0:22 · Clear · 68°</div></div></div>
-      </div>
-      <div class="section">Merlin library</div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play sm ghost" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Song</div><div class="meta">House Finch</div></div></div>
-        <div class="row"><button type="button" class="play sm ghost" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Call</div><div class="meta">House Finch</div></div></div>
-      </div>
-      <div class="meta" style="padding:0 28px;line-height:1.4">Opened from a bird in an outing or mix — not the mix itself.</div>
-    </div>
-    <div class="tabbar"><span><div class="ico"></div>ID</span><span><div class="ico"></div>Places</span><span class="on"><div class="ico"></div>Past</span><span><div class="ico"></div>Friends</span></div>
-  </div>
-</div>
-
-<!-- 08 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">08</div><div><div class="t">Place hub</div><div class="d">Play left · people right. Timeline + weather on recent rows.</div></div></div>
-  <div class="phone">
-    <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen">
-      <div class="hero-place"><img src="bird.jpg" alt=""><div class="inner"><div class="nm" style="font-size:1.15rem;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)">Union Bay</div><div class="meta" style="color:rgba(255,255,255,.9)">Seattle · 47 listens</div></div></div>
-      <div class="row" style="background:transparent;border:none;padding:4px 16px 8px"><div class="grow meta">Phoebe · Sara · Maya also bird here</div><div class="stack"><img class="avatar" src="person.jpg" alt="" style="width:32px;height:32px;margin-left:-8px;border:2px solid #fff"><img class="avatar" src="person.jpg" alt="" style="width:32px;height:32px;margin-left:-8px;border:2px solid #fff"><img class="avatar" src="person.jpg" alt="" style="width:32px;height:32px;margin-left:-8px;border:2px solid #fff"></div></div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Place mix</div><div class="meta">Shared audio only</div></div></div>
-      </div>
-      <div class="section">Timeline</div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · evening</div><div class="meta">5 birds · Overcast · with Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · morning</div><div class="meta">2 birds · private</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 12 · morning</div><div class="meta">4 birds · shared Sara</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 8 · dawn</div><div class="meta">Maya · co-listen</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row" style="justify-content:center;padding:10px"><span class="chip more">+ 13 more</span></div>
-      </div>
-    </div>
-    <div class="tabbar"><span><div class="ico"></div>ID</span><span class="on"><div class="ico"></div>Places</span><span><div class="ico"></div>Updates</span><span><div class="ico"></div>Friends</span></div>
-  </div>
-</div>
-
-<!-- 09 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">09</div><div><div class="t">Map</div><div class="d">Pins = place name. Shared places show friend faces. List button · Backyard = home.</div></div></div>
-  <div class="phone">
-    <div class="statusbar" style="background:transparent;position:absolute;left:0;right:0;top:0;z-index:3"><span>9:41</span><span>▮▮</span></div>
-    <div id="map09" class="map-full"></div>
-    <div style="position:absolute;top:36px;left:12px;right:12px;z-index:3;display:flex;gap:8px;align-items:flex-start">
-      <div style="flex:1;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-radius:12px;padding:10px 12px;box-shadow:0 4px 20px rgba(0,0,0,.12)">
-        <div class="nm">Your places</div>
-        <div class="meta">Pin = name · faces if shared</div>
-      </div>
-      <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.94);box-shadow:0 4px 20px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700">≡</div>
-    </div>
-    <div class="tabbar" style="z-index:3"><span><div class="ico"></div>ID</span><span class="on"><div class="ico"></div>Map</span><span><div class="ico"></div>Updates</span><span><div class="ico"></div>Friends</span></div>
-  </div>
-</div>
-
-<!-- 09b list -->
-<div class="cell">
-  <div class="cell-num"><div class="n">09b</div><div><div class="t">Places · list</div><div class="d">From map ≡. Home = Backyard. Shared places show people on the right.</div></div></div>
-  <div class="phone">
-    <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen">
-      <div class="nav"><span class="back">‹</span><div class="title">Places</div><div class="right">Map</div></div>
-      <div class="search"><span style="opacity:.45">⌕</span><span class="ph">Search places</span></div>
-      <div class="section">Home</div>
-      <div class="inset">
-        <div class="row"><div class="grow"><div class="nm">Backyard</div><div class="meta">Home · 23 listens · last today</div></div><span class="chip">⌂</span></div>
-      </div>
-      <div class="section">Shared with friends</div>
-      <div class="inset">
-        <div class="row"><div class="grow"><div class="nm">Union Bay</div><div class="meta">47 listens · last today</div></div><div class="stack"><img src="person.jpg" alt=""><img src="person.jpg" alt=""><img src="person.jpg" alt=""></div></div>
-        <div class="row"><div class="grow"><div class="nm">Ravenna Park</div><div class="meta">12 listens · with Maya</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-      </div>
-      <div class="section">Yours only</div>
-      <div class="inset">
-        <div class="row"><div class="grow"><div class="nm">Bus stop</div><div class="meta">8 listens · incidental</div></div></div>
-        <div class="row"><div class="grow"><div class="nm">Laurelhurst</div><div class="meta">5 listens</div></div></div>
-      </div>
-    </div>
-    <div class="tabbar"><span><div class="ico"></div>ID</span><span class="on"><div class="ico"></div>Map</span><span><div class="ico"></div>Updates</span><span><div class="ico"></div>Friends</span></div>
-  </div>
-</div>
-
-<!-- 10 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">10</div><div><div class="t">Place sheet · recently heard</div><div class="d">Bottom sheet focuses on recent listens, not full species catalog.</div></div></div>
-  <div class="phone">
-    <div class="statusbar" style="background:transparent;position:absolute;left:0;right:0;top:0;z-index:2"><span>9:41</span><span>▮▮</span></div>
-    <div id="map10" class="map-full" style="bottom:0"></div>
-    <div class="sheet-backdrop"></div>
-    <div class="sheet">
-      <div class="grab"></div>
-      <div style="padding:0 16px 8px">
-        <div class="nm" style="font-size:1.15rem;font-weight:700">Union Bay</div>
-        <div class="meta">Seattle · last heard today</div>
-      </div>
-      <div class="inset" style="margin-bottom:8px">
-        <div class="row"><button type="button" class="play" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Place mix</div><div class="meta">Recent shared</div></div></div>
-      </div>
-      <div class="section" style="padding-top:4px">Recently heard</div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · evening</div><div class="meta">5 birds · Overcast · with Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · morning</div><div class="meta">2 birds · Just you</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 12 · morning</div><div class="meta">4 birds · Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 8 · dawn</div><div class="meta">Maya · co-listen</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-      </div>
-      <button class="btn secondary">All birds here</button>
-      <button class="btn plain">Open timeline</button>
-    </div>
-  </div>
-</div>
-
-<!-- 11 removed — path chart lives in refs at bottom -->
-
-<!-- 12 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">12</div><div><div class="t">Bird @ place</div><div class="d">Shared section shows last heard + who shared.</div></div></div>
-  <div class="phone">
-    <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen">
-      <div class="nav"><span class="back">‹</span><div class="title">Red-winged Blackbird</div></div>
-      <div class="sub">Union Bay · 14 listens</div>
-      <div class="section">Your clips</div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · evening</div><div class="meta">0:08 · in chorus · last heard</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 12 · morning</div><div class="meta">0:11</div></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 8 · dawn</div><div class="meta">0:09</div></div></div>
-        <div class="row" style="justify-content:center;padding:10px"><span class="chip more">+ 11 more</span></div>
-      </div>
-      <div class="section">Shared · last heard</div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Phoebe · Jul 14 · 6:40pm</div><div class="meta">Last heard · same outing</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-        <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Sara · Jul 6</div><div class="meta">Shared clip</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
-      </div>
-      <div class="section">Compare</div>
-      <div class="inset">
-        <div class="row"><button type="button" class="play sm ghost" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Yours ↔ Merlin</div><div class="meta">Song + call</div></div><span class="chev">›</span></div>
-      </div>
-    </div>
-    <div class="tabbar"><span><div class="ico"></div>ID</span><span class="on"><div class="ico"></div>Map</span><span><div class="ico"></div>Updates</span><span><div class="ico"></div>Friends</span></div>
-  </div>
-</div>
-
-<!-- 13 Share audio hero -->
-<div class="cell">
-  <div class="cell-num"><div class="n">13</div><div><div class="t">Share · audio center</div><div class="d">Not a list — big play + wave is the card.</div></div></div>
-  <div class="phone">
-    <div class="statusbar" style="background:#1c1c1e;color:#fff"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen share-dark">
-      <div style="display:flex;justify-content:space-between;padding:10px 16px;font-size:.88rem"><span style="opacity:.5">Cancel</span><span style="font-weight:600">Share</span><span></span></div>
-      <div class="share-audio-hero">
-        <div style="font-size:.68rem;opacity:.55;margin-bottom:8px">UNION BAY · JUL 14</div>
-        <button type="button" class="play xl" style="margin:0 auto;background:#fff" aria-label="Play bird recording"></button>
-        <div class="wave-big">
-          <i style="height:30%"></i><i style="height:70%"></i><i style="height:45%"></i><i style="height:90%"></i><i style="height:55%"></i><i style="height:75%"></i><i style="height:40%"></i><i style="height:65%"></i><i style="height:50%"></i><i style="height:80%"></i>
-        </div>
-        <div style="font-size:1rem;font-weight:700;margin-top:4px">5 birds · 1:12</div>
-        <div style="font-size:.72rem;opacity:.55;margin-top:6px">Overcast · with Phoebe, Sara</div>
-        <div style="font-size:.6rem;opacity:.4;margin-top:14px">@you · merlin.app</div>
-      </div>
-      <div class="share-row"><div class="act"><div class="circ">↑</div><span>More</span></div><div class="act"><div class="circ">⚭</div><span>Copy</span></div><div class="act"><div class="circ" style="background:#34c759">💬</div><span>Messages</span></div></div>
-    </div>
-  </div>
-</div>
-
-<!-- 14 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">14</div><div><div class="t">Share · photo + audio pill</div><div class="d">Visual still, but audio is the only CTA — not a checklist of birds.</div></div></div>
-  <div class="phone">
-    <div class="statusbar" style="background:#1c1c1e;color:#fff"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen share-dark">
-      <div style="padding:10px 16px;text-align:center;font-weight:600">Share</div>
-      <div style="margin:12px 20px;border-radius:18px;overflow:hidden;position:relative;aspect-ratio:4/5;background:#2c2c2e">
-        <img src="bird.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.75">
-        <div style="position:absolute;inset:0;background:linear-gradient(transparent 45%,rgba(0,0,0,.85))"></div>
-        <div style="position:absolute;left:0;right:0;bottom:0;padding:16px;color:#fff">
-          <div style="font-size:.65rem;opacity:.75">JUL 14 · UNION BAY</div>
-          <div style="font-size:1.15rem;font-weight:800;margin:6px 0 12px">Evening chorus</div>
-          <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.2);backdrop-filter:blur(8px);border-radius:980px;padding:10px 14px">
-            <button type="button" class="play sm" style="background:#fff" aria-label="Play bird recording"></button>
-            <div style="flex:1;font-size:.78rem;font-weight:600">Play audio · 1:12</div>
+<main class="page">
+<section class="section-block" aria-labelledby="h-location">
+  <h2 id="h-location">Location</h2>
+  <div class="grid" data-axis="location">
+    <!-- 01 -->
+    <div class="cell" data-group="location">
+      <div class="cell-label">Place timeline</div>
+      <div class="cell-num"><div class="n">01</div><div><div class="t">Place timeline</div><div class="d">Location in header. This time last year: play only, no chevron. Play left · people right.</div></div></div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen">
+          <nav class="nav" aria-label="Main"><span class="back">‹</span><div class="title">Union Bay</div><span class="right">⋯</span></div>
+          <div class="sub">Seattle, WA · 47 listens · Jul 2026</div>
+          <div class="pill-row">
+            <button class="pill on">All</button><button class="pill">Shared</button><button class="pill">Mine</button><button class="pill">Mix</button>
           </div>
-        </div>
-      </div>
-      <div class="share-row"><div class="act"><div class="circ">📋</div><span>Story</span></div><div class="act"><div class="circ" style="background:#34c759">💬</div><span>Messages</span></div></div>
-    </div>
-  </div>
-</div>
-
-<!-- 15 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">15</div><div><div class="t">Share · week as sound</div><div class="d">Week strip but each tile is playable audio, not a photo dump.</div></div></div>
-  <div class="phone">
-    <div class="statusbar" style="background:#1c1c1e;color:#fff"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen share-dark">
-      <div style="padding:12px;text-align:center;font-weight:600">Share week</div>
-      <div style="margin:12px 18px;background:#fff;border-radius:16px;padding:16px;color:var(--label)">
-        <div class="nm" style="margin-bottom:4px">Week of Jul 13–19</div>
-        <div class="meta" style="margin-bottom:14px">7 listens · tap a day to hear</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-          <div style="aspect-ratio:1;border-radius:12px;background:var(--ink);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"><button type="button" class="play sm" style="background:#fff;width:22px;height:22px" aria-label="Play bird recording"></button><span style="font-size:.55rem;font-weight:600">Mon</span></div>
-          <div style="aspect-ratio:1;border-radius:12px;background:var(--fill);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"><button type="button" class="play sm ghost" style="width:22px;height:22px" aria-label="Play bird recording"></button><span style="font-size:.55rem;font-weight:600">Tue</span></div>
-          <div style="aspect-ratio:1;border-radius:12px;background:var(--ink);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"><button type="button" class="play sm" style="background:#fff;width:22px;height:22px" aria-label="Play bird recording"></button><span style="font-size:.55rem;font-weight:600">Wed</span></div>
-          <div style="aspect-ratio:1;border-radius:12px;background:var(--fill);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"><button type="button" class="play sm ghost" style="width:22px;height:22px" aria-label="Play bird recording"></button><span style="font-size:.55rem;font-weight:600">Sat</span></div>
-        </div>
-        <div class="meta" style="margin-top:12px;text-align:center">Or play full week mix</div>
-        <div style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--fill);border-radius:980px;padding:10px"><button type="button" class="play sm" aria-label="Play bird recording"></button><span style="font-size:.78rem;font-weight:600">Week mix · 3:40</span></div>
-      </div>
-      <div class="share-row"><div class="act"><div class="circ" style="background:#34c759">💬</div><span>Messages</span></div><div class="act"><div class="circ">⚭</div><span>Link</span></div></div>
-    </div>
-  </div>
-</div>
-
-<!-- 16 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">16</div><div><div class="t">Share · Messages bubble</div><div class="d">Native audio bubble + one line context (place · weather · with).</div></div></div>
-  <div class="phone" style="background:#c8c8cc">
-    <div class="statusbar" style="background:transparent"><span>9:41</span><span>▮▮</span></div>
-    <div style="padding:48px 14px 0">
-      <div style="background:#1c1c1e;color:#fff;border-radius:18px;padding:12px 14px;max-width:88%;margin-left:auto">
-        <div style="font-size:.68rem;opacity:.55;margin-bottom:8px">Union Bay · overcast · with Phoebe</div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <button type="button" class="play" style="background:#fff" aria-label="Play bird recording"></button>
-          <div style="flex:1">
-            <div style="display:flex;gap:2px;height:20px;align-items:center">
-              <i style="flex:1;height:40%;background:#fff;opacity:.45;border-radius:1px"></i>
-              <i style="flex:1;height:80%;background:#fff;opacity:.45;border-radius:1px"></i>
-              <i style="flex:1;height:50%;background:#fff;opacity:.45;border-radius:1px"></i>
-              <i style="flex:1;height:95%;background:#fff;opacity:.45;border-radius:1px"></i>
-              <i style="flex:1;height:60%;background:#fff;opacity:.45;border-radius:1px"></i>
+          <div class="past-card">
+            <div class="k">This time last year</div>
+            <div class="h">Quieter mornings · 3 birds</div>
+            <div class="m">Same week · Jul 2025 · Union Bay</div>
+            <div class="act">
+              <button type="button" class="play sm" aria-label="Play bird recording"></button>
+              <div class="grow"><div class="nm" style="font-size:.82rem">Compare with this week</div></div>
             </div>
-            <div style="font-size:.6rem;opacity:.5;margin-top:4px">1:12</div>
+          </div>
+          <div class="section">July 2026</div>
+          <div class="week-hd"><span class="w">Week of Jul 13–19</span><span class="c">5</span></div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · 6:40pm</div><div class="meta">5 birds · Overcast · 64°</div></div><div class="stack"><img src="person.jpg" alt=""><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · 7:12am</div><div class="meta">2 birds · Clear · Just you</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 12 · 10:04am</div><div class="meta">4 birds · With Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 11 · 8:22am</div><div class="meta">Song Sparrow</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 10 · 5:55pm</div><div class="meta">3 birds</div></div></div>
+          </div>
+          <div class="week-hd"><span class="w">Week of Jul 6–12</span><span class="c">8</span></div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 8 · 7:30am</div><div class="meta">6 birds · With Maya</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 7 · 6:15am</div><div class="meta">2 birds · Dawn</div></div></div>
+            <div class="row" style="justify-content:center;padding:10px"><span class="chip more">+ 6 more this week</span></div>
           </div>
         </div>
       </div>
-      <div style="font-size:.65rem;color:var(--tertiary);text-align:right;margin-top:6px;padding-right:4px">Delivered</div>
-    </div>
-  </div>
-</div>
 
-<!-- 17 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">17</div><div><div class="t">Share · story vertical</div><div class="d">Audio is hero; birds aren’t listed.</div></div></div>
-  <div class="phone">
-    <div class="statusbar" style="background:#1c1c1e;color:#fff"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen share-dark" style="display:flex;flex-direction:column;align-items:center;padding:12px">
-      <div style="width:200px;flex:1;max-height:420px;border-radius:20px;overflow:hidden;position:relative;background:#111;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;color:#fff">
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.25">
-          <div class="wave-big" style="height:80px;width:80%"><i style="height:40%;background:#fff"></i><i style="height:70%;background:#fff"></i><i style="height:50%;background:#fff"></i><i style="height:90%;background:#fff"></i><i style="height:45%;background:#fff"></i><i style="height:75%;background:#fff"></i><i style="height:55%;background:#fff"></i></div>
-        </div>
-        <button type="button" class="play xl" style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);background:#fff;z-index:1" aria-label="Play bird recording"></button>
-        <div style="position:relative;z-index:1">
-          <div style="font-size:.6rem;opacity:.65">UNION BAY · JUL 14</div>
-          <div style="font-size:1.2rem;font-weight:800;margin:6px 0">Listen</div>
-          <div style="font-size:.7rem;opacity:.7">Overcast · with Phoebe</div>
-        </div>
-      </div>
-      <div class="share-row" style="margin-top:10px"><div class="act"><div class="circ">📋</div><span>Story</span></div></div>
-    </div>
-  </div>
-</div>
-
-<!-- 18 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">18</div><div><div class="t">Share · link preview</div><div class="d">OG card when pasted: play affordance in preview, not a bird list.</div></div></div>
-  <div class="phone" style="background:#e8e8ed">
-    <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
-    <div style="padding:40px 14px">
-      <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)">
-        <div style="height:120px;background:#1c1c1e;display:flex;align-items:center;justify-content:center;gap:14px;color:#fff">
-          <button type="button" class="play" style="background:#fff" aria-label="Play bird recording"></button>
-          <div class="wave-big" style="width:100px;margin:0"><i style="height:35%;background:#fff"></i><i style="height:70%;background:#fff"></i><i style="height:50%;background:#fff"></i><i style="height:85%;background:#fff"></i><i style="height:45%;background:#fff"></i></div>
-        </div>
-        <div style="padding:12px 14px">
-          <div class="nm">Heard at Union Bay</div>
-          <div class="meta">5 birds · 1:12 · Jul 14 · Merlin</div>
+    <!-- 02 -->
+    <div class="cell" data-group="location">
+      <div class="cell-label">Outing detail</div>
+      <div class="cell-num"><div class="n">02</div><div><div class="t">Outing detail</div><div class="d">Shared-with = simple inline stack (not a card). Notes separate.</div></div></div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen">
+          <div class="nav"><span class="back">‹</span><div class="title">Jul 14 · evening</div></div>
+          <div class="sub">5 birds · 1:12 · Union Bay</div>
+          <div class="shared-inline">
+            <span class="when">Shared 1d ago</span>
+            <div class="stack"><img src="person.jpg" alt=""><img src="person.jpg" alt=""></div>
+            <div class="people-btn">+</div>
+          </div>
+          <div class="log-meta">
+            <div class="line"><span class="k">Place</span><span class="v">Union Bay, Seattle</span></div>
+            <div class="line"><span class="k">Weather</span><span class="v">Overcast · 64°</span></div>
+            <div class="line"><span class="k">With</span><span class="v">Phoebe, Sara</span></div>
+          </div>
+          <div class="section">Birds</div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><img class="thumb" src="bird.jpg" alt=""><div class="grow"><div class="nm">Red-winged Blackbird</div><div class="meta">0:08</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><img class="thumb" src="bird.jpg" alt=""><div class="grow"><div class="nm">Song Sparrow</div><div class="meta">0:06</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><img class="thumb" src="bird.jpg" alt=""><div class="grow"><div class="nm">American Robin</div><div class="meta">0:05</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><img class="thumb" src="bird.jpg" alt=""><div class="grow"><div class="nm">Marsh Wren</div><div class="meta">0:07</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><img class="thumb" src="bird.jpg" alt=""><div class="grow"><div class="nm">Chickadee</div><div class="meta">0:04</div></div></div>
+          </div>
+          <div class="section">Chorus</div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Full session · 1:12</div><div class="meta">5 birds overlapping</div></div></div>
+          </div>
+          <div class="section">Your notes</div>
+          <div class="notes-box">
+            <div class="lbl">Only you can see this</div>
+            <p>Wet after rain — blackbirds loud from the reeds.</p>
+          </div>
         </div>
       </div>
-      <div class="meta" style="margin-top:10px;text-align:center">merlin.app/s/ab12…</div>
     </div>
-  </div>
-</div>
 
-<!-- 19 -->
-<div class="cell">
-  <div class="cell-num"><div class="n">19</div><div><div class="t">Share · iOS sheet</div><div class="d">System destinations; preview still audio-led.</div></div></div>
-  <div class="phone" style="background:#888">
-    <div class="statusbar" style="background:transparent;color:#fff"><span>9:41</span><span>▮▮</span></div>
-    <div style="position:absolute;left:8px;right:8px;bottom:10px;background:rgba(242,242,247,.94);backdrop-filter:blur(24px);border-radius:14px;padding:8px">
-      <div style="display:flex;gap:10px;align-items:center;padding:10px;background:#fff;border-radius:10px;margin-bottom:8px">
-        <div style="width:44px;height:44px;border-radius:10px;background:#1c1c1e;display:flex;align-items:center;justify-content:center;flex:none"><button type="button" class="play sm" style="background:#fff;width:20px;height:20px" aria-label="Play bird recording"></button></div>
-        <div class="grow"><div class="nm" style="font-size:.8rem">Union Bay · 1:12</div><div class="meta">Audio · merlin.app</div></div>
-      </div>
-      <div style="background:#fff;border-radius:10px;overflow:hidden">
-        <div class="row" style="justify-content:center;padding:14px">Messages</div>
-        <div class="row" style="justify-content:center;padding:14px">Copy Link</div>
-        <div class="row" style="justify-content:center;padding:14px;color:var(--tertiary)">Cancel</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 20 logging -->
-<div class="cell">
-  <div class="cell-num"><div class="n">20</div><div><div class="t">After save · log fields</div><div class="d">What you capture: location · weather · people with you · optional notes · share.</div></div></div>
-  <div class="phone">
-    <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
-    <div class="screen">
-      <div class="nav"><div class="title">Saved</div><div class="right">Done</div></div>
-      <div class="inset" style="margin-top:8px">
-        <div class="row"><button type="button" class="play" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · evening</div><div class="meta">5 birds · 1:12</div></div></div>
-      </div>
-      <div class="section">From this listen</div>
-      <div class="log-meta">
-        <div class="line"><span class="k">Place</span><span class="v">Union Bay</span></div>
-        <div class="line"><span class="k">Weather</span><span class="v">Overcast · 64° · auto</span></div>
-        <div class="line"><span class="k">With</span><span class="v">Phoebe, Sara · edit</span></div>
-      </div>
-      <div class="section">Notes · optional</div>
-      <div class="notes-box"><div class="lbl">Personal · not shared by default</div><p style="color:var(--tertiary)">Add a field note…</p></div>
-      <div class="section">Share with</div>
-      <div class="inset">
-        <div class="row" style="justify-content:flex-start;gap:12px;padding:14px">
-          <div style="text-align:center;opacity:.4"><div style="width:40px;height:40px;border-radius:50%;border:1.5px dashed var(--sep);display:flex;align-items:center;justify-content:center;font-size:1.1rem">+</div><div class="meta" style="margin-top:4px">Add</div></div>
-          <div style="text-align:center"><img class="avatar" src="person.jpg" alt="" style="width:40px;height:40px"><div class="meta" style="margin-top:4px">Phoebe</div></div>
-          <div style="text-align:center"><img class="avatar" src="person.jpg" alt="" style="width:40px;height:40px"><div class="meta" style="margin-top:4px">Sara</div></div>
+    <!-- 03 -->
+    <div class="cell" data-group="location">
+      <div class="cell-label">Place insight</div>
+      <div class="cell-num"><div class="n">03</div><div><div class="t">Place insight</div><div class="d">Play left · friend avatar right when shared.</div></div></div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen">
+          <div class="nav"><span class="back">‹</span><div class="title">Backyard</div></div>
+          <div class="sub">Seattle · 23 listens</div>
+          <div class="past-card">
+            <div class="k">Lately</div>
+            <div class="h">More dawn chatter than in spring</div>
+            <div class="m">From last 6 listens</div>
+            <div class="act"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm" style="font-size:.82rem">Hear spring vs now</div></div></div>
+          </div>
+          <div class="section">Recent</div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · House Finch</div><div class="meta">You · Clear · 68°</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 13 · American Robin</div><div class="meta">Shared from Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 12 · 3 birds</div><div class="meta">You · With Sara</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 11 · Song Sparrow</div><div class="meta">Maya · co-listen</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 10 · Bus wait</div><div class="meta">You · incidental</div></div></div>
+            <div class="row" style="justify-content:center;padding:10px"><span class="chip more">+ 18 more</span></div>
+          </div>
         </div>
       </div>
-      <button class="btn">Share</button>
-      <button class="btn plain">Skip</button>
     </div>
-    <div class="tabbar"><span class="on"><div class="ico"></div>ID</span><span><div class="ico"></div>Places</span><span><div class="ico"></div>Updates</span><span><div class="ico"></div>Friends</span></div>
-  </div>
-</div>
 
-</div>
+    <!-- 08 -->
+    <div class="cell" data-group="location">
+      <div class="cell-label">Place hub</div>
+      <div class="cell-num"><div class="n">08</div><div><div class="t">Place hub</div><div class="d">Play left · people right. Timeline + weather on recent rows.</div></div></div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen">
+          <div class="hero-place"><img src="bird.jpg" alt=""><div class="inner"><div class="nm" style="font-size:1.15rem;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)">Union Bay</div><div class="meta" style="color:rgba(255,255,255,.9)">Seattle · 47 listens</div></div></div>
+          <div class="row" style="background:transparent;border:none;padding:4px 16px 8px"><div class="grow meta">Phoebe · Sara · Maya also bird here</div><div class="stack"><img class="avatar" src="person.jpg" alt="" style="width:32px;height:32px;margin-left:-8px;border:2px solid #fff"><img class="avatar" src="person.jpg" alt="" style="width:32px;height:32px;margin-left:-8px;border:2px solid #fff"><img class="avatar" src="person.jpg" alt="" style="width:32px;height:32px;margin-left:-8px;border:2px solid #fff"></div></div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Place mix</div><div class="meta">Shared audio only</div></div></div>
+          </div>
+          <div class="section">Timeline</div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · evening</div><div class="meta">5 birds · Overcast · with Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · morning</div><div class="meta">2 birds · private</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 12 · morning</div><div class="meta">4 birds · shared Sara</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 8 · dawn</div><div class="meta">Maya · co-listen</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row" style="justify-content:center;padding:10px"><span class="chip more">+ 13 more</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<div class="refs">
-  <h2>Reference · not phone screens</h2>
-  <p>Logging fields and navigation path — kept as cards so product UI stays clean.</p>
-  <div class="ref-grid">
-    <div class="ref-card">
-      <div class="n">11 · Path to bird @ place</div>
-      <h3>Map → sheet → bird</h3>
-      <div class="block"><strong>1 · Map</strong><span>Tap pin (place name · faces if shared)</span></div>
-      <div class="block"><strong>2 · Sheet</strong><span>Recently heard at that place</span></div>
-      <div class="block"><strong>3 · Optional</strong><span>“All birds here” or open an outing</span></div>
-      <div class="block"><strong>4 · Bird @ place (12)</strong><span>Your clips · shared last heard · Merlin compare</span></div>
-      <div class="block"><strong>Also</strong><span>Places list (09b) ≡ → Backyard home · shared places with faces</span></div>
+    <!-- 09 -->
+    <div class="cell" data-group="location">
+      <div class="cell-label">Map</div>
+      <div class="cell-num"><div class="n">09</div><div><div class="t">Map</div><div class="d">Pins = place name. Shared places show friend faces. List button · Backyard = home.</div></div></div>
+      <div class="phone">
+        <div class="statusbar" style="background:transparent;position:absolute;left:0;right:0;top:0;z-index:3"><span>9:41</span><span>▮▮</span></div>
+        <div id="map09" class="map-full"></div>
+        <div style="position:absolute;top:36px;left:12px;right:12px;z-index:3;display:flex;gap:8px;align-items:flex-start">
+          <div style="flex:1;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-radius:12px;padding:10px 12px;box-shadow:0 4px 20px rgba(0,0,0,.12)">
+            <div class="nm">Your places</div>
+            <div class="meta">Pin = name · faces if shared</div>
+          </div>
+          <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.94);box-shadow:0 4px 20px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700">≡</div>
+        </div>
+      </div>
     </div>
-    <div class="ref-card">
-      <div class="n">Captured at log</div>
-      <h3>Automatic + light input</h3>
-      <div class="block"><strong>Place</strong><span>GPS / saved place → timelines, map pins, Updates meta, share line</span></div>
-      <div class="block"><strong>Weather</strong><span>Auto at save → outing header, share context</span></div>
-      <div class="block"><strong>People with you</strong><span>Co-present ≠ share recipients</span></div>
-      <div class="block"><strong>Share with</strong><span>Inline stack on outing (02) · Updates · place hub</span></div>
-      <div class="block"><strong>Personal notes</strong><span>Only you · never default on share cards</span></div>
+
+    <!-- 09b list -->
+    <div class="cell" data-group="location">
+      <div class="cell-label">Places · list</div>
+      <div class="cell-num"><div class="n">09b</div><div><div class="t">Places · list</div><div class="d">From map ≡. Home = Backyard. Shared places show people on the right.</div></div></div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen">
+          <div class="nav"><span class="back">‹</span><div class="title">Places</div><div class="right">Map</div></div>
+          <div class="search"><span style="opacity:.45">⌕</span><span class="ph">Search places</span></div>
+          <div class="section">Home</div>
+          <div class="inset">
+            <div class="row"><div class="grow"><div class="nm">Backyard</div><div class="meta">Home · 23 listens · last today</div></div><span class="chip">⌂</span></div>
+          </div>
+          <div class="section">Shared with friends</div>
+          <div class="inset">
+            <div class="row"><div class="grow"><div class="nm">Union Bay</div><div class="meta">47 listens · last today</div></div><div class="stack"><img src="person.jpg" alt=""><img src="person.jpg" alt=""><img src="person.jpg" alt=""></div></div>
+            <div class="row"><div class="grow"><div class="nm">Ravenna Park</div><div class="meta">12 listens · with Maya</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+          </div>
+          <div class="section">Yours only</div>
+          <div class="inset">
+            <div class="row"><div class="grow"><div class="nm">Bus stop</div><div class="meta">8 listens · incidental</div></div></div>
+            <div class="row"><div class="grow"><div class="nm">Laurelhurst</div><div class="meta">5 listens</div></div></div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="ref-card">
-      <div class="n">With vs Shared</div>
-      <h3>Two different people sets</h3>
-      <div class="block"><strong>With</strong><span>Co-present on the outing. Log meta + Past filters.</span></div>
-      <div class="block"><strong>Shared with</strong><span>Recipients. Inline stack (right). Map faces on shared places.</span></div>
-      <div class="block"><strong>Weather</strong><span>Rides along as context — no tab.</span></div>
+
+    <!-- 10 -->
+    <div class="cell" data-group="location">
+      <div class="cell-label">Place sheet · recently heard</div>
+      <div class="cell-num"><div class="n">10</div><div><div class="t">Place sheet · recently heard</div><div class="d">Bottom sheet focuses on recent listens, not full species catalog.</div></div></div>
+      <div class="phone">
+        <div class="statusbar" style="background:transparent;position:absolute;left:0;right:0;top:0;z-index:2"><span>9:41</span><span>▮▮</span></div>
+        <div id="map10" class="map-full"></div>
+        <div class="sheet-backdrop"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div style="padding:0 16px 8px">
+            <div class="nm" style="font-size:1.15rem;font-weight:700">Union Bay</div>
+            <div class="meta">Seattle · last heard today</div>
+          </div>
+          <div class="inset" style="margin-bottom:8px">
+            <div class="row"><button type="button" class="play" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Place mix</div><div class="meta">Recent shared</div></div></div>
+          </div>
+          <div class="section" style="padding-top:4px">Recently heard</div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · evening</div><div class="meta">5 birds · Overcast · with Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · morning</div><div class="meta">2 birds · Just you</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 12 · morning</div><div class="meta">4 birds · Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 8 · dawn</div><div class="meta">Maya · co-listen</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+          </div>
+          <button class="btn secondary">All birds here</button>
+          <button class="btn plain">Open timeline</button>
+        </div>
+      </div>
     </div>
+
+    <!-- 20 logging -->
+    <div class="cell" data-group="location">
+      <div class="cell-label">After save · log fields</div>
+      <div class="cell-num"><div class="n">20</div><div><div class="t">After save · log fields</div><div class="d">What you capture: location · weather · people with you · optional notes · share.</div></div></div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen">
+          <div class="nav"><div class="title">Saved</div><div class="right">Done</div></div>
+          <div class="inset" style="margin-top:8px">
+            <div class="row"><button type="button" class="play" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · evening</div><div class="meta">5 birds · 1:12</div></div></div>
+          </div>
+          <div class="section">From this listen</div>
+          <div class="log-meta">
+            <div class="line"><span class="k">Place</span><span class="v">Union Bay</span></div>
+            <div class="line"><span class="k">Weather</span><span class="v">Overcast · 64° · auto</span></div>
+            <div class="line"><span class="k">With</span><span class="v">Phoebe, Sara · edit</span></div>
+          </div>
+          <div class="section">Notes · optional</div>
+          <div class="notes-box"><div class="lbl">Personal · not shared by default</div><p style="color:var(--tertiary)">Add a field note…</p></div>
+          <div class="section">Share with</div>
+          <div class="inset">
+            <div class="row" style="justify-content:flex-start;gap:12px;padding:14px">
+              <div style="text-align:center;opacity:.4"><div style="width:40px;height:40px;border-radius:50%;border:1.5px dashed var(--sep);display:flex;align-items:center;justify-content:center;font-size:1.1rem">+</div><div class="meta" style="margin-top:4px">Add</div></div>
+              <div style="text-align:center"><img class="avatar" src="person.jpg" alt="" style="width:40px;height:40px"><div class="meta" style="margin-top:4px">Phoebe</div></div>
+              <div style="text-align:center"><img class="avatar" src="person.jpg" alt="" style="width:40px;height:40px"><div class="meta" style="margin-top:4px">Sara</div></div>
+            </div>
+          </div>
+          <button class="btn">Share</button>
+          <button class="btn plain">Skip</button>
+        </div>
+      </div>
+    </div>
+
   </div>
-</div>
+</section>
+<section class="section-block" aria-labelledby="h-species">
+  <h2 id="h-species">Species</h2>
+  <div class="grid" data-axis="species">
+    <!-- 07b compare -->
+    <div class="cell" data-group="species">
+      <div class="cell-label">Yours ↔ Merlin</div>
+      <div class="cell-num"><div class="n">07b</div><div><div class="t">Yours ↔ Merlin</div><div class="d">Separate from mix. One of your clips next to Merlin song + call.</div></div></div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen">
+          <div class="nav"><span class="back">‹</span><div class="title">House Finch</div></div>
+          <div class="sub">Compare · Backyard · Jul 11</div>
+          <div class="inset" style="margin-top:8px">
+            <div class="row"><button type="button" class="play" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Yours</div><div class="meta">Field · 0:22 · Clear · 68°</div></div></div>
+          </div>
+          <div class="section">Merlin library</div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play sm ghost" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Song</div><div class="meta">House Finch</div></div></div>
+            <div class="row"><button type="button" class="play sm ghost" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Call</div><div class="meta">House Finch</div></div></div>
+          </div>
+          <div class="meta" style="padding:0 28px;line-height:1.4">Opened from a bird in an outing or mix — not the mix itself.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12 -->
+    <div class="cell" data-group="species">
+      <div class="cell-label">Bird @ place</div>
+      <div class="cell-num"><div class="n">12</div><div><div class="t">Bird @ place</div><div class="d">Shared section shows last heard + who shared.</div></div></div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen">
+          <div class="nav"><span class="back">‹</span><div class="title">Red-winged Blackbird</div></div>
+          <div class="sub">Union Bay · 14 listens</div>
+          <div class="section">Your clips</div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · evening</div><div class="meta">0:08 · in chorus · last heard</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 12 · morning</div><div class="meta">0:11</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 8 · dawn</div><div class="meta">0:09</div></div></div>
+            <div class="row" style="justify-content:center;padding:10px"><span class="chip more">+ 11 more</span></div>
+          </div>
+          <div class="section">Shared · last heard</div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Phoebe · Jul 14 · 6:40pm</div><div class="meta">Last heard · same outing</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Sara · Jul 6</div><div class="meta">Shared clip</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+          </div>
+          <div class="section">Compare</div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play sm ghost" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Yours ↔ Merlin</div><div class="meta">Song + call</div></div><span class="chev">›</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+<section class="section-block" aria-labelledby="h-time">
+  <h2 id="h-time">Time</h2>
+  <div class="grid" data-axis="time">
+    <!-- 04 -->
+    <div class="cell" data-group="time">
+      <div class="cell-label">Updates</div>
+      <div class="cell-num"><div class="n">04</div><div><div class="t">Updates</div><div class="d">Date column left · card right. Same day reuses date slot.</div></div></div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen">
+          <div class="large-title">Updates</div>
+          <div class="sub">Friends’ shares · yours · past audio</div>
+          <div class="diary">
+            <div class="diary-row">
+              <div class="diary-date"><div class="d">14</div><div class="m">Wed</div></div>
+              <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Phoebe · Robin</div><div class="meta">Backyard</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            </div>
+            <div class="diary-row">
+              <div class="diary-date empty"><div class="d">·</div></div>
+              <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">You · House Finch</div><div class="meta">Backyard · 7:12am</div></div></div>
+            </div>
+            <div class="diary-row">
+              <div class="diary-date empty"><div class="d">·</div></div>
+              <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Maya · 4 birds</div><div class="meta">Union Bay</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            </div>
+            <div class="diary-row">
+              <div class="diary-date"><div class="d">12</div><div class="m">Mon</div></div>
+              <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">You → Sara</div><div class="meta">Union Bay · Overcast</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            </div>
+            <div class="diary-row">
+              <div class="diary-date"><div class="d">11</div><div class="m">Sun</div></div>
+              <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Phoebe · Sparrow</div><div class="meta">Bus stop</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            </div>
+            <div class="diary-row">
+              <div class="diary-date"><div class="d">’25</div><div class="m">Jul</div></div>
+              <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">This time last year</div><div class="meta">Union Bay · quieter</div></div></div>
+            </div>
+            <div class="diary-row">
+              <div class="diary-date"><div class="d">08</div><div class="m">Thu</div></div>
+              <div class="diary-card"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">You · Dawn chorus</div><div class="meta">Union Bay · with Maya</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 06 -->
+    <div class="cell" data-group="time">
+      <div class="cell-label">Past</div>
+      <div class="cell-num"><div class="n">06</div><div><div class="t">Past</div><div class="d">Mix cards + search / place filter. No browse grid.</div></div></div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen">
+          <div class="large-title">Past</div>
+          <div class="section">Mixes</div>
+          <div class="mix-cards">
+            <div class="mix-card"><img src="bird.jpg" alt=""><div class="inner"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="txt"><div class="t">July mix</div><div class="s">12 clips · 3 places</div></div></div></div>
+            <div class="mix-card"><img src="bird.jpg" alt="" style="filter:grayscale(1)"><div class="inner"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="txt"><div class="t">This time last year</div><div class="s">8 clips · Union Bay</div></div></div></div>
+            <div class="mix-card"><img src="person.jpg" alt="" style="opacity:.55"><div class="inner"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="txt"><div class="t">From friends</div><div class="s">5 clips</div></div></div></div>
+          </div>
+          <div class="section">Outings</div>
+          <div class="search"><span style="opacity:.45">⌕</span><span class="ph">Search outings</span></div>
+          <div class="pill-row">
+            <button class="pill on">All places</button>
+            <button class="pill">Backyard</button>
+            <button class="pill">Union Bay</button>
+            <button class="pill">Shared</button>
+          </div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · evening</div><div class="meta">Union Bay · 5 birds</div></div><div class="stack"><img src="person.jpg" alt=""><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 14 · morning</div><div class="meta">Backyard · 2 birds</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 12 · morning</div><div class="meta">Union Bay · Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 11 · bus</div><div class="meta">Bus stop · Sparrow</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">Jul 8 · dawn</div><div class="meta">Union Bay · Maya</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row" style="justify-content:center;padding:10px"><span class="chip more">+ 42 more</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 07a Mix -->
+    <div class="cell" data-group="time">
+      <div class="cell-label">Mix player</div>
+      <div class="cell-num"><div class="n">07a</div><div><div class="t">Mix player</div><div class="d">Just your field clips in sequence. Not Merlin library.</div></div></div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen">
+          <div class="nav"><span class="back">‹</span><div class="title">July mix</div></div>
+          <div class="sub">12 clips · 4:02 · your recordings</div>
+          <div style="margin:16px 14px;padding:24px;background:var(--grouped);border-radius:16px;text-align:center">
+            <button type="button" class="play xl" style="margin:0 auto 12px" aria-label="Play bird recording"></button>
+            <div class="nm">Clip 4 of 12</div>
+            <div class="meta" style="margin-top:4px">Jul 11 · Backyard · House Finch</div>
+            <div class="meta">Clear · 68° · Just you</div>
+          </div>
+          <div class="section">In this mix</div>
+          <div class="inset">
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">1 · Jul 14 · Union Bay</div><div class="meta">Chorus · 5 birds</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">2 · Jul 13 · Backyard</div><div class="meta">Robin · from Phoebe</div></div><div class="stack"><img src="person.jpg" alt=""></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">3 · Jul 12 · Union Bay</div><div class="meta">4 birds</div></div></div>
+            <div class="row" style="background:var(--fill2)"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">4 · Jul 11 · Backyard</div><div class="meta">House Finch · playing</div></div></div>
+            <div class="row"><button type="button" class="play sm" aria-label="Play bird recording"></button><div class="grow"><div class="nm">5 · Jul 10 · Bus stop</div><div class="meta">Sparrow</div></div></div>
+            <div class="row" style="justify-content:center;padding:10px"><span class="chip more">+ 7 more</span></div>
+          </div>
+          <button class="btn plain">Share mix</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 15 -->
+    <div class="cell" data-group="time">
+      <div class="cell-label">Share · week as sound</div>
+      <div class="cell-num"><div class="n">15</div><div><div class="t">Share · week as sound</div><div class="d">Week strip but each tile is playable audio, not a photo dump.</div></div></div>
+      <div class="phone">
+        <div class="statusbar" style="background:#1c1c1e;color:#fff"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen share-dark">
+          <div style="padding:12px;text-align:center;font-weight:600">Share week</div>
+          <div style="margin:12px 18px;background:#fff;border-radius:16px;padding:16px;color:var(--label)">
+            <div class="nm" style="margin-bottom:4px">Week of Jul 13–19</div>
+            <div class="meta" style="margin-bottom:14px">7 listens · tap a day to hear</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+              <div style="aspect-ratio:1;border-radius:12px;background:var(--ink);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"><button type="button" class="play sm" style="background:#fff;width:22px;height:22px" aria-label="Play bird recording"></button><span style="font-size:.55rem;font-weight:600">Mon</span></div>
+              <div style="aspect-ratio:1;border-radius:12px;background:var(--fill);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"><button type="button" class="play sm ghost" style="width:22px;height:22px" aria-label="Play bird recording"></button><span style="font-size:.55rem;font-weight:600">Tue</span></div>
+              <div style="aspect-ratio:1;border-radius:12px;background:var(--ink);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"><button type="button" class="play sm" style="background:#fff;width:22px;height:22px" aria-label="Play bird recording"></button><span style="font-size:.55rem;font-weight:600">Wed</span></div>
+              <div style="aspect-ratio:1;border-radius:12px;background:var(--fill);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px"><button type="button" class="play sm ghost" style="width:22px;height:22px" aria-label="Play bird recording"></button><span style="font-size:.55rem;font-weight:600">Sat</span></div>
+            </div>
+            <div class="meta" style="margin-top:12px;text-align:center">Or play full week mix</div>
+            <div style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--fill);border-radius:980px;padding:10px"><button type="button" class="play sm" aria-label="Play bird recording"></button><span style="font-size:.78rem;font-weight:600">Week mix · 3:40</span></div>
+          </div>
+          <div class="share-row"><div class="act"><div class="circ" style="background:#34c759">💬</div><span>Messages</span></div><div class="act"><div class="circ">⚭</div><span>Link</span></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+<section class="section-block" aria-labelledby="h-share">
+  <h2 id="h-share">Share</h2>
+  <div class="grid" data-axis="share">
+    <!-- 13 Share audio hero -->
+    <div class="cell" data-group="share">
+      <div class="cell-label">Share · audio center</div>
+      <div class="cell-num"><div class="n">13</div><div><div class="t">Share · audio center</div><div class="d">Not a list — big play + wave is the card.</div></div></div>
+      <div class="phone">
+        <div class="statusbar" style="background:#1c1c1e;color:#fff"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen share-dark">
+          <div style="display:flex;justify-content:space-between;padding:10px 16px;font-size:.88rem"><span style="opacity:.5">Cancel</span><span style="font-weight:600">Share</span><span></span></div>
+          <div class="share-audio-hero">
+            <div style="font-size:.68rem;opacity:.55;margin-bottom:8px">UNION BAY · JUL 14</div>
+            <button type="button" class="play xl" style="margin:0 auto;background:#fff" aria-label="Play bird recording"></button>
+            <div class="wave-big">
+              <i style="height:30%"></i><i style="height:70%"></i><i style="height:45%"></i><i style="height:90%"></i><i style="height:55%"></i><i style="height:75%"></i><i style="height:40%"></i><i style="height:65%"></i><i style="height:50%"></i><i style="height:80%"></i>
+            </div>
+            <div style="font-size:1rem;font-weight:700;margin-top:4px">5 birds · 1:12</div>
+            <div style="font-size:.72rem;opacity:.55;margin-top:6px">Overcast · with Phoebe, Sara</div>
+            <div style="font-size:.6rem;opacity:.4;margin-top:14px">@you · merlin.app</div>
+          </div>
+          <div class="share-row"><div class="act"><div class="circ">↑</div><span>More</span></div><div class="act"><div class="circ">⚭</div><span>Copy</span></div><div class="act"><div class="circ" style="background:#34c759">💬</div><span>Messages</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14 -->
+    <div class="cell" data-group="share">
+      <div class="cell-label">Share · photo + audio pill</div>
+      <div class="cell-num"><div class="n">14</div><div><div class="t">Share · photo + audio pill</div><div class="d">Visual still, but audio is the only CTA — not a checklist of birds.</div></div></div>
+      <div class="phone">
+        <div class="statusbar" style="background:#1c1c1e;color:#fff"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen share-dark">
+          <div style="padding:10px 16px;text-align:center;font-weight:600">Share</div>
+          <div style="margin:12px 20px;border-radius:18px;overflow:hidden;position:relative;aspect-ratio:4/5;background:#2c2c2e">
+            <img src="bird.jpg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.75">
+            <div style="position:absolute;inset:0;background:linear-gradient(transparent 45%,rgba(0,0,0,.85))"></div>
+            <div style="position:absolute;left:0;right:0;bottom:0;padding:16px;color:#fff">
+              <div style="font-size:.65rem;opacity:.75">JUL 14 · UNION BAY</div>
+              <div style="font-size:1.15rem;font-weight:800;margin:6px 0 12px">Evening chorus</div>
+              <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.2);backdrop-filter:blur(8px);border-radius:980px;padding:10px 14px">
+                <button type="button" class="play sm" style="background:#fff" aria-label="Play bird recording"></button>
+                <div style="flex:1;font-size:.78rem;font-weight:600">Play audio · 1:12</div>
+              </div>
+            </div>
+          </div>
+          <div class="share-row"><div class="act"><div class="circ">📋</div><span>Story</span></div><div class="act"><div class="circ" style="background:#34c759">💬</div><span>Messages</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 16 -->
+    <div class="cell" data-group="share">
+      <div class="cell-label">Share · Messages bubble</div>
+      <div class="cell-num"><div class="n">16</div><div><div class="t">Share · Messages bubble</div><div class="d">Native audio bubble + one line context (place · weather · with).</div></div></div>
+      <div class="phone" style="background:#c8c8cc">
+        <div class="statusbar" style="background:transparent"><span>9:41</span><span>▮▮</span></div>
+        <div style="padding:48px 14px 0">
+          <div style="background:#1c1c1e;color:#fff;border-radius:18px;padding:12px 14px;max-width:88%;margin-left:auto">
+            <div style="font-size:.68rem;opacity:.55;margin-bottom:8px">Union Bay · overcast · with Phoebe</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <button type="button" class="play" style="background:#fff" aria-label="Play bird recording"></button>
+              <div style="flex:1">
+                <div style="display:flex;gap:2px;height:20px;align-items:center">
+                  <i style="flex:1;height:40%;background:#fff;opacity:.45;border-radius:1px"></i>
+                  <i style="flex:1;height:80%;background:#fff;opacity:.45;border-radius:1px"></i>
+                  <i style="flex:1;height:50%;background:#fff;opacity:.45;border-radius:1px"></i>
+                  <i style="flex:1;height:95%;background:#fff;opacity:.45;border-radius:1px"></i>
+                  <i style="flex:1;height:60%;background:#fff;opacity:.45;border-radius:1px"></i>
+                </div>
+                <div style="font-size:.6rem;opacity:.5;margin-top:4px">1:12</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:.65rem;color:var(--tertiary);text-align:right;margin-top:6px;padding-right:4px">Delivered</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 17 -->
+    <div class="cell" data-group="share">
+      <div class="cell-label">Share · story vertical</div>
+      <div class="cell-num"><div class="n">17</div><div><div class="t">Share · story vertical</div><div class="d">Audio is hero; birds aren’t listed.</div></div></div>
+      <div class="phone">
+        <div class="statusbar" style="background:#1c1c1e;color:#fff"><span>9:41</span><span>▮▮</span></div>
+        <div class="screen share-dark" style="display:flex;flex-direction:column;align-items:center;padding:12px">
+          <div style="width:200px;flex:1;max-height:420px;border-radius:20px;overflow:hidden;position:relative;background:#111;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;color:#fff">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.25">
+              <div class="wave-big" style="height:80px;width:80%"><i style="height:40%;background:#fff"></i><i style="height:70%;background:#fff"></i><i style="height:50%;background:#fff"></i><i style="height:90%;background:#fff"></i><i style="height:45%;background:#fff"></i><i style="height:75%;background:#fff"></i><i style="height:55%;background:#fff"></i></div>
+            </div>
+            <button type="button" class="play xl" style="position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);background:#fff;z-index:1" aria-label="Play bird recording"></button>
+            <div style="position:relative;z-index:1">
+              <div style="font-size:.6rem;opacity:.65">UNION BAY · JUL 14</div>
+              <div style="font-size:1.2rem;font-weight:800;margin:6px 0">Listen</div>
+              <div style="font-size:.7rem;opacity:.7">Overcast · with Phoebe</div>
+            </div>
+          </div>
+          <div class="share-row" style="margin-top:10px"><div class="act"><div class="circ">📋</div><span>Story</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 18 -->
+    <div class="cell" data-group="share">
+      <div class="cell-label">Share · link preview</div>
+      <div class="cell-num"><div class="n">18</div><div><div class="t">Share · link preview</div><div class="d">OG card when pasted: play affordance in preview, not a bird list.</div></div></div>
+      <div class="phone" style="background:#e8e8ed">
+        <div class="statusbar"><span>9:41</span><span>▮▮</span></div>
+        <div style="padding:40px 14px">
+          <div style="background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+            <div style="height:120px;background:#1c1c1e;display:flex;align-items:center;justify-content:center;gap:14px;color:#fff">
+              <button type="button" class="play" style="background:#fff" aria-label="Play bird recording"></button>
+              <div class="wave-big" style="width:100px;margin:0"><i style="height:35%;background:#fff"></i><i style="height:70%;background:#fff"></i><i style="height:50%;background:#fff"></i><i style="height:85%;background:#fff"></i><i style="height:45%;background:#fff"></i></div>
+            </div>
+            <div style="padding:12px 14px">
+              <div class="nm">Heard at Union Bay</div>
+              <div class="meta">5 birds · 1:12 · Jul 14 · Merlin</div>
+            </div>
+          </div>
+          <div class="meta" style="margin-top:10px;text-align:center">merlin.app/s/ab12…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 19 -->
+    <div class="cell" data-group="share">
+      <div class="cell-label">Share · iOS sheet</div>
+      <div class="cell-num"><div class="n">19</div><div><div class="t">Share · iOS sheet</div><div class="d">System destinations; preview still audio-led.</div></div></div>
+      <div class="phone" style="background:#888">
+        <div class="statusbar" style="background:transparent;color:#fff"><span>9:41</span><span>▮▮</span></div>
+        <div style="position:absolute;left:8px;right:8px;bottom:10px;background:rgba(242,242,247,.94);backdrop-filter:blur(24px);border-radius:14px;padding:8px">
+          <div style="display:flex;gap:10px;align-items:center;padding:10px;background:#fff;border-radius:10px;margin-bottom:8px">
+            <div style="width:44px;height:44px;border-radius:10px;background:#1c1c1e;display:flex;align-items:center;justify-content:center;flex:none"><button type="button" class="play sm" style="background:#fff;width:20px;height:20px" aria-label="Play bird recording"></button></div>
+            <div class="grow"><div class="nm" style="font-size:.8rem">Union Bay · 1:12</div><div class="meta">Audio · merlin.app</div></div>
+          </div>
+          <div style="background:#fff;border-radius:10px;overflow:hidden">
+            <div class="row" style="justify-content:center;padding:14px">Messages</div>
+            <div class="row" style="justify-content:center;padding:14px">Copy Link</div>
+            <div class="row" style="justify-content:center;padding:14px;color:var(--tertiary)">Cancel</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</main>
 
 <script>
 const UB = [47.6555, -122.2925];
@@ -815,15 +806,44 @@ function placePin(p){
 function makeMap(id, interactive){
   const el = document.getElementById(id);
   if (!el || typeof L === 'undefined') return;
-  const map = L.map(el, {zoomControl:false, attributionControl:false, dragging:interactive, scrollWheelZoom:interactive, doubleClickZoom:interactive, boxZoom:false, keyboard:false}).setView(UB, 13);
+  if (el._jjMap) { el._jjMap.invalidateSize(); return el._jjMap; }
+  // Size from the phone frame — Leaflet otherwise expands the grid cell.
+  const phone = el.closest('.phone');
+  if (phone) {
+    el.style.width = phone.clientWidth + 'px';
+    el.style.height = phone.clientHeight + 'px';
+  }
+  const map = L.map(el, {
+    zoomControl:false,
+    attributionControl:false,
+    dragging:interactive,
+    scrollWheelZoom:interactive,
+    doubleClickZoom:interactive,
+    boxZoom:false,
+    keyboard:false,
+  }).setView(UB, 13);
+  el._jjMap = map;
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {subdomains:'abcd', maxZoom:19}).addTo(map);
   pins.forEach(p => L.marker([p.lat,p.lng],{icon:placePin(p)}).addTo(map));
-  setTimeout(() => map.invalidateSize(), 250);
+  const fix = () => map.invalidateSize({animate:false});
+  requestAnimationFrame(() => { fix(); setTimeout(fix, 100); setTimeout(fix, 400); });
+  return map;
 }
 window.addEventListener('load', () => { makeMap('map09', true); makeMap('map10', false); });
+window.addEventListener('resize', () => {
+  ['map09','map10'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el || !el._jjMap) return;
+    const phone = el.closest('.phone');
+    if (phone) {
+      el.style.width = phone.clientWidth + 'px';
+      el.style.height = phone.clientHeight + 'px';
+    }
+    el._jjMap.invalidateSize({animate:false});
+  });
+});
 </script>
 
-</main>
 <script>
 (function enhancePrototypeA11y(){
   document.querySelectorAll('.play, .back, .tap, [data-go], .s-close, .s-icon').forEach(el=>{

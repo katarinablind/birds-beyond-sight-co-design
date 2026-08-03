@@ -118,7 +118,7 @@ li a:hover .arrow{opacity:1}
 <main class="page">
   <header class="masthead">
     <h1>Birds Beyond Sight</h1>
-    <p class="lede">Working space of Katarina Blind, Catherine Fu and Jax Powell</p>
+    <p class="lede">Katarina Blind, Catherine Fu and Jax Powell</p>
   </header>
 
   <div class="cols">
@@ -128,7 +128,17 @@ li a:hover .arrow{opacity:1}
         <li><a href="merlin-prototype.html">Test 1<span class="arrow">→</span></a></li>
         <li><a href="merlin-hifi.html">Test 2<span class="arrow">→</span></a></li>
         <li><a href="study.html">Test 2 Facilitation<span class="arrow">→</span></a></li>
-        <li><a href="sr-layers.html">Screen reader layers<span class="arrow">→</span></a></li>
+        <li><a href="sr-layers.html">Screen Reader Debug<span class="arrow">→</span></a></li>
+        <li><a href="lv-anatomy.html">Low Vision Debug<span class="arrow">→</span></a></li>
+      </ul>
+    </section>
+
+    <section class="block" aria-labelledby="ideation-h">
+      <h2 id="ideation-h">Ideation</h2>
+      <ul>
+        <li><a href="playground.html">Playground<span class="arrow">→</span></a></li>
+        <li><a href="dashboard.html">Insights<span class="arrow">→</span></a></li>
+        <li><a href="place-feed-v3.html">Categories<span class="arrow">→</span></a></li>
       </ul>
     </section>
 
@@ -137,17 +147,6 @@ li a:hover .arrow{opacity:1}
       <ul>
         <li><a href="index-soundboard-archive.html">Bird DJ<span class="arrow">→</span></a></li>
         <li><a href="bird-composition.html">Bird DJ Facilitation<span class="arrow">→</span></a></li>
-      </ul>
-    </section>
-
-    <section class="block" aria-labelledby="ideation-h">
-      <h2 id="ideation-h">Ideation</h2>
-      <ul>
-        <li><a href="playground.html">Playground<span class="arrow">→</span></a></li>
-        <li><a href="prototypes.html">Prototype grid<span class="arrow">→</span></a></li>
-        <li><a href="place-feed-v3.html">Place / feed<span class="arrow">→</span></a></li>
-        <li><a href="sonogram.html">Sonogram<span class="arrow">→</span></a></li>
-        <li><a href="dashboard.html">Dashboard<span class="arrow">→</span></a></li>
       </ul>
     </section>
   </div>
@@ -164,13 +163,19 @@ li a:hover .arrow{opacity:1}
   let active = null;
   let lastHref = '';
 
+  // Hover thumbnails can deep-link into a better first view of the page.
+  const PREVIEW = {
+    'playground.html': 'playground.html?tab=gallery',
+  };
+
   document.querySelectorAll('.cols a[href]').forEach(link => {
     link.addEventListener('mouseenter', () => {
       active = link;
       const href = link.getAttribute('href');
-      if (href && href !== lastHref) {
-        lastHref = href;
-        frame.src = href;
+      const src = PREVIEW[href] || href;
+      if (src && src !== lastHref) {
+        lastHref = src;
+        frame.src = src;
       }
       peek.classList.add('on');
     });

@@ -11,11 +11,14 @@
 <script src="config.local.js" onerror="window.JJ_CONFIG=window.JJ_CONFIG||{}"></script>
 <script>
 // Participant study links: hide desktop Screen Reader Verifier chrome
+// Also apply ?textscale= before paint (same --text-scale as the study text-size gate).
 (function () {
   try {
     var p = new URLSearchParams(location.search);
     var sid = (p.get('session') || p.get('room') || '').trim();
     if (sid && p.get('role') !== 'watch') document.documentElement.classList.add('study-participant');
+    var s = parseFloat(p.get('textscale') || '');
+    if (s >= 1 && s <= 2) document.documentElement.style.setProperty('--text-scale', String(s));
   } catch (_) {}
 })();
 </script>
@@ -4484,6 +4487,21 @@ input.field{
   // Optional pre-study text size gate (low vision) — ?textsize=1 on main link
   (function textSizeGate() {
     const params = new URLSearchParams(location.search);
+    const KEY = 'merle-text-scale';
+
+    function applyTextScale(v) {
+      const n = Number(v);
+      if (!(n >= 1 && n <= 2)) return;
+      document.documentElement.style.setProperty('--text-scale', String(n));
+    }
+
+    // Live updates from low-vision debug (and any parent tooling)
+    window.addEventListener('message', (e) => {
+      const data = e.data;
+      if (!data || data.type !== 'merle-text-scale') return;
+      applyTextScale(data.scale);
+    });
+
     if (params.get('textsize') !== '1') return;
     if (params.get('role') === 'watch') return;
     const gate = document.getElementById('textsize-gate');
@@ -4497,7 +4515,6 @@ input.field{
       1.8: 'Maximum'
     };
     let scale = 1;
-    const KEY = 'merle-text-scale';
     try {
       const saved = parseFloat(localStorage.getItem(KEY) || '');
       if (saved >= 1 && saved <= 1.8) scale = saved;
@@ -4528,7 +4545,7 @@ input.field{
     });
     document.getElementById('textsize-continue')?.addEventListener('click', () => {
       try { localStorage.setItem(KEY, String(scale)); } catch (_) {}
-      document.documentElement.style.setProperty('--text-scale', String(scale));
+      applyTextScale(scale);
       gate.hidden = true;
       document.getElementById('app')?.removeAttribute('inert');
       const pct = Math.round(scale * 100);
